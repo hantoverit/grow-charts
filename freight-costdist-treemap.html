@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Freight Cost by Account</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f4f6f8;--surface:#fff;--surface2:#f9fafb;--border:#e3e7ed;
+    --text-primary:#111827;--text-secondary:#4b5563;--text-muted:#9ca3af;
+    --green:#1e8a4a;--green-bg:#dcfce7;--red:#c0392b;--red-bg:#fee2e2;
+    --toggle-bg:#d1d5db;--toggle-knob:#fff;
+    --week-active-bg:#1a73e8;--week-active-text:#fff;--week-inactive:#6b7280;
+    --shadow:0 1px 6px rgba(0,0,0,.08),0 4px 20px rgba(0,0,0,.04);
+  }
+  [data-theme="dark"] {
+    --bg:#161b27;--surface:#1e2533;--surface2:#252d3d;--border:#2e3a4e;
+    --text-primary:#e8edf5;--text-secondary:#b0bdd0;--text-muted:#6b7f99;
+    --green:#4ade80;--green-bg:#0c2b1c;--red:#fc8181;--red-bg:#2d1214;
+    --toggle-bg:#2e3a4e;--toggle-knob:#e8edf5;
+    --week-active-bg:#4f93f5;--week-active-text:#0d1117;--week-inactive:#94a3b8;
+    --shadow:0 1px 8px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%}
+  body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text-primary);transition:background .25s,color .25s}
+  .widget{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px 16px;width:100%;height:100%;display:flex;flex-direction:column;box-shadow:var(--shadow);transition:background .25s,border-color .25s}
+  .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-shrink:0}
+  .header-left{display:flex;flex-direction:column;gap:2px}
+  .eyebrow{font-size:10.5px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted)}
+  .title-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .title{font-size:16px;font-weight:700;color:var(--text-primary);letter-spacing:-.02em}
+  .header-total{font-size:11.5px;color:var(--text-muted);font-weight:400}
+  .header-delta{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;border-radius:4px;padding:2px 6px}
+  .header-delta.pos{color:var(--green);background:var(--green-bg)}
+  .header-delta.neg{color:var(--red);background:var(--red-bg)}
+  .header-right{display:flex;align-items:center;gap:14px}
+  .week-toggle{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px;gap:2px}
+  .week-btn{font-size:11.5px;font-weight:600;padding:5px 13px;border-radius:6px;border:none;cursor:pointer;background:transparent;color:var(--week-inactive);transition:all .16s;font-family:"Inter",sans-serif}
+  .week-btn.active{background:var(--week-active-bg);color:var(--week-active-text);box-shadow:0 1px 5px rgba(26,115,232,.3)}
+  .dm-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;opacity:.6;transition:opacity .15s;user-select:none;padding:2px 4px}
+  .dm-toggle:hover{opacity:1}
+  .dm-icon{font-size:10px;color:var(--text-secondary);display:flex;align-items:center;width:12px;justify-content:center}
+  .dm-track{width:28px;height:15px;background:var(--toggle-bg);border-radius:8px;position:relative;transition:background .2s;flex-shrink:0}
+  .dm-knob{width:11px;height:11px;background:var(--toggle-knob);border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  [data-theme="dark"] .dm-knob{transform:translateX(13px)}
+  .divider{height:1px;background:var(--border);margin:10px 0;flex-shrink:0}
+  .treemap-wrap{position:relative;width:100%;flex:1;min-height:0;border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+  canvas{display:block;width:100%;height:100%}
+  /* Legend — clickable chips */
+  .legend{display:flex;flex-wrap:wrap;gap:5px 8px;margin-top:10px;flex-shrink:0}
+  .leg-item{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--text-secondary);cursor:pointer;padding:3px 7px 3px 5px;border-radius:5px;border:1px solid transparent;transition:border-color .12s,background .12s,color .12s;user-select:none}
+  .leg-item:hover{background:var(--surface2);border-color:var(--border)}
+  .leg-item.pinned{background:var(--surface2);border-color:var(--border);color:var(--text-primary);font-weight:600}
+  .leg-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+  .leg-pin{font-size:9px;margin-left:2px;opacity:0.5}
+  .leg-item.pinned .leg-pin{opacity:1}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="header">
+    <div class="header-left">
+      <span class="eyebrow">Hantover Inc. &middot; Freight</span>
+      <div class="title-row">
+        <span class="title">Cost Distribution by Account</span>
+        <span class="header-total" id="header-total"></span>
+        <span class="header-delta" id="header-delta" style="display:none"></span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="week-toggle">
+        <button class="week-btn" id="btn-216" onclick="setWeek('2-16')">W2-16</button>
+        <button class="week-btn active" id="btn-223" onclick="setWeek('2-23')">W2-23</button>
+      </div>
+      <div class="dm-toggle" onclick="toggleDark()" title="Toggle dark mode">
+        <span class="dm-icon">&#9728;</span>
+        <div class="dm-track"><div class="dm-knob"></div></div>
+        <span class="dm-icon">&#9790;</span>
+      </div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="treemap-wrap" id="wrap"><canvas id="canvas"></canvas></div>
+  <div class="legend" id="legend"></div>
+</div>
+<script>
+const RAW={
+  "2-16":{AM:1934.20,AT:13210.88,AV:29104.12,CA:5120.33,CO:2387.45,DC:4521.90,FM:1876.33,FR:9102.44,HB:2801.22,HZ:6890.11,KC:87234.18,NW:834.56,WC:4965.71},
+  "2-23":{AM:1726.35,AT:12404.52,AV:27684.35,CA:4808.52,CO:2049.26,DC:4088.86,FM:2008.74,FR:8641.71,HB:2519.47,HZ:6136.56,KC:84699.06,NW:722.04,WC:4285.80}
+};
+const LABELS={AM:"Amelia",AT:"Atlanta",AV:"Avon",CA:"Canada",CO:"Colorado",DC:"DC Metro",FM:"Farmer's Mkt",FR:"Franklin",HB:"Harrisburg",HZ:"Hazleton",KC:"Kansas City",NW:"Northwest",WC:"West Coast"};
+const PAL_L=["#1a73e8","#0d47a1","#1565c0","#1976d2","#1e88e5","#2196f3","#42a5f5","#64b5f6","#1a5fa8","#0077b6","#023e8a","#0096c7","#00b4d8"];
+const PAL_D=["#4f93f5","#1e5bbf","#2874d4","#3384e0","#4a95f0","#5ba3f5","#7dbaf8","#9ecdfb","#2968b8","#1a8fd1","#1256a8","#1aaddb","#1dc8f0"];
+
+let week="2-23", dark=false, hov=null, pinnedKey="KC";
+let flashAlphas={}, flashFrame=null;
+let cachedBox=null, cachedW=0, cachedH=0;
+let spCanvas=null, spKey=null, spWeek=null, spDark=null;
+
+function fmt(v){return"$"+v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function fmtK(v){return v>=1000?"$"+(v/1000).toFixed(1)+"k":fmt(v)}
+function fmtD(v){const a=Math.abs(v),s=v>=0?"+":"\u2212";return s+"$"+a.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function pal(){return dark?PAL_D:PAL_L}
+
+// Sort descending, then squarify starting vertical (h>=w) to stack right column
+function squarify(items,x,y,w,h){
+  if(!items.length)return[];
+  const total=items.reduce((s,i)=>s+i.v,0);
+  const rects=[];let rem=[...items],rx=x,ry=y,rw=w,rh=h;
+  while(rem.length){
+    // Force vertical split first to encourage right-side stacking
+    const horiz=rw>rh*1.4, side=horiz?rh:rw;
+    let row=[],rsum=0,best=Infinity;
+    for(let i=0;i<rem.length;i++){
+      const tr=[...row,rem[i]],ts=rsum+rem[i].v,ra=(ts/total)*rw*rh;
+      let worst=0;
+      for(const r of tr){const ia=(r.v/total)*rw*rh;worst=Math.max(worst,Math.max((side*side*ia)/(ra*ra),(ra*ra)/(side*side*ia)));}
+      if(worst<=best){best=worst;row=tr;rsum=ts;}else break;
+    }
+    rem=rem.slice(row.length);
+    const ra=(rsum/total)*rw*rh;
+    let cx=rx,cy=ry;
+    for(const item of row){
+      const frac=item.v/rsum,hz=rw>rh*1.4;
+      let iw,ih;
+      if(hz){ih=rh;iw=row.length===1?ra/rh:ra/rh*frac;}
+      else{iw=rw;ih=row.length===1?ra/rw:ra/rw*frac;}
+      rects.push({...item,x:cx,y:cy,w:iw,h:ih});
+      if(hz)cx+=iw;else cy+=ih;
+    }
+    if(rw>rh*1.4){rx+=ra/rh;rw-=ra/rh;}else{ry+=ra/rw;rh-=ra/rw;}
+  }
+  return rects;
+}
+
+function findEmptyBox(rects,W,H,GAP){
+  const STEP=6;
+  const cols=Math.ceil(W/STEP),rows=Math.ceil(H/STEP);
+  const grid=new Uint8Array(cols*rows);
+  for(const r of rects){
+    const rx=r.x+GAP,ry=r.y+GAP,rw=r.w-GAP*2,rh=r.h-GAP*2;
+    if(rw<=0||rh<=0) continue;
+    const c0=Math.max(0,Math.floor(rx/STEP)),c1=Math.min(cols-1,Math.ceil((rx+rw)/STEP));
+    const r0=Math.max(0,Math.floor(ry/STEP)),r1=Math.min(rows-1,Math.ceil((ry+rh)/STEP));
+    for(let rr=r0;rr<=r1;rr++) for(let cc=c0;cc<=c1;cc++) grid[rr*cols+cc]=1;
+  }
+  let bestBox=null,bestArea=0;
+  for(let r0=0;r0<rows;r0++){
+    for(let c0=0;c0<cols;c0++){
+      if(grid[r0*cols+c0]) continue;
+      let c1=c0;
+      while(c1+1<cols&&!grid[r0*cols+c1+1]) c1++;
+      let r1=r0;
+      outer:while(r1+1<rows){for(let cc=c0;cc<=c1;cc++)if(grid[(r1+1)*cols+cc])break outer;r1++;}
+      const bw=(c1-c0)*STEP,bh=(r1-r0)*STEP,area=bw*bh;
+      if(area>bestArea&&bw>70&&bh>50){bestArea=area;bestBox={x:c0*STEP+GAP,y:r0*STEP+GAP,w:bw,h:bh};}
+    }
+  }
+  return bestBox;
+}
+
+function renderSpotlightOffscreen(box){
+  const k=hov||pinnedKey;
+  if(!k||!box) return null;
+  if(spCanvas&&spKey===k&&spWeek===week&&spDark===dark&&
+     spCanvas.width===Math.round(box.w*2)&&spCanvas.height===Math.round(box.h*2)) return spCanvas;
+
+  const curr=RAW[week],prev=RAW["2-16"];
+  const total=Object.values(curr).reduce((a,b)=>a+b,0);
+  const v=curr[k]||0,pv=prev[k]||0,d=v-pv,pct=(d/pv*100);
+  const sorted=Object.entries(curr).sort((a,b)=>b[1]-a[1]);
+  const idx=Math.max(0,sorted.findIndex(([kk])=>kk===k));
+  const p=pal(),color=p[idx%p.length];
+  const isW=week==="2-23",share=(v/total*100);
+  const W=box.w,H=box.h,DPR=2;
+  const oc=document.createElement("canvas");
+  oc.width=Math.round(W*DPR);oc.height=Math.round(H*DPR);
+  const ctx=oc.getContext("2d");
+  ctx.scale(DPR,DPR);
+
+  ctx.fillStyle=dark?"#1e2533":"#ffffff";
+  ctx.beginPath();ctx.roundRect(0,0,W,H,6);ctx.fill();
+  ctx.globalAlpha=0.3;
+  ctx.strokeStyle=dark?"#2e3a4e":"#e3e7ed";ctx.lineWidth=1;
+  ctx.beginPath();ctx.roundRect(0.5,0.5,W-1,H-1,6);ctx.stroke();
+  ctx.globalAlpha=1;
+  ctx.fillStyle=color;
+  ctx.beginPath();ctx.roundRect(0,0,4,H,{upperLeft:6,upperRight:0,lowerLeft:6,lowerRight:0});ctx.fill();
+
+  const PAD=18,px=PAD+6;
+  // Measure total content height to center vertically
+  const codeFS=Math.min(48,Math.max(20,Math.floor(Math.min(H*0.48,110)*0.56)));
+  const nameFS=Math.min(15,Math.max(11,Math.floor(H*0.09)));
+  const lblFS=Math.min(12,Math.max(10,Math.floor(H*0.07)));
+  const valFS=Math.min(18,Math.max(13,Math.floor(H*0.115)));
+  const pillFS2=Math.min(valFS-1,14);
+  const topH=Math.min(H*0.48,110);
+  const metricsH=isW
+    ?(lblFS+3+valFS+10)+(lblFS+3+pillFS2+8+10)+(lblFS+3+valFS+10)
+    :(lblFS+3+valFS+10)*3;
+  const totalContentH=topH+10+metricsH+PAD*2;
+  const vOffset=Math.max(0,Math.floor((H-totalContentH)/2));
+  ctx.font=`700 ${codeFS}px Inter,sans-serif`;
+  ctx.fillStyle=color;ctx.textAlign="left";ctx.textBaseline="top";
+  ctx.fillText(k,px,PAD+vOffset);
+
+  const rankFS=Math.min(10,Math.max(8,Math.floor(H*0.058)));
+  const isPinned=!hov||hov===pinnedKey;
+  const badgeText=isPinned?`#${idx+1} of 13 \u2713`:`#${idx+1} of 13`;
+  ctx.font=`600 ${rankFS}px Inter,sans-serif`;
+  const bw2=ctx.measureText(badgeText).width+10,bh2=rankFS+6;
+  ctx.fillStyle=isPinned?(dark?"#1a2d50":"#e8f0fd"):(dark?"#252d3d":"#f1f5f9");
+  ctx.beginPath();ctx.roundRect(W-bw2-PAD,PAD+2+vOffset,bw2,bh2,4);ctx.fill();
+  ctx.fillStyle=isPinned?(dark?"#7db3f8":"#1a73e8"):(dark?"#b0bdd0":"#4b5563");
+  ctx.textBaseline="middle";
+  ctx.fillText(badgeText,W-bw2-PAD+5,PAD+2+bh2/2+vOffset);
+
+  ctx.font=`500 ${nameFS}px Inter,sans-serif`;
+  ctx.fillStyle=dark?"#d0ddf0":"#4b5563";
+  ctx.textBaseline="top";
+  ctx.fillText(LABELS[k]||k,px,PAD+codeFS+3+vOffset);
+
+  const divY=topH+vOffset;
+  ctx.globalAlpha=0.25;ctx.strokeStyle=dark?"#2e3a4e":"#e3e7ed";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(px,divY);ctx.lineTo(W-PAD,divY);ctx.stroke();
+  ctx.globalAlpha=1;
+
+  const metY=divY+10,col1x=px,col2x=px+Math.floor((W-px-PAD)*0.5)+4;
+
+  function metricPair(label,value,x,y,valueColor){
+    ctx.font=`600 ${lblFS}px Inter,sans-serif`;
+    ctx.fillStyle=dark?"#c8d8f0":"#6b7a99";ctx.textBaseline="top";
+    ctx.fillText(label.toUpperCase(),x,y);
+    ctx.font=`700 ${valFS}px Inter,sans-serif`;
+    ctx.fillStyle=valueColor||(dark?"#f0f4ff":"#0f172a");
+    ctx.fillText(value,x,y+lblFS+4);
+    return y+lblFS+4+valFS+12;
+  }
+
+  let row1Y=metY,row2Y=metY;
+  row1Y=metricPair("Total Paid",fmt(v),col1x,row1Y);
+  row1Y=metricPair("Share of Total",share.toFixed(1)+"%",col1x,row1Y);
+  if(isW&&row1Y+lblFS+valFS+10<H-6) metricPair("Prev Week",fmt(pv),col1x,row1Y);
+
+  if(isW){
+    const isPos=d>=0,arrow=isPos?"\u2191":"\u2193",dtext=arrow+" "+fmtD(d);
+    const dcolor=isPos?(dark?"#4ade80":"#1e8a4a"):(dark?"#fc8181":"#c0392b");
+    const dbg=isPos?(dark?"#0c2b1c":"#dcfce7"):(dark?"#2d1214":"#fee2e2");
+    const pillFS2=Math.min(valFS-1,14);
+    ctx.font=`600 ${pillFS2}px Inter,sans-serif`;
+    const dtw=ctx.measureText(dtext).width;
+    const pH=pillFS2+8,pW=Math.min(dtw+14,W-col2x-PAD-4);
+    ctx.font=`600 ${lblFS}px Inter,sans-serif`;
+    ctx.fillStyle=dark?"#c8d8f0":"#6b7a99";ctx.textBaseline="top";
+    ctx.fillText("WOW CHANGE",col2x,row2Y);
+    row2Y+=lblFS+3;
+    ctx.fillStyle=dbg;ctx.beginPath();ctx.roundRect(col2x,row2Y,pW,pH,4);ctx.fill();
+    ctx.fillStyle=dcolor;ctx.font=`600 ${pillFS2}px Inter,sans-serif`;
+    ctx.textBaseline="middle";ctx.fillText(dtext,col2x+7,row2Y+pH/2);
+    row2Y+=pH+10;
+    metricPair("WoW %",(pct>=0?"+":"")+pct.toFixed(1)+"%",col2x,row2Y,dcolor);
+  } else {
+    metricPair("Prev Week Paid",fmt(pv),col2x,row2Y);
+  }
+
+  spCanvas=oc;spKey=k;spWeek=week;spDark=dark;
+  return oc;
+}
+
+function startFlash(fromWeek,toWeek){
+  flashAlphas={};
+  // Fire on ALL tiles — black or white ripple depending on dark mode, staggered by tile index
+  const curr=RAW[toWeek];
+  const sorted=Object.entries(curr).sort((a,b)=>b[1]-a[1]);
+  sorted.forEach(([k],i)=>{
+    flashAlphas[k]={alpha:0,phase:"in",delay:Math.floor(i*1.8),hold:0};
+  });
+  if(flashFrame) cancelAnimationFrame(flashFrame);
+  animateFlash();
+}
+function animateFlash(){
+  let any=false;
+  for(const k of Object.keys(flashAlphas)){
+    const f=flashAlphas[k];
+    if(f.delay>0){f.delay--;any=true;continue;}
+    if(f.phase==="in"){f.alpha+=0.07;if(f.alpha>=0.55){f.alpha=0.55;f.phase="hold";f.hold=0;}}
+    else if(f.phase==="hold"){f.hold++;if(f.hold>10)f.phase="out";}
+    else{f.alpha-=0.03;if(f.alpha<=0){delete flashAlphas[k];continue;}}
+    any=true;
+  }
+  drawCanvas();
+  if(any) flashFrame=requestAnimationFrame(animateFlash);
+  else flashFrame=null;
+}
+
+function getDisplayKey(){return hov||pinnedKey;}
+
+function drawCanvas(){
+  const canvas=document.getElementById("canvas");
+  const wrap=document.getElementById("wrap");
+  if(!wrap.clientWidth||!wrap.clientHeight) return;
+  const dpr=window.devicePixelRatio||1;
+  const W=wrap.clientWidth,H=wrap.clientHeight;
+  if(canvas._lastW!==W||canvas._lastH!==H){
+    canvas.width=W*dpr;canvas.height=H*dpr;
+    canvas.style.width=W+"px";canvas.style.height=H+"px";
+    canvas._lastW=W;canvas._lastH=H;
+    cachedBox=null;spCanvas=null;
+  }
+  const ctx=canvas.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+
+  const curr=RAW[week];
+  const total=Object.values(curr).reduce((a,b)=>a+b,0);
+  const sorted=Object.entries(curr).sort((a,b)=>b[1]-a[1]);
+  // Minimum floor: 3% share so all tiles are visible and hoverable
+  // Data in spotlight panel always uses RAW values — tile sizes are layout only
+  const totalRaw=Object.values(curr).reduce((a,b)=>a+b,0);
+  const minData=totalRaw*0.03;
+  const boosted=sorted.map(([k,v],i)=>({k,v:Math.max(v,minData),i}));
+  const totalBoosted=boosted.reduce((s,r)=>s+r.v,0);
+  const items=boosted.map(r=>({...r,v:r.v*(totalRaw/totalBoosted)}));
+  const p=pal(),GAP=3;
+  const rawRects=squarify(items,GAP,GAP,W-GAP*2,H-GAP*2);
+  // Flip y-axis only: KC anchors bottom, small bars top-left→right, empty space top-right
+  const rects=rawRects.map(r=>({...r,y:H-r.y-r.h}));
+  canvas._rects=rects;
+
+  if(!cachedBox||cachedW!==W||cachedH!==H){
+    cachedBox=findEmptyBox(rects,W,H,GAP);
+    cachedW=W;cachedH=H;
+  }
+
+  const activeKey=getDisplayKey();
+  for(const r of rects){
+    const isActive=(r.k===activeKey);
+    const rx=r.x+GAP,ry=r.y+GAP,rw=r.w-GAP*2,rh=r.h-GAP*2;
+    if(rw<=0||rh<=0) continue;
+    ctx.globalAlpha=isActive?1:0.85;
+    ctx.fillStyle=p[r.i%p.length];
+    ctx.beginPath();ctx.roundRect(rx,ry,rw,rh,5);ctx.fill();
+    const fl=flashAlphas[r.k];
+    if(fl&&fl.alpha>0){
+      ctx.globalAlpha=fl.alpha;
+      ctx.fillStyle=dark?"rgba(255,255,255,1)":"rgba(255,255,255,1)";
+      ctx.beginPath();ctx.roundRect(rx,ry,rw,rh,5);ctx.fill();
+    }
+    if(isActive){
+      ctx.globalAlpha=1;ctx.strokeStyle="rgba(255,255,255,0.8)";ctx.lineWidth=2;
+      ctx.beginPath();ctx.roundRect(rx+1,ry+1,rw-2,rh-2,4);ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+    const cx=rx+rw/2,pct2=(r.v/total*100);
+    if(rw>110&&rh>70){
+      ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.fillStyle="rgba(255,255,255,0.97)";ctx.font="700 22px Inter,sans-serif";
+      ctx.fillText(r.k,cx,ry+rh/2-16);
+      ctx.font="600 13px Inter,sans-serif";ctx.fillStyle="rgba(255,255,255,0.88)";
+      ctx.fillText(fmtK(r.v),cx,ry+rh/2+5);
+      ctx.font="500 11px Inter,sans-serif";ctx.fillStyle="rgba(255,255,255,0.65)";
+      ctx.fillText(pct2.toFixed(1)+"%",cx,ry+rh/2+22);
+    } else if(rw>60&&rh>40){
+      ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.fillStyle="rgba(255,255,255,0.97)";ctx.font="700 14px Inter,sans-serif";
+      ctx.fillText(r.k,cx,ry+rh/2-7);
+      ctx.font="500 10px Inter,sans-serif";ctx.fillStyle="rgba(255,255,255,0.72)";
+      ctx.fillText(pct2.toFixed(1)+"%",cx,ry+rh/2+8);
+    } else if(rw>28&&rh>20){
+      ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.fillStyle="rgba(255,255,255,0.95)";ctx.font="700 11px Inter,sans-serif";
+      ctx.fillText(r.k,cx,ry+rh/2);
+    }
+  }
+
+  if(cachedBox&&getDisplayKey()){
+    const oc=renderSpotlightOffscreen(cachedBox);
+    if(oc) ctx.drawImage(oc,cachedBox.x,cachedBox.y,cachedBox.w,cachedBox.h);
+  }
+}
+
+function updateHeader(){
+  const curr=RAW[week],prev=RAW["2-16"];
+  const total=Object.values(curr).reduce((a,b)=>a+b,0);
+  const totalP=Object.values(prev).reduce((a,b)=>a+b,0);
+  const d=total-totalP,pct=(d/totalP*100),isW=week==="2-23";
+  document.getElementById("header-total").textContent=fmt(total);
+  const hd=document.getElementById("header-delta");
+  if(isW){hd.style.display="inline-flex";hd.className="header-delta "+(d>=0?"pos":"neg");hd.innerHTML=(d>=0?"&#8593;":"&#8595;")+" "+fmtD(d)+"&nbsp;"+(pct>=0?"+":"")+pct.toFixed(1)+"%";}
+  else hd.style.display="none";
+}
+
+function updateLegend(){
+  const curr=RAW[week];
+  const sorted=Object.entries(curr).sort((a,b)=>b[1]-a[1]);
+  const p=pal();
+  const activeKey=getDisplayKey();
+  document.getElementById("legend").innerHTML=sorted.map(([k],i)=>{
+    const isPinned=(k===pinnedKey&&!hov)||(k===pinnedKey);
+    return `<div class="leg-item${k===activeKey?' pinned':''}" onclick="pinKey('${k}')" data-key="${k}">
+      <div class="leg-dot" style="background:${p[i%p.length]}"></div>
+      <span><b>${k}</b> ${LABELS[k]||""}</span>
+      <span class="leg-pin">${k===pinnedKey?'📌':''}</span>
+    </div>`;
+  }).join("");
+}
+
+function pinKey(k){
+  pinnedKey=k;
+  hov=null;
+  spCanvas=null;
+  drawCanvas();
+  updateLegend();
+}
+
+// Hover on canvas tiles still works for large tiles
+document.getElementById("canvas").addEventListener("mousemove",e=>{
+  const c=e.target,b=c.getBoundingClientRect();
+  const mx=e.clientX-b.left,my=e.clientY-b.top;
+  const GAP=3;
+  const rects=c._rects||[];
+  // Check if directly on a tile
+  const hit=rects.find(r=>{
+    const rx=r.x+GAP,ry=r.y+GAP,rw=r.w-GAP*2,rh=r.h-GAP*2;
+    return mx>=rx&&mx<=rx+rw&&my>=ry&&my<=ry+rh;
+  });
+  let activeK=null;
+  if(hit){
+    activeK=hit.k;
+    c.style.cursor="pointer";
+  } else {
+    // Gap zone — claim by nearest tile center so gaps split evenly between neighbors
+    let bestDist=Infinity;
+    for(const r of rects){
+      const rx=r.x+GAP,ry=r.y+GAP,rw=r.w-GAP*2,rh=r.h-GAP*2;
+      const dist=Math.hypot(mx-(rx+rw/2),my-(ry+rh/2));
+      if(dist<bestDist){bestDist=dist;activeK=r.k;}
+    }
+    c.style.cursor="default";
+  }
+  if(activeK&&activeK!==hov){hov=activeK;spCanvas=null;drawCanvas();updateLegend();}
+},{passive:true});
+
+// Click on canvas tile to pin
+document.getElementById("canvas").addEventListener("click",e=>{
+  const c=e.target,b=c.getBoundingClientRect();
+  const mx=e.clientX-b.left,my=e.clientY-b.top;
+  const GAP=3;
+  const f=(c._rects||[]).find(r=>{
+    const rx=r.x+GAP,ry=r.y+GAP,rw=r.w-GAP*2,rh=r.h-GAP*2;
+    return mx>=rx&&mx<=rx+rw&&my>=ry&&my<=ry+rh;
+  });
+  if(f) pinKey(f.k);
+});
+
+function render(fromWeek){
+  updateHeader();updateLegend();spCanvas=null;
+  document.getElementById("btn-216").classList.toggle("active",week==="2-16");
+  document.getElementById("btn-223").classList.toggle("active",week==="2-23");
+  if(fromWeek&&fromWeek!==week) startFlash(fromWeek,week);
+  else drawCanvas();
+}
+function setWeek(w){const from=week;week=w;hov=null;cachedBox=null;render(from);}
+function toggleDark(){dark=!dark;spCanvas=null;document.documentElement.setAttribute("data-theme",dark?"dark":"");render();}
+window.addEventListener("resize",()=>{
+  const c=document.getElementById("canvas");c._lastW=0;c._lastH=0;cachedBox=null;spCanvas=null;drawCanvas();
+});
+render();
+</script>
+</body>
+</html>
