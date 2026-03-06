@@ -14,21 +14,23 @@
     --toggle-bg:#d1d5db;--toggle-knob:#fff;
     --week-active-bg:#1a73e8;--week-active-text:#fff;--week-inactive:#6b7280;
     --shadow:0 1px 6px rgba(0,0,0,.08),0 4px 20px rgba(0,0,0,.04);
+    --chart-bg:#f8fafc;--chart-border:#dce3eb;
   }
   [data-theme="dark"] {
-    --bg:#161b27;--surface:#1e2533;--surface2:#252d3d;--border:#2e3a4e;
+    --bg:#0d1117;--surface:#161b27;--surface2:#1e2533;--border:#2e3a4e;
     --text-primary:#e8edf5;--text-secondary:#b0bdd0;--text-muted:#6b7f99;
     --accent:#4f93f5;--accent-dim:#1a2d50;--accent-text:#7db3f8;
     --green:#4ade80;--green-bg:#0c2b1c;--red:#fc8181;--red-bg:#2d1214;
     --toggle-bg:#2e3a4e;--toggle-knob:#e8edf5;
     --week-active-bg:#4f93f5;--week-active-text:#0d1117;--week-inactive:#94a3b8;
-    --shadow:0 1px 8px rgba(0,0,0,.4);
+    --shadow:0 1px 8px rgba(0,0,0,.5);
+    --chart-bg:#0f1520;--chart-border:#1e2a3a;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{width:100%;height:100%}
   body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text-primary);transition:background .25s,color .25s}
-  .widget{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px 20px;width:100%;box-shadow:var(--shadow);transition:background .25s,border-color .25s}
-  .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .widget{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px 16px;width:100%;height:100%;display:flex;flex-direction:column;box-shadow:var(--shadow);transition:background .25s,border-color .25s}
+  .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-shrink:0}
   .header-left{display:flex;flex-direction:column;gap:2px}
   .eyebrow{font-size:10.5px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted)}
   .title{font-size:16px;font-weight:700;color:var(--text-primary);letter-spacing:-.02em}
@@ -42,8 +44,9 @@
   .dm-track{width:28px;height:15px;background:var(--toggle-bg);border-radius:8px;position:relative;transition:background .2s;flex-shrink:0}
   .dm-knob{width:11px;height:11px;background:var(--toggle-knob);border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
   [data-theme="dark"] .dm-knob{transform:translateX(13px)}
-  .divider{height:1px;background:var(--border);margin-bottom:16px}
-  .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+  .divider{height:1px;background:var(--border);margin-bottom:16px;flex-shrink:0}
+  .kpi-area{flex:1;min-height:0;background:var(--chart-bg);border:1px solid var(--chart-border);border-radius:8px;padding:16px;display:flex;align-items:center;transition:background .25s,border-color .25s}
+  .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;width:100%}
   .kpi-card{
     background:var(--surface2);border:1px solid var(--border);border-radius:10px;
     padding:14px 14px 12px;
@@ -97,7 +100,9 @@
     </div>
   </div>
   <div class="divider"></div>
-  <div class="kpi-grid" id="kpi-grid"></div>
+  <div class="kpi-area">
+    <div class="kpi-grid" id="kpi-grid"></div>
+  </div>
 </div>
 <script>
 const WEEKS=["2-16","2-23","3-2"];
