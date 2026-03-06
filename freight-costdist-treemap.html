@@ -13,14 +13,16 @@
     --toggle-bg:#d1d5db;--toggle-knob:#fff;
     --week-active-bg:#1a73e8;--week-active-text:#fff;--week-inactive:#6b7280;
     --shadow:0 1px 6px rgba(0,0,0,.08),0 4px 20px rgba(0,0,0,.04);
+    --chart-bg:#f8fafc;--chart-border:#dce3eb;
   }
   [data-theme="dark"] {
-    --bg:#161b27;--surface:#1e2533;--surface2:#252d3d;--border:#2e3a4e;
+    --bg:#0d1117;--surface:#161b27;--surface2:#1e2533;--border:#2e3a4e;
     --text-primary:#e8edf5;--text-secondary:#b0bdd0;--text-muted:#6b7f99;
     --green:#4ade80;--green-bg:#0c2b1c;--red:#fc8181;--red-bg:#2d1214;
     --toggle-bg:#2e3a4e;--toggle-knob:#e8edf5;
     --week-active-bg:#4f93f5;--week-active-text:#0d1117;--week-inactive:#94a3b8;
-    --shadow:0 1px 8px rgba(0,0,0,.4);
+    --shadow:0 1px 8px rgba(0,0,0,.5);
+    --chart-bg:#0f1520;--chart-border:#1e2a3a;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{width:100%;height:100%}
@@ -48,7 +50,7 @@
   .dm-knob{width:11px;height:11px;background:var(--toggle-knob);border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
   [data-theme="dark"] .dm-knob{transform:translateX(13px)}
   .divider{height:1px;background:var(--border);margin:10px 0;flex-shrink:0}
-  .treemap-wrap{position:relative;width:100%;flex:1;min-height:0;border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+  .treemap-wrap{position:relative;width:100%;flex:1;min-height:0;border-radius:8px;overflow:hidden;border:1px solid var(--chart-border);background:var(--chart-bg)}
   canvas{display:block;width:100%;height:100%}
   .legend{display:flex;flex-wrap:wrap;gap:5px 8px;margin-top:10px;flex-shrink:0}
   .leg-item{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--text-secondary);cursor:pointer;padding:3px 7px 3px 5px;border-radius:5px;border:1px solid transparent;transition:border-color .12s,background .12s,color .12s;user-select:none}
@@ -98,8 +100,10 @@ const RAW={
   "3-2":{AM:590.64,AT:12150.07,AV:28723.14,CA:1739.97,CO:3783.60,DC:4037.77,FM:1111.65,FR:12608.60,HB:5023.40,HZ:5211.53,KC:75890.10,NW:2690.56,SP:4.26,WC:4629.11}
 };
 const LABELS={AM:"Amelia",AT:"Atlanta",AV:"Avon",CA:"Canada",CO:"Colorado",DC:"DC Metro",FM:"Farmer's Mkt",FR:"Franklin",HB:"Harrisburg",HZ:"Hazleton",KC:"Kansas City",NW:"Northwest",SP:"Springfield",WC:"West Coast"};
-const PAL_L=["#1a73e8","#0d47a1","#1565c0","#1976d2","#1e88e5","#2196f3","#42a5f5","#64b5f6","#1a5fa8","#0077b6","#023e8a","#0096c7","#00b4d8","#0288d1"];
-const PAL_D=["#4f93f5","#1e5bbf","#2874d4","#3384e0","#4a95f0","#5ba3f5","#7dbaf8","#9ecdfb","#2968b8","#1a8fd1","#1256a8","#1aaddb","#1dc8f0","#3a9de0"];
+// Fixed color index per account — assigned by best-ever Total Paid rank across all weeks
+const ACCT_COLORS={KC:0,AV:1,AT:2,FR:3,HZ:4,CA:5,HB:6,WC:7,DC:8,CO:9,NW:10,AM:11,FM:12,SP:13};
+const PAL_L=["#1a73e8","#d93025","#0f9d58","#f4a623","#9c27b0","#00acc1","#e53935","#1565c0","#2e7d32","#ef6c00","#6a1b9a","#00838f","#d84315","#1e88e5"];
+const PAL_D=["#60a5fa","#f87171","#4ade80","#fbbf24","#c084fc","#22d3ee","#fb7185","#38bdf8","#86efac","#fcd34d","#d8b4fe","#67e8f9","#fca5a5","#7dd3fc"];
 
 let week="3-2", dark=false, hov=null, pinnedKey="KC";
 let flashAlphas={}, flashFrame=null;
@@ -111,6 +115,7 @@ function fmt(v){return"$"+v.toLocaleString("en-US",{minimumFractionDigits:2,maxi
 function fmtK(v){return v>=1000?"$"+(v/1000).toFixed(1)+"k":fmt(v)}
 function fmtD(v){const a=Math.abs(v),s=v>=0?"+":"\u2212";return s+"$"+a.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}
 function pal(){return dark?PAL_D:PAL_L}
+function getCI(k){return ACCT_COLORS[k]!=null?ACCT_COLORS[k]%PAL_L.length:PAL_L.length-1;}
 
 function squarify(items,x,y,w,h){
   if(!items.length)return[];
@@ -178,7 +183,7 @@ function renderSpotlightOffscreen(box){
   const v=curr[k]||0,pv=prev?(prev[k]||0):0,d=v-pv,pct=pv?(d/pv*100):0;
   const sorted=Object.entries(curr).sort((a,b)=>b[1]-a[1]);
   const idx=Math.max(0,sorted.findIndex(([kk])=>kk===k));
-  const p=pal(),color=p[idx%p.length];
+  const p=pal(),color=p[getCI(k)];
   const hasPrev=!!prev,share=(v/total*100);
   const W=box.w,H=box.h,DPR=2;
   const oc=document.createElement("canvas");
@@ -347,7 +352,7 @@ function drawCanvas(){
     const rx=r.x+GAP,ry=r.y+GAP,rw=r.w-GAP*2,rh=r.h-GAP*2;
     if(rw<=0||rh<=0) continue;
     ctx.globalAlpha=isActive?1:0.85;
-    ctx.fillStyle=p[r.i%p.length];
+    ctx.fillStyle=p[getCI(r.k)];
     ctx.beginPath();ctx.roundRect(rx,ry,rw,rh,5);ctx.fill();
     const fl=flashAlphas[r.k];
     if(fl&&fl.alpha>0){
@@ -409,7 +414,7 @@ function updateLegend(){
   const activeKey=getDisplayKey();
   document.getElementById("legend").innerHTML=sorted.map(([k],i)=>{
     return `<div class="leg-item${k===activeKey?' pinned':''}" onclick="pinKey('${k}')" data-key="${k}">
-      <div class="leg-dot" style="background:${p[i%p.length]}"></div>
+      <div class="leg-dot" style="background:${p[getCI(k)]}"></div>
       <span><b>${k}</b> ${LABELS[k]||""}</span>
       <span class="leg-pin">${k===pinnedKey?'📌':''}</span>
     </div>`;
@@ -465,8 +470,11 @@ function render(fromWeek){
 }
 function setWeek(w){const from=week;week=w;hov=null;cachedBox=null;render(from);}
 function toggleDark(){dark=!dark;spCanvas=null;document.documentElement.setAttribute("data-theme",dark?"dark":"");render();}
+let resizeTimer;
 window.addEventListener("resize",()=>{
-  const c=document.getElementById("canvas");c._lastW=0;c._lastH=0;cachedBox=null;spCanvas=null;drawCanvas();
+  clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{
+    const c=document.getElementById("canvas");c._lastW=0;c._lastH=0;cachedBox=null;spCanvas=null;drawCanvas();
+  },100);
 });
 render();
 </script>
