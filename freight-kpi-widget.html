@@ -25,7 +25,7 @@
     --shadow:0 1px 8px rgba(0,0,0,.4);
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{width:100%}
+  html,body{width:100%;height:100%}
   body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text-primary);transition:background .25s,color .25s}
   .widget{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px 20px;width:100%;box-shadow:var(--shadow);transition:background .25s,border-color .25s}
   .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
@@ -51,8 +51,9 @@
     grid-template-rows:16px minmax(28px,auto) 32px 56px 16px;
     row-gap:6px;
     position:relative;overflow:hidden;
-    transition:background .25s,border-color .25s;
+    transition:background .25s,border-color .25s,transform .16s,box-shadow .16s;
   }
+  .kpi-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.08)}
   .kpi-card::after{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent);opacity:.5;border-radius:10px 10px 0 0}
   .week-badge{display:inline-flex;align-items:center;font-size:9px;font-weight:600;letter-spacing:.07em;padding:0 6px;border-radius:4px;background:var(--accent-dim);color:var(--accent-text);text-transform:uppercase;align-self:center;justify-self:start;height:16px}
   .kpi-label{font-size:10.5px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;line-height:1.35;align-self:start}
@@ -85,7 +86,8 @@
     <div class="header-right">
       <div class="week-toggle">
         <button class="week-btn" id="btn-216" onclick="setWeek('2-16')">W2-16</button>
-        <button class="week-btn active" id="btn-223" onclick="setWeek('2-23')">W2-23</button>
+        <button class="week-btn" id="btn-223" onclick="setWeek('2-23')">W2-23</button>
+        <button class="week-btn active" id="btn-32" onclick="setWeek('3-2')">W3-2</button>
       </div>
       <div class="dm-toggle" onclick="toggleDark()" title="Toggle dark mode">
         <span class="dm-icon">&#9728;</span>
@@ -98,9 +100,11 @@
   <div class="kpi-grid" id="kpi-grid"></div>
 </div>
 <script>
+const WEEKS=["2-16","2-23","3-2"];
 const data={
   "2-16":{totalShipments:468,avgPaidPerShipment:358.94,totalFreightPaid:167983.23,avgWeightPerShipment:1367,totalWeight:639576},
-  "2-23":{totalShipments:362,avgPaidPerShipment:446.89,totalFreightPaid:161775.24,avgWeightPerShipment:1393,totalWeight:504412}
+  "2-23":{totalShipments:362,avgPaidPerShipment:446.89,totalFreightPaid:161775.24,avgWeightPerShipment:1393,totalWeight:504412},
+  "3-2":{totalShipments:369,avgPaidPerShipment:428.71,totalFreightPaid:158194.40,avgWeightPerShipment:1465,totalWeight:540732}
 };
 const metrics=[
   {key:"totalShipments",      label:"Total Shipments",      format:"integer", unit:null},
@@ -109,27 +113,36 @@ const metrics=[
   {key:"avgWeightPerShipment",label:"Avg Weight / Shipment",format:"integer", unit:"lbs"},
   {key:"totalWeight",         label:"Total Weight",         format:"integer", unit:"lbs"}
 ];
-let currentWeek="2-23",darkMode=false;
+let currentWeek="3-2",darkMode=false;
+
+function prevWeek(w){const i=WEEKS.indexOf(w);return i>0?WEEKS[i-1]:null;}
 function fmt(v,t,u){let s=t==="currency"?"$"+v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):v.toLocaleString("en-US");return u?s+" "+u:s}
 function fmtD(v,t,u){const a=Math.abs(v),sg=v>=0?"+":"\u2212";let s=t==="currency"?sg+"$"+a.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):sg+a.toLocaleString("en-US");return u?s+" "+u:s}
+
 function render(){
   const grid=document.getElementById("kpi-grid");
-  const curr=data[currentWeek],prev=data["2-16"],isW223=currentWeek==="2-23";
+  const curr=data[currentWeek],pw=prevWeek(currentWeek),prev=pw?data[pw]:null;
   grid.innerHTML="";grid.classList.remove("animating");void grid.offsetWidth;grid.classList.add("animating");
   metrics.forEach(m=>{
     const v=curr[m.key],card=document.createElement("div");card.className="kpi-card";
     let dH,pH;
-    if(isW223){
+    if(prev){
       const pv=prev[m.key],rd=v-pv,pct=(rd/pv)*100,iz=rd===0,ip=rd>0;
       const cls=iz?"neutral":ip?"positive":"negative",arr=iz?"\u2192":ip?"\u2191":"\u2193";
       dH=`<div class="kpi-deltas"><div class="delta-pill ${cls}"><span class="delta-arrow">${arr}</span><span>${fmtD(rd,m.format,m.unit)}</span></div><div class="delta-pill ${cls}"><span class="delta-arrow">${arr}</span><span>${(pct>=0?"+":"")+pct.toFixed(1)}%</span></div></div>`;
-      pH=`<div class="kpi-prev">prev: <span>${fmt(pv,m.format,m.unit)}</span></div>`;
-    }else{dH="<div class=\"kpi-spacer\"></div>";pH="<div class=\"kpi-prev\"></div>";}
+      pH=`<div class="kpi-prev">prev (W${pw}): <span>${fmt(pv,m.format,m.unit)}</span></div>`;
+    }else{
+      dH=`<div class="kpi-deltas"><div class="delta-pill neutral"><span>\u2014 \u2014</span></div><div class="delta-pill neutral"><span>\u2014 \u2014</span></div></div>`;
+      pH=`<div class="kpi-prev">prev: <span>\u2014 \u2014</span></div>`;
+    }
     card.innerHTML=`<span class="week-badge">W${currentWeek}</span><div class="kpi-label">${m.label}</div><div class="kpi-value">${fmt(v,m.format,m.unit)}</div>${dH}${pH}`;
     grid.appendChild(card);
   });
-  document.getElementById("btn-216").classList.toggle("active",currentWeek==="2-16");
-  document.getElementById("btn-223").classList.toggle("active",currentWeek==="2-23");
+  WEEKS.forEach(w=>{
+    const id="btn-"+w.replace("-","");
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle("active",currentWeek===w);
+  });
 }
 function setWeek(w){currentWeek=w;render();}
 function toggleDark(){darkMode=!darkMode;document.documentElement.setAttribute("data-theme",darkMode?"dark":"");}
