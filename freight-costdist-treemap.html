@@ -29,9 +29,11 @@
   .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-shrink:0}
   .header-left{display:flex;flex-direction:column;gap:2px}
   .eyebrow{font-size:10.5px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted)}
-  .title-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
   .title{font-size:16px;font-weight:700;color:var(--text-primary);letter-spacing:-.02em}
-  .header-total{font-size:11.5px;color:var(--text-muted);font-weight:400}
+  .header-center{display:flex;flex-direction:column;align-items:center;gap:3px}
+  .header-total-label{font-size:10px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted)}
+  .header-total-row{display:flex;align-items:center;gap:8px}
+  .header-total{font-size:15px;color:var(--text-primary);font-weight:700;letter-spacing:-.02em}
   .header-delta{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;border-radius:4px;padding:2px 6px}
   .header-delta.pos{color:var(--green);background:var(--green-bg)}
   .header-delta.neg{color:var(--red);background:var(--red-bg)}
@@ -48,7 +50,6 @@
   .divider{height:1px;background:var(--border);margin:10px 0;flex-shrink:0}
   .treemap-wrap{position:relative;width:100%;flex:1;min-height:0;border-radius:10px;overflow:hidden;border:1px solid var(--border)}
   canvas{display:block;width:100%;height:100%}
-  /* Legend — clickable chips */
   .legend{display:flex;flex-wrap:wrap;gap:5px 8px;margin-top:10px;flex-shrink:0}
   .leg-item{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--text-secondary);cursor:pointer;padding:3px 7px 3px 5px;border-radius:5px;border:1px solid transparent;transition:border-color .12s,background .12s,color .12s;user-select:none}
   .leg-item:hover{background:var(--surface2);border-color:var(--border)}
@@ -63,8 +64,11 @@
   <div class="header">
     <div class="header-left">
       <span class="eyebrow">Hantover Inc. &middot; Freight</span>
-      <div class="title-row">
-        <span class="title">Cost Distribution by Account</span>
+      <span class="title">Cost Distribution by Account</span>
+    </div>
+    <div class="header-center">
+      <span class="header-total-label">Weekly Total</span>
+      <div class="header-total-row">
         <span class="header-total" id="header-total"></span>
         <span class="header-delta" id="header-delta" style="display:none"></span>
       </div>
@@ -72,7 +76,8 @@
     <div class="header-right">
       <div class="week-toggle">
         <button class="week-btn" id="btn-216" onclick="setWeek('2-16')">W2-16</button>
-        <button class="week-btn active" id="btn-223" onclick="setWeek('2-23')">W2-23</button>
+        <button class="week-btn" id="btn-223" onclick="setWeek('2-23')">W2-23</button>
+        <button class="week-btn active" id="btn-32" onclick="setWeek('3-2')">W3-2</button>
       </div>
       <div class="dm-toggle" onclick="toggleDark()" title="Toggle dark mode">
         <span class="dm-icon">&#9728;</span>
@@ -86,31 +91,32 @@
   <div class="legend" id="legend"></div>
 </div>
 <script>
+const WEEKS=["2-16","2-23","3-2"];
 const RAW={
   "2-16":{AM:1934.20,AT:13210.88,AV:29104.12,CA:5120.33,CO:2387.45,DC:4521.90,FM:1876.33,FR:9102.44,HB:2801.22,HZ:6890.11,KC:87234.18,NW:834.56,WC:4965.71},
-  "2-23":{AM:1726.35,AT:12404.52,AV:27684.35,CA:4808.52,CO:2049.26,DC:4088.86,FM:2008.74,FR:8641.71,HB:2519.47,HZ:6136.56,KC:84699.06,NW:722.04,WC:4285.80}
+  "2-23":{AM:1726.35,AT:12404.52,AV:27684.35,CA:4808.52,CO:2049.26,DC:4088.86,FM:2008.74,FR:8641.71,HB:2519.47,HZ:6136.56,KC:84699.06,NW:722.04,WC:4285.80},
+  "3-2":{AM:590.64,AT:12150.07,AV:28723.14,CA:1739.97,CO:3783.60,DC:4037.77,FM:1111.65,FR:12608.60,HB:5023.40,HZ:5211.53,KC:75890.10,NW:2690.56,SP:4.26,WC:4629.11}
 };
-const LABELS={AM:"Amelia",AT:"Atlanta",AV:"Avon",CA:"Canada",CO:"Colorado",DC:"DC Metro",FM:"Farmer's Mkt",FR:"Franklin",HB:"Harrisburg",HZ:"Hazleton",KC:"Kansas City",NW:"Northwest",WC:"West Coast"};
-const PAL_L=["#1a73e8","#0d47a1","#1565c0","#1976d2","#1e88e5","#2196f3","#42a5f5","#64b5f6","#1a5fa8","#0077b6","#023e8a","#0096c7","#00b4d8"];
-const PAL_D=["#4f93f5","#1e5bbf","#2874d4","#3384e0","#4a95f0","#5ba3f5","#7dbaf8","#9ecdfb","#2968b8","#1a8fd1","#1256a8","#1aaddb","#1dc8f0"];
+const LABELS={AM:"Amelia",AT:"Atlanta",AV:"Avon",CA:"Canada",CO:"Colorado",DC:"DC Metro",FM:"Farmer's Mkt",FR:"Franklin",HB:"Harrisburg",HZ:"Hazleton",KC:"Kansas City",NW:"Northwest",SP:"Springfield",WC:"West Coast"};
+const PAL_L=["#1a73e8","#0d47a1","#1565c0","#1976d2","#1e88e5","#2196f3","#42a5f5","#64b5f6","#1a5fa8","#0077b6","#023e8a","#0096c7","#00b4d8","#0288d1"];
+const PAL_D=["#4f93f5","#1e5bbf","#2874d4","#3384e0","#4a95f0","#5ba3f5","#7dbaf8","#9ecdfb","#2968b8","#1a8fd1","#1256a8","#1aaddb","#1dc8f0","#3a9de0"];
 
-let week="2-23", dark=false, hov=null, pinnedKey="KC";
+let week="3-2", dark=false, hov=null, pinnedKey="KC";
 let flashAlphas={}, flashFrame=null;
 let cachedBox=null, cachedW=0, cachedH=0;
 let spCanvas=null, spKey=null, spWeek=null, spDark=null;
 
+function prevWeek(w){const i=WEEKS.indexOf(w);return i>0?WEEKS[i-1]:null;}
 function fmt(v){return"$"+v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}
 function fmtK(v){return v>=1000?"$"+(v/1000).toFixed(1)+"k":fmt(v)}
 function fmtD(v){const a=Math.abs(v),s=v>=0?"+":"\u2212";return s+"$"+a.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}
 function pal(){return dark?PAL_D:PAL_L}
 
-// Sort descending, then squarify starting vertical (h>=w) to stack right column
 function squarify(items,x,y,w,h){
   if(!items.length)return[];
   const total=items.reduce((s,i)=>s+i.v,0);
   const rects=[];let rem=[...items],rx=x,ry=y,rw=w,rh=h;
   while(rem.length){
-    // Force vertical split first to encourage right-side stacking
     const horiz=rw>rh*1.4, side=horiz?rh:rw;
     let row=[],rsum=0,best=Infinity;
     for(let i=0;i<rem.length;i++){
@@ -167,13 +173,13 @@ function renderSpotlightOffscreen(box){
   if(spCanvas&&spKey===k&&spWeek===week&&spDark===dark&&
      spCanvas.width===Math.round(box.w*2)&&spCanvas.height===Math.round(box.h*2)) return spCanvas;
 
-  const curr=RAW[week],prev=RAW["2-16"];
+  const curr=RAW[week],pw=prevWeek(week),prev=pw?RAW[pw]:null;
   const total=Object.values(curr).reduce((a,b)=>a+b,0);
-  const v=curr[k]||0,pv=prev[k]||0,d=v-pv,pct=(d/pv*100);
+  const v=curr[k]||0,pv=prev?(prev[k]||0):0,d=v-pv,pct=pv?(d/pv*100):0;
   const sorted=Object.entries(curr).sort((a,b)=>b[1]-a[1]);
   const idx=Math.max(0,sorted.findIndex(([kk])=>kk===k));
   const p=pal(),color=p[idx%p.length];
-  const isW=week==="2-23",share=(v/total*100);
+  const hasPrev=!!prev,share=(v/total*100);
   const W=box.w,H=box.h,DPR=2;
   const oc=document.createElement("canvas");
   oc.width=Math.round(W*DPR);oc.height=Math.round(H*DPR);
@@ -190,14 +196,13 @@ function renderSpotlightOffscreen(box){
   ctx.beginPath();ctx.roundRect(0,0,4,H,{upperLeft:6,upperRight:0,lowerLeft:6,lowerRight:0});ctx.fill();
 
   const PAD=18,px=PAD+6;
-  // Measure total content height to center vertically
   const codeFS=Math.min(48,Math.max(20,Math.floor(Math.min(H*0.48,110)*0.56)));
   const nameFS=Math.min(15,Math.max(11,Math.floor(H*0.09)));
   const lblFS=Math.min(12,Math.max(10,Math.floor(H*0.07)));
   const valFS=Math.min(18,Math.max(13,Math.floor(H*0.115)));
   const pillFS2=Math.min(valFS-1,14);
   const topH=Math.min(H*0.48,110);
-  const metricsH=isW
+  const metricsH=hasPrev
     ?(lblFS+3+valFS+10)+(lblFS+3+pillFS2+8+10)+(lblFS+3+valFS+10)
     :(lblFS+3+valFS+10)*3;
   const totalContentH=topH+10+metricsH+PAD*2;
@@ -207,8 +212,9 @@ function renderSpotlightOffscreen(box){
   ctx.fillText(k,px,PAD+vOffset);
 
   const rankFS=Math.min(10,Math.max(8,Math.floor(H*0.058)));
+  const acctCount=sorted.length;
   const isPinned=!hov||hov===pinnedKey;
-  const badgeText=isPinned?`#${idx+1} of 13 \u2713`:`#${idx+1} of 13`;
+  const badgeText=isPinned?`#${idx+1} of ${acctCount} \u2713`:`#${idx+1} of ${acctCount}`;
   ctx.font=`600 ${rankFS}px Inter,sans-serif`;
   const bw2=ctx.measureText(badgeText).width+10,bh2=rankFS+6;
   ctx.fillStyle=isPinned?(dark?"#1a2d50":"#e8f0fd"):(dark?"#252d3d":"#f1f5f9");
@@ -242,13 +248,16 @@ function renderSpotlightOffscreen(box){
   let row1Y=metY,row2Y=metY;
   row1Y=metricPair("Total Paid",fmt(v),col1x,row1Y);
   row1Y=metricPair("Share of Total",share.toFixed(1)+"%",col1x,row1Y);
-  if(isW&&row1Y+lblFS+valFS+10<H-6) metricPair("Prev Week",fmt(pv),col1x,row1Y);
+  if(row1Y+lblFS+valFS+10<H-6){
+    const prevLabel=hasPrev?"Prev Week (W"+pw+")":"Prev Week";
+    const prevVal=hasPrev?fmt(pv):"\u2014 \u2014";
+    metricPair(prevLabel,prevVal,col1x,row1Y,hasPrev?null:(dark?"#6b7f99":"#9ca3af"));
+  }
 
-  if(isW){
+  if(hasPrev){
     const isPos=d>=0,arrow=isPos?"\u2191":"\u2193",dtext=arrow+" "+fmtD(d);
     const dcolor=isPos?(dark?"#4ade80":"#1e8a4a"):(dark?"#fc8181":"#c0392b");
     const dbg=isPos?(dark?"#0c2b1c":"#dcfce7"):(dark?"#2d1214":"#fee2e2");
-    const pillFS2=Math.min(valFS-1,14);
     ctx.font=`600 ${pillFS2}px Inter,sans-serif`;
     const dtw=ctx.measureText(dtext).width;
     const pH=pillFS2+8,pW=Math.min(dtw+14,W-col2x-PAD-4);
@@ -262,7 +271,9 @@ function renderSpotlightOffscreen(box){
     row2Y+=pH+10;
     metricPair("WoW %",(pct>=0?"+":"")+pct.toFixed(1)+"%",col2x,row2Y,dcolor);
   } else {
-    metricPair("Prev Week Paid",fmt(pv),col2x,row2Y);
+    metricPair("WoW Change","\u2014 \u2014",col2x,row2Y,dark?"#6b7f99":"#9ca3af");
+    row2Y+=lblFS+4+valFS+12;
+    metricPair("WoW %","\u2014 \u2014",col2x,row2Y,dark?"#6b7f99":"#9ca3af");
   }
 
   spCanvas=oc;spKey=k;spWeek=week;spDark=dark;
@@ -271,7 +282,6 @@ function renderSpotlightOffscreen(box){
 
 function startFlash(fromWeek,toWeek){
   flashAlphas={};
-  // Fire on ALL tiles — black or white ripple depending on dark mode, staggered by tile index
   const curr=RAW[toWeek];
   const sorted=Object.entries(curr).sort((a,b)=>b[1]-a[1]);
   sorted.forEach(([k],i)=>{
@@ -316,16 +326,13 @@ function drawCanvas(){
   const curr=RAW[week];
   const total=Object.values(curr).reduce((a,b)=>a+b,0);
   const sorted=Object.entries(curr).sort((a,b)=>b[1]-a[1]);
-  // Minimum floor: 3% share so all tiles are visible and hoverable
-  // Data in spotlight panel always uses RAW values — tile sizes are layout only
-  const totalRaw=Object.values(curr).reduce((a,b)=>a+b,0);
+  const totalRaw=total;
   const minData=totalRaw*0.03;
   const boosted=sorted.map(([k,v],i)=>({k,v:Math.max(v,minData),i}));
   const totalBoosted=boosted.reduce((s,r)=>s+r.v,0);
   const items=boosted.map(r=>({...r,v:r.v*(totalRaw/totalBoosted)}));
   const p=pal(),GAP=3;
   const rawRects=squarify(items,GAP,GAP,W-GAP*2,H-GAP*2);
-  // Flip y-axis only: KC anchors bottom, small bars top-left→right, empty space top-right
   const rects=rawRects.map(r=>({...r,y:H-r.y-r.h}));
   canvas._rects=rects;
 
@@ -345,7 +352,7 @@ function drawCanvas(){
     const fl=flashAlphas[r.k];
     if(fl&&fl.alpha>0){
       ctx.globalAlpha=fl.alpha;
-      ctx.fillStyle=dark?"rgba(255,255,255,1)":"rgba(255,255,255,1)";
+      ctx.fillStyle="rgba(255,255,255,1)";
       ctx.beginPath();ctx.roundRect(rx,ry,rw,rh,5);ctx.fill();
     }
     if(isActive){
@@ -353,13 +360,13 @@ function drawCanvas(){
       ctx.beginPath();ctx.roundRect(rx+1,ry+1,rw-2,rh-2,4);ctx.stroke();
     }
     ctx.globalAlpha=1;
-    const cx=rx+rw/2,pct2=(r.v/total*100);
+    const cx=rx+rw/2,pct2=(curr[r.k]/total*100);
     if(rw>110&&rh>70){
       ctx.textAlign="center";ctx.textBaseline="middle";
       ctx.fillStyle="rgba(255,255,255,0.97)";ctx.font="700 22px Inter,sans-serif";
       ctx.fillText(r.k,cx,ry+rh/2-16);
       ctx.font="600 13px Inter,sans-serif";ctx.fillStyle="rgba(255,255,255,0.88)";
-      ctx.fillText(fmtK(r.v),cx,ry+rh/2+5);
+      ctx.fillText(fmtK(curr[r.k]),cx,ry+rh/2+5);
       ctx.font="500 11px Inter,sans-serif";ctx.fillStyle="rgba(255,255,255,0.65)";
       ctx.fillText(pct2.toFixed(1)+"%",cx,ry+rh/2+22);
     } else if(rw>60&&rh>40){
@@ -382,14 +389,17 @@ function drawCanvas(){
 }
 
 function updateHeader(){
-  const curr=RAW[week],prev=RAW["2-16"];
+  const curr=RAW[week],pw=prevWeek(week),prev=pw?RAW[pw]:null;
   const total=Object.values(curr).reduce((a,b)=>a+b,0);
-  const totalP=Object.values(prev).reduce((a,b)=>a+b,0);
-  const d=total-totalP,pct=(d/totalP*100),isW=week==="2-23";
   document.getElementById("header-total").textContent=fmt(total);
   const hd=document.getElementById("header-delta");
-  if(isW){hd.style.display="inline-flex";hd.className="header-delta "+(d>=0?"pos":"neg");hd.innerHTML=(d>=0?"&#8593;":"&#8595;")+" "+fmtD(d)+"&nbsp;"+(pct>=0?"+":"")+pct.toFixed(1)+"%";}
-  else hd.style.display="none";
+  if(prev){
+    const totalP=Object.values(prev).reduce((a,b)=>a+b,0);
+    const d=total-totalP,pct=(d/totalP*100);
+    hd.style.display="inline-flex";
+    hd.className="header-delta "+(d>=0?"pos":"neg");
+    hd.innerHTML=(d>=0?"&#8593;":"&#8595;")+" "+fmtD(d)+"&nbsp;"+(pct>=0?"+":"")+pct.toFixed(1)+"%";
+  } else hd.style.display="none";
 }
 
 function updateLegend(){
@@ -398,7 +408,6 @@ function updateLegend(){
   const p=pal();
   const activeKey=getDisplayKey();
   document.getElementById("legend").innerHTML=sorted.map(([k],i)=>{
-    const isPinned=(k===pinnedKey&&!hov)||(k===pinnedKey);
     return `<div class="leg-item${k===activeKey?' pinned':''}" onclick="pinKey('${k}')" data-key="${k}">
       <div class="leg-dot" style="background:${p[i%p.length]}"></div>
       <span><b>${k}</b> ${LABELS[k]||""}</span>
@@ -408,30 +417,20 @@ function updateLegend(){
 }
 
 function pinKey(k){
-  pinnedKey=k;
-  hov=null;
-  spCanvas=null;
-  drawCanvas();
-  updateLegend();
+  pinnedKey=k;hov=null;spCanvas=null;drawCanvas();updateLegend();
 }
 
-// Hover on canvas tiles still works for large tiles
 document.getElementById("canvas").addEventListener("mousemove",e=>{
   const c=e.target,b=c.getBoundingClientRect();
   const mx=e.clientX-b.left,my=e.clientY-b.top;
-  const GAP=3;
-  const rects=c._rects||[];
-  // Check if directly on a tile
+  const GAP=3;const rects=c._rects||[];
   const hit=rects.find(r=>{
     const rx=r.x+GAP,ry=r.y+GAP,rw=r.w-GAP*2,rh=r.h-GAP*2;
     return mx>=rx&&mx<=rx+rw&&my>=ry&&my<=ry+rh;
   });
   let activeK=null;
-  if(hit){
-    activeK=hit.k;
-    c.style.cursor="pointer";
-  } else {
-    // Gap zone — claim by nearest tile center so gaps split evenly between neighbors
+  if(hit){activeK=hit.k;c.style.cursor="pointer";}
+  else{
     let bestDist=Infinity;
     for(const r of rects){
       const rx=r.x+GAP,ry=r.y+GAP,rw=r.w-GAP*2,rh=r.h-GAP*2;
@@ -443,7 +442,6 @@ document.getElementById("canvas").addEventListener("mousemove",e=>{
   if(activeK&&activeK!==hov){hov=activeK;spCanvas=null;drawCanvas();updateLegend();}
 },{passive:true});
 
-// Click on canvas tile to pin
 document.getElementById("canvas").addEventListener("click",e=>{
   const c=e.target,b=c.getBoundingClientRect();
   const mx=e.clientX-b.left,my=e.clientY-b.top;
@@ -457,8 +455,11 @@ document.getElementById("canvas").addEventListener("click",e=>{
 
 function render(fromWeek){
   updateHeader();updateLegend();spCanvas=null;
-  document.getElementById("btn-216").classList.toggle("active",week==="2-16");
-  document.getElementById("btn-223").classList.toggle("active",week==="2-23");
+  WEEKS.forEach(w=>{
+    const id="btn-"+w.replace("-","");
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle("active",week===w);
+  });
   if(fromWeek&&fromWeek!==week) startFlash(fromWeek,week);
   else drawCanvas();
 }
