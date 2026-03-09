@@ -201,8 +201,11 @@ function drawBar(canvas,type){
   const isMag=(hovRow===type);
   const isIsolate=(viewWeek!=="all");
   const LABEL_R=isIsolate?52:0;
-  const totalGaps=SEG_GAP*(WEEKS.filter(w=>(DATA[type][w]||0)>0).length-1);
-  const barW=Math.max(4,(total/globalMaxTotal)*(W-LABEL_R)-totalGaps);
+  const activeSegs=WEEKS.filter(w=>(DATA[type][w]||0)>0).length;
+  const totalGaps=SEG_GAP*Math.max(0,activeSegs-1);
+  // Sqrt scale: preserves rank order, compresses range so small bars are readable
+  const barArea=W-LABEL_R;
+  const barW=Math.max(8,(Math.sqrt(total)/Math.sqrt(globalMaxTotal))*(barArea)-totalGaps);
   const baseH=isMag?22:16,popH=isMag?30:24,R=3;
   const baseY=(H-baseH)/2,popY=(H-popH)/2;
 
