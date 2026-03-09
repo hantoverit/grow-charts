@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Rebate Structure Flow</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:"Inter",sans-serif;background:#0d1117;color:#e8edf5}
+.app{display:flex;flex-direction:column;height:100vh;padding:14px 20px;gap:10px}
+.top{flex-shrink:0;display:flex;justify-content:space-between;align-items:flex-end}
+.top-left .eyebrow{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b7f99}
+.top-left .title{font-size:15px;font-weight:800;letter-spacing:-.03em}
+.controls{display:flex;gap:6px;align-items:center}
+.btn{font-size:10px;font-weight:600;padding:5px 14px;border-radius:6px;border:1px solid #1e2a3a;background:transparent;color:#6b7f99;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn.on{background:#818cf8;color:#0d1117;border-color:#818cf8}
+.btn:hover:not(.on){border-color:#6b7f99}
+select{font-size:10px;font-weight:600;padding:4px 8px;border-radius:6px;border:1px solid #1e2a3a;background:#161b27;color:#b0bdd0;font-family:inherit;display:none;outline:none}
+.stats{display:flex;gap:28px;font-size:9.5px;font-weight:600;color:#6b7f99;flex-shrink:0}
+.stat b{font-size:18px;font-weight:800;display:block;line-height:1.1}
+.stat b.t{color:#22d3ee}.stat b.i{color:#818cf8}.stat b.m{color:#e879f9}
+.chart{flex:1;min-height:0;position:relative;background:#161b27;border:1px solid #1e2a3a;border-radius:8px;overflow:hidden}
+canvas{display:block}
+.tt{position:absolute;pointer-events:none;background:#1a2235ee;border:1px solid #2a3a52;border-radius:8px;padding:11px 15px;font-size:10.5px;line-height:1.55;color:#e8edf5;box-shadow:0 8px 30px rgba(0,0,0,.65);max-width:380px;z-index:20;opacity:0;transition:opacity .08s}
+.tt.show{opacity:1}
+.tt h3{font-size:13px;font-weight:700;margin-bottom:1px}
+.tt .sub{color:#6b7f99;font-size:9.5px;margin-bottom:5px}
+.tt .r{display:flex;justify-content:space-between;gap:16px;padding:2px 0}
+.tt .l{color:#b0bdd0}.tt .v{font-weight:600}
+.tt hr{border:0;border-top:1px solid #2a3a52;margin:5px 0}
+.foot{display:flex;gap:18px;font-size:9px;font-weight:600;color:#6b7f99;flex-shrink:0;align-items:center}
+.foot .d{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:4px;vertical-align:middle}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="top-left">
+      <div class="eyebrow">Hantover Inc. · Enable → P21 Migration</div>
+      <div class="title">Rebate Structure Flow — Pages → Books → Libraries</div>
+    </div>
+    <div class="controls">
+      <button class="btn on" data-v="overview">Overview</button>
+      <button class="btn" data-v="vendor">By Vendor</button>
+      <button class="btn" data-v="drill">Drill-Down</button>
+      <select id="sel"></select>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><b class="t">1,748</b>Price Pages</div>
+    <div class="stat"><b class="i">105</b>Price Books</div>
+    <div class="stat"><b class="m">38</b>Customer Libraries</div>
+    <div style="margin-left:auto;font-size:8.5px;color:#4a5568">Hover any element for detail</div>
+  </div>
+  <div class="chart" id="box"><canvas id="cv"></canvas><div class="tt" id="tt"></div></div>
+  <div class="foot">
+    <span><span class="d" style="background:#22d3ee"></span>Pages</span>
+    <span><span class="d" style="background:#818cf8"></span>Books</span>
+    <span><span class="d" style="background:#e879f9"></span>Libraries</span>
+    <span style="margin-left:auto">Flow width ∝ page count · Node height ∝ √pages</span>
+  </div>
+</div>
+<script>
+const DATA={"vendors":{"3M COMPANY":{"books":[{"bid":"BK-001","name":"3M COMPANY - Cargill - 2025","pages":20,"items":24,"customer":"Cargill","cpcs":["E","EA","EB","EC","EE","EEG","EEJ"],"customers":["Cargill"],"status":"READY"},{"bid":"BK-002","name":"3M COMPANY - Tyson - 2025","pages":28,"items":29,"customer":"Tyson","cpcs":["TY1","TYS","TYSW","TYTP","TYXH","TYXP","tysk"],"customers":["Tyson"],"status":"READY"},{"bid":"BK-003","name":"3M COMPANY - Foster Farms - 2026","pages":7,"items":7,"customer":"Foster Farms","cpcs":["FOS"],"customers":["Multiple / Mixed"],"status":"READY"}],"total_pages":55},"INTERTAPE POLYMER CO":{"books":[{"bid":"BK-004","name":"INTERTAPE POLYM - Cargill - 2025","pages":27,"items":30,"customer":"Cargill","cpcs":["E","EA","EB","EC","EE","EEG","EEJ"],"customers":["Cargill"],"status":"READY"},{"bid":"BK-005","name":"INTERTAPE POLYM - Tyson - 2025","pages":4,"items":4,"customer":"Tyson","cpcs":["TY1","TYS","TYSW","TYTP","TYXH","TYXP","tysk"],"customers":["Tyson"],"status":"READY"}],"total_pages":31},"PITT PLASTICS INC.":{"books":[{"bid":"BK-006","name":"PITT PLASTICS I - Cargill - 2025","pages":19,"items":20,"customer":"Cargill","cpcs":["E","EA","EB","EC","ED","EE","EEG","EEI","EEJ","EEM","EEN","EF"],"customers":["Cargill"],"status":"READY"},{"bid":"BK-007","name":"PITT PLASTICS I - Tyson - 2025","pages":45,"items":45,"customer":"Tyson","cpcs":["TY1","TYS","TYSW","TYTP","TYXH","TYXP","tysk"],"customers":["Tyson"],"status":"READY"},{"bid":"BK-008","name":"PITT PLASTICS I - Bimbo Bakeries - 2026","pages":5,"items":5,"customer":"Bimbo Bakeries","cpcs":["BIM","BIM1"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-009","name":"PITT PLASTICS I - Pepsi/Frito - 2026","pages":39,"items":40,"customer":"Pepsi/Frito","cpcs":["LAY"],"customers":["Multiple / Mixed"],"status":"READY"}],"total_pages":108},"GEORGIA PACIFIC TISS":{"books":[{"bid":"BK-010","name":"GEORGIA PACIFIC - Dispenser MDP USA - 2026","pages":5,"items":5,"customer":"Dispenser MDP USA","cpcs":["All"],"customers":["Multiple / Mixed"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-025","name":"GEORGIA PACIFIC - Tyson - 2026","pages":5,"items":7,"customer":"Tyson","cpcs":["TY1","TYS","TYSW","TYTP","TYXH","TYXP","tysk"],"customers":["Tyson"],"status":"READY"},{"bid":"BK-047","name":"GEORGIA PACIFIC - Foster Farms - 2026","pages":3,"items":3,"customer":"Foster Farms","cpcs":["FOS"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-086","name":"GEORGIA PACIFIC - CBRE - 2026","pages":10,"items":11,"customer":"CBRE","cpcs":[],"customers":["CBRE"],"status":"NEEDS LIBRARY ASSIGNMENT"}],"total_pages":23},"KIMBERLY CLARK":{"books":[{"bid":"BK-011","name":"KIMBERLY CLARK/ - Shenandoah Valley Organic - 2025","pages":1,"items":1,"customer":"Shenandoah Valley Organic","cpcs":[],"customers":["Shenandoah Valley Organic"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-020","name":"KIMBERLY CLARK/ - Disp Drop Ship Only - 2026","pages":4,"items":17,"customer":"Disp Drop Ship Only","cpcs":[],"customers":["Disp Drop Ship Only"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-035","name":"KIMBERLY CLARK/ - Pepsico-Frito Lay - 2026","pages":57,"items":57,"customer":"Pepsico-Frito Lay","cpcs":[],"customers":["Pepsico-Frito Lay"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-058","name":"KIMBERLY CLARK/ - Bar S Foods - 2025","pages":2,"items":2,"customer":"Bar S Foods","cpcs":["bars"],"customers":["Bar S Foods"],"status":"READY"},{"bid":"BK-059","name":"KIMBERLY CLARK/ - Aryzta North Am - 2026","pages":15,"items":15,"customer":"Aryzta North Am","cpcs":["ART"],"customers":["Aryzta North Am"],"status":"READY"},{"bid":"BK-060","name":"KIMBERLY CLARK/ - Bimbo Bakeries - 2026","pages":22,"items":22,"customer":"Bimbo Bakeries","cpcs":["BIM","BIM1"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-061","name":"KIMBERLY CLARK/ - Cargill (Rev 544) - 2026","pages":50,"items":51,"customer":"Cargill","cpcs":["E","EA","EB","EC","ED","EE","EEG","EEJ","EEK","EEL","EF"],"customers":["Cargill"],"status":"READY"},{"bid":"BK-062","name":"KIMBERLY CLARK/ - Flowers Foods - 2026","pages":10,"items":10,"customer":"Flowers Foods","cpcs":["FLO1","flow"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-063","name":"KIMBERLY CLARK/ - Foster Farms - 2026","pages":5,"items":5,"customer":"Foster Farms","cpcs":["FOS"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-064","name":"KIMBERLY CLARK/ - Fresh Express - 2026","pages":6,"items":6,"customer":"Fresh Express","cpcs":["fe"],"customers":["Fresh Express"],"status":"READY"},{"bid":"BK-065","name":"KIMBERLY CLARK/ - JBS/Pilgrims - 2026","pages":25,"items":26,"customer":"JBS/Pilgrims","cpcs":["JBS"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-066","name":"KIMBERLY CLARK/ - Land O Lakes - 2026","pages":10,"items":10,"customer":"Land O Lakes","cpcs":["LOL","LOL1"],"customers":["Land O Lakes"],"status":"READY"},{"bid":"BK-067","name":"KIMBERLY CLARK/ - Mission Foods - 2026","pages":11,"items":11,"customer":"Mission Foods","cpcs":["mfc","mfc1"],"customers":["Mission Foods"],"status":"READY"},{"bid":"BK-068","name":"KIMBERLY CLARK/ - Ruiz Foods - 2026","pages":6,"items":6,"customer":"Ruiz Foods","cpcs":["ruiz"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-069","name":"KIMBERLY CLARK/ - Tyson - 2026","pages":45,"items":45,"customer":"Tyson","cpcs":["TY1","TYS","TYSW","TYTP","TYXH","TYXP","tysk"],"customers":["Tyson"],"status":"READY"},{"bid":"BK-070","name":"KIMBERLY CLARK/ - Taylor Farms - 2026","pages":8,"items":8,"customer":"Taylor Farms","cpcs":["TAYL"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-071","name":"KIMBERLY CLARK/ - Seco Dairies - 2026","pages":14,"items":14,"customer":"Seco Dairies","cpcs":["SEC"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-089","name":"KIMBERLY CLARK/ - Bake Rite Rolls - 2025","pages":2,"items":2,"customer":"Bake Rite Rolls","cpcs":[],"customers":["Bake Rite Rolls"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-090","name":"KIMBERLY CLARK/ - Peco Foods - 2025","pages":2,"items":2,"customer":"Peco Foods","cpcs":[],"customers":["Peco Foods"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-091","name":"KIMBERLY CLARK/ - Tishcon - 2025","pages":1,"items":1,"customer":"Tishcon","cpcs":[],"customers":["Tishcon"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-092","name":"KIMBERLY CLARK/ - Blanket PA - 2025","pages":57,"items":58,"customer":"Blanket PA","cpcs":[],"customers":["Blanket PA"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-093","name":"KIMBERLY CLARK/ - Campbell Soup - 2026","pages":33,"items":33,"customer":"Campbell Soup","cpcs":[],"customers":["Campbell Soup"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-094","name":"KIMBERLY CLARK/ - Cargill Camp Hill - 2026","pages":4,"items":4,"customer":"Cargill","cpcs":[],"customers":["Cargill"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-095","name":"KIMBERLY CLARK/ - Conagra (Treehouse Foods) - 2026","pages":27,"items":28,"customer":"Conagra (Treehouse Foods)","cpcs":[],"customers":["Conagra (Treehouse Foods)"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-096","name":"KIMBERLY CLARK/ - General Mills - 2026","pages":21,"items":21,"customer":"General Mills","cpcs":[],"customers":["General Mills"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-097","name":"KIMBERLY CLARK/ - Pressed Juicery - 2026","pages":1,"items":1,"customer":"Pressed Juicery","cpcs":[],"customers":["Pressed Juicery"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-098","name":"KIMBERLY CLARK/ - See's Candy - 2026","pages":6,"items":6,"customer":"See's Candy","cpcs":[],"customers":["See's Candy"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-099","name":"KIMBERLY CLARK/ - Triumph Foods - 2026","pages":5,"items":5,"customer":"Triumph Foods","cpcs":[],"customers":["Triumph Foods"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-100","name":"KIMBERLY CLARK/ - Vizient - 2026","pages":78,"items":78,"customer":"Vizient","cpcs":[],"customers":["Vizient"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-101","name":"KIMBERLY CLARK/ - Foodbuy Compass Group - 2026","pages":96,"items":115,"customer":"Foodbuy Compass Group","cpcs":[],"customers":["Foodbuy Compass Group"],"status":"NEEDS LIBRARY ASSIGNMENT"}],"total_pages":624},"CFS BRANDS":{"books":[{"bid":"BK-012","name":"CFS BRANDS - Tyson - 2026","pages":120,"items":171,"customer":"Tyson","cpcs":["TY1","TYS","TYSW","TYTP","TYXH","TYXP","tysk"],"customers":["Tyson"],"status":"READY"}],"total_pages":120},"ESSITY":{"books":[{"bid":"BK-013","name":"ESSITY - Taylor Farms Jun 2025 - 2025","pages":15,"items":15,"customer":"Taylor Farms Jun 2025","cpcs":["TAYL"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-014","name":"ESSITY - Bimbo Bakeries - 2025","pages":8,"items":8,"customer":"Bimbo Bakeries","cpcs":["BIM","BIM1"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-015","name":"ESSITY - Fresh Express - 2025","pages":7,"items":7,"customer":"Fresh Express","cpcs":["fe"],"customers":["Fresh Express"],"status":"READY"},{"bid":"BK-016","name":"ESSITY - OK Foods - 2025","pages":10,"items":10,"customer":"OK Foods","cpcs":["ok"],"customers":["OK Foods"],"status":"READY"},{"bid":"BK-017","name":"ESSITY - Cargill - 2026","pages":22,"items":22,"customer":"Cargill","cpcs":["E","EA","EB","EC","EE","EEG","EEJ","EEL"],"customers":["Cargill"],"status":"READY"},{"bid":"BK-018","name":"ESSITY - Hastings Foods - 2025","pages":1,"items":1,"customer":"Hastings Foods","cpcs":[],"customers":["Hastings Foods"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-019","name":"ESSITY - Wellington Foods Jun 2025 - 2025","pages":2,"items":2,"customer":"Wellington Foods Jun 2025","cpcs":[],"customers":["Wellington Foods Jun 2025"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-021","name":"ESSITY - Ruiz Foods - 2026","pages":7,"items":7,"customer":"Ruiz Foods","cpcs":["ruiz"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-022","name":"ESSITY - Tyson - 2026","pages":18,"items":18,"customer":"Tyson","cpcs":["TY1","TYS","TYSW","TYTP","TYXH","TYXP","tysk"],"customers":["Tyson"],"status":"READY"},{"bid":"BK-023","name":"ESSITY - Allied QCS Purchasing Feb 2026 - 2026","pages":4,"items":4,"customer":"Allied QCS Purchasing Feb 2026","cpcs":["SEC"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-024","name":"ESSITY - Flowers Foods - 2026","pages":15,"items":15,"customer":"Flowers Foods","cpcs":["FLO1","flow"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-085","name":"ESSITY - Artisan Chef - 2025","pages":1,"items":1,"customer":"Artisan Chef","cpcs":[],"customers":["Artisan Chef"],"status":"NEEDS LIBRARY ASSIGNMENT"}],"total_pages":110},"MARCAL SOUTH LLC":{"books":[{"bid":"BK-026","name":"MARCAL SOUTH LL - Cargill - 2026","pages":7,"items":7,"customer":"Cargill","cpcs":["E","EA","EB","EC","ED","EE","EEG","EEI","EEJ","EEK","EF"],"customers":["Cargill"],"status":"READY"}],"total_pages":7},"NEWELL BRANDS DISTRI":{"books":[{"bid":"BK-027","name":"NEWELL BRANDS D - JBS/Pilgrims - 2026","pages":2,"items":2,"customer":"JBS/Pilgrims","cpcs":["JBS"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-028","name":"NEWELL BRANDS D - Bimbo Bakeries - 2026","pages":23,"items":23,"customer":"Bimbo Bakeries","cpcs":["BIM","BIM1"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-029","name":"NEWELL BRANDS D - Cargill - 2026","pages":79,"items":104,"customer":"Cargill","cpcs":["E","EA","EB","EC","EE","EEG","EEJ"],"customers":["Cargill"],"status":"READY"},{"bid":"BK-030","name":"NEWELL BRANDS D - Flowers Foods - 2026","pages":34,"items":35,"customer":"Flowers Foods","cpcs":["FLO1","flow"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-031","name":"NEWELL BRANDS D - Napoleon Poultry Supply - 2026","pages":8,"items":8,"customer":"Napoleon Poultry Supply","cpcs":["FOS"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-032","name":"NEWELL BRANDS D - Tyson - 2026","pages":115,"items":141,"customer":"Tyson","cpcs":["TY1","TYS","TYSW","TYTP","TYXH","TYXP","tysk"],"customers":["Tyson"],"status":"READY"},{"bid":"BK-036","name":"NEWELL BRANDS D - Bruce Pac Food - 2026","pages":1,"items":1,"customer":"Bruce Pac Food","cpcs":[],"customers":["Bruce Pac Food"],"status":"NEEDS LIBRARY ASSIGNMENT"}],"total_pages":262},"PROTECTIVE INDUSTRIA":{"books":[{"bid":"BK-033","name":"PROTECTIVE INDU - Cargill - 2025","pages":12,"items":38,"customer":"Cargill","cpcs":["E","EA","EB","EC","ED","EE","EEG","EEI","EEJ","EEK","EF"],"customers":["Cargill"],"status":"READY"},{"bid":"BK-034","name":"PROTECTIVE INDU - Tyson - 2025","pages":6,"items":15,"customer":"Tyson","cpcs":["TY1","TYS","TYSW","TYTP","TYXH","TYXP","tysk"],"customers":["Tyson"],"status":"READY"}],"total_pages":18},"ANSELL HEALTHCARE LL":{"books":[{"bid":"BK-037","name":"ANSELL HEALTHCA - Ansell - 2025","pages":4,"items":16,"customer":"Ansell","cpcs":["All"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-038","name":"ANSELL HEALTHCA - Cargill - 2025","pages":47,"items":231,"customer":"Cargill","cpcs":["E","EA","EB","EC","EE","EEG","EEJ"],"customers":["Cargill"],"status":"READY"},{"bid":"BK-039","name":"ANSELL HEALTHCA - Fieldale Farms - 2025","pages":1,"items":5,"customer":"Fieldale Farms","cpcs":["FLD"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-040","name":"ANSELL HEALTHCA - Foster Farms - 2025","pages":13,"items":46,"customer":"Foster Farms","cpcs":["FOS"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-041","name":"ANSELL HEALTHCA - Ruiz Foods - 2025","pages":3,"items":12,"customer":"Ruiz Foods","cpcs":["ruiz"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-083","name":"ANSELL HEALTHCA - Ducktrap River of Maine - 2025","pages":1,"items":4,"customer":"Ducktrap River of Maine","cpcs":[],"customers":["Ducktrap River of Maine"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-084","name":"ANSELL HEALTHCA - Western Valley Meat - 2025","pages":1,"items":5,"customer":"Western Valley Meat","cpcs":[],"customers":["Western Valley Meat"],"status":"NEEDS LIBRARY ASSIGNMENT"}],"total_pages":70},"BEST SANITIZERS":{"books":[{"bid":"BK-042","name":"BEST SANITIZERS - Flowers Foods - 2026","pages":1,"items":5,"customer":"Flowers Foods","cpcs":["FLO1","flow"],"customers":["Multiple / Mixed"],"status":"READY"}],"total_pages":1},"BOOT FACILITY SERVIC":{"books":[{"bid":"BK-043","name":"BOOT FACILITY S - 2026 Program - 2026","pages":1,"items":53,"customer":"2026 Program","cpcs":["AMF","E","EA","EB","EC","ED","EE","EEG","EEI","EEJ","EF","JBS","NB","TY1","TYS","TYSW","TYTP","TYXH","TYXP","tysk"],"customers":["Cargill","Tyson","Multiple / Mixed"],"status":"READY"}],"total_pages":1},"DEXTER":{"books":[{"bid":"BK-044","name":"DEXTER - Cargill - 2026","pages":8,"items":8,"customer":"Cargill","cpcs":["E","EA","EB","EC","EE","EEG","EEJ"],"customers":["Cargill"],"status":"READY"},{"bid":"BK-045","name":"DEXTER - Foster Farms - 2026","pages":6,"items":6,"customer":"Foster Farms","cpcs":["FOS"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-046","name":"DEXTER - Tyson - 2026","pages":49,"items":52,"customer":"Tyson","cpcs":["TY1","TYS","TYSW","TYTP","TYXH","TYXP","tysk"],"customers":["Tyson"],"status":"READY"}],"total_pages":63},"GOJO INDUSTRIES":{"books":[{"bid":"BK-048","name":"GOJO INDUSTRIES - Ajinomoto Foods - 2025","pages":2,"items":2,"customer":"Ajinomoto Foods","cpcs":["wind"],"customers":["Ajinomoto Foods"],"status":"READY"},{"bid":"BK-049","name":"GOJO INDUSTRIES - Cargill - 2025","pages":33,"items":42,"customer":"Cargill","cpcs":["E","EA","EB","EC","EE","EEG","EEJ"],"customers":["Cargill"],"status":"READY"},{"bid":"BK-050","name":"GOJO INDUSTRIES - Foster Farms - 2025","pages":14,"items":21,"customer":"Foster Farms","cpcs":["FOS"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-051","name":"GOJO INDUSTRIES - Maple Leaf Farms - 2025","pages":2,"items":2,"customer":"Maple Leaf Farms","cpcs":["MAP"],"customers":["Maple Leaf Farms"],"status":"READY"},{"bid":"BK-052","name":"GOJO INDUSTRIES - Mission Foods - 2025","pages":6,"items":9,"customer":"Mission Foods","cpcs":["mfc"],"customers":["Mission Foods"],"status":"READY"},{"bid":"BK-053","name":"GOJO INDUSTRIES - Pepsico - 2025","pages":25,"items":35,"customer":"Pepsico","cpcs":["LAY"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-054","name":"GOJO INDUSTRIES - Triumph Foods - 2025","pages":19,"items":24,"customer":"Triumph Foods","cpcs":["SBF"],"customers":["Triumph Foods"],"status":"READY"},{"bid":"BK-055","name":"GOJO INDUSTRIES - Wayne Farms Sep 2025 - 2025","pages":9,"items":11,"customer":"Wayne Farms Sep 2025","cpcs":["WAY"],"customers":["Wayne Farms Sep 2025"],"status":"READY"},{"bid":"BK-056","name":"GOJO INDUSTRIES - CBRE - 2025","pages":16,"items":21,"customer":"CBRE","cpcs":["NET"],"customers":["CBRE"],"status":"READY"},{"bid":"BK-087","name":"GOJO INDUSTRIES - Lopez Foods Sep 2025 - 2025","pages":1,"items":1,"customer":"Lopez Foods Sep 2025","cpcs":[],"customers":["Lopez Foods Sep 2025"],"status":"NEEDS LIBRARY ASSIGNMENT"},{"bid":"BK-088","name":"GOJO INDUSTRIES - Pure Prairie Poultry - 2025","pages":4,"items":4,"customer":"Pure Prairie Poultry","cpcs":[],"customers":["Pure Prairie Poultry"],"status":"NEEDS LIBRARY ASSIGNMENT"}],"total_pages":131},"JARVIS PRODUCTS CORP":{"books":[{"bid":"BK-057","name":"JARVIS PRODUCTS - Cargill - 2025","pages":43,"items":46,"customer":"Cargill","cpcs":["E","EA","EB","EC","EE","EEG","EEJ"],"customers":["Cargill"],"status":"READY"}],"total_pages":43},"PQ FOOTWEAR":{"books":[{"bid":"BK-072","name":"PQ FOOTWEAR - Foster Farms - 2026","pages":1,"items":13,"customer":"Foster Farms","cpcs":["FOS"],"customers":["Multiple / Mixed"],"status":"READY"}],"total_pages":1},"SHOWA":{"books":[{"bid":"BK-073","name":"SHOWA - Bimbo Bakeries - 2026","pages":6,"items":30,"customer":"Bimbo Bakeries","cpcs":["BIM","BIM1"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-074","name":"SHOWA - Cargill - 2026","pages":1,"items":10,"customer":"Cargill","cpcs":["E","EA","EB","EC","ED","EE","EEG","EEI","EEJ","EEK","EF"],"customers":["Cargill"],"status":"READY"}],"total_pages":7},"TINGLEY RUBBER CORPO":{"books":[{"bid":"BK-075","name":"TINGLEY RUBBER - Tingley - 2026","pages":2,"items":48,"customer":"Tingley","cpcs":["All"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-076","name":"TINGLEY RUBBER - Foster Farms - 2026","pages":21,"items":161,"customer":"Foster Farms","cpcs":["FOS","ruiz"],"customers":["Multiple / Mixed"],"status":"READY"}],"total_pages":23},"UNGER ENTERPRISES":{"books":[{"bid":"BK-077","name":"UNGER ENTERPRIS - Tyson - 2026","pages":21,"items":22,"customer":"Tyson","cpcs":["TY1","TYS","TYSW","TYTP","TYXH","TYXP","tysk"],"customers":["Tyson"],"status":"READY"}],"total_pages":21},"WELLS LAMONT INDUSTR":{"books":[{"bid":"BK-078","name":"WELLS LAMONT IN - Cargill - 2026","pages":2,"items":26,"customer":"Cargill","cpcs":["E","EA","EB","EC","EE","EEG","EEJ"],"customers":["Cargill"],"status":"READY"},{"bid":"BK-079","name":"WELLS LAMONT IN - Caviness Packing - 2026","pages":1,"items":7,"customer":"Caviness Packing","cpcs":["CAV"],"customers":["Caviness Packing"],"status":"READY"},{"bid":"BK-080","name":"WELLS LAMONT IN - Fieldale Farms, Am Food Group - 2026","pages":1,"items":13,"customer":"Fieldale Farms, Am Food Group","cpcs":["AMF","FLD"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-081","name":"WELLS LAMONT IN - Nat'l Beef - 2026","pages":5,"items":22,"customer":"Nat'l Beef","cpcs":["NB"],"customers":["Multiple / Mixed"],"status":"READY"},{"bid":"BK-082","name":"WELLS LAMONT IN - Tyson - 2026","pages":12,"items":57,"customer":"Tyson","cpcs":["TY1","TYS","TYSW","TYTP","TYXH","TYXP","tysk"],"customers":["Tyson"],"status":"READY"},{"bid":"BK-102","name":"WELLS LAMONT IN - Greater Omaha Packing - 2026","pages":2,"items":6,"customer":"Greater Omaha Packing","cpcs":[],"customers":["Greater Omaha Packing"],"status":"NEEDS LIBRARY ASSIGNMENT"}],"total_pages":23},"DUNLOP PROTECTIVE FO":{"books":[{"bid":"BK-103","name":"DUNLOP PROTECTI - 2026 Jan Programs - 2026","pages":4,"items":89,"customer":"2026 Jan Programs","cpcs":["All","E","EA","EB","EC","ED","EE","EEG","EEI","EEJ","EF","TY1","TYS","TYSW","TYTP","TYXH","TYXP","tysk"],"customers":["Cargill","Tyson","Multiple / Mixed"],"status":"REBATE \u2014 REVIEW"}],"total_pages":4},"PURAC AMERICA":{"books":[{"bid":"BK-104","name":"PURAC AMERICA - Cargill - 2026","pages":1,"items":1,"customer":"Cargill","cpcs":["E","EA","EB","EC","EE","EEG","EEJ"],"customers":["Cargill"],"status":"REBATE \u2014 REVIEW"},{"bid":"BK-105","name":"PURAC AMERICA - National Beef - 2026","pages":1,"items":1,"customer":"National Beef","cpcs":["NB"],"customers":["Multiple / Mixed"],"status":"REBATE \u2014 REVIEW"}],"total_pages":2}},"libraries":{"Cargill":{"cpcs":["E"],"books":18,"pages":380},"Tyson":{"cpcs":["TY1"],"books":14,"pages":473},"Multiple / Mixed":{"cpcs":["NB","LAY","SEC","FOS","FLD","AMF","FLO1","ruiz","BIM","TAYL","JBS","All"],"books":38,"pages":374},"Shenandoah Valley Organic":{"cpcs":[],"books":1,"pages":1},"Fresh Express":{"cpcs":["fe"],"books":2,"pages":13},"OK Foods":{"cpcs":["ok"],"books":1,"pages":10},"Hastings Foods":{"cpcs":[],"books":1,"pages":1},"Wellington Foods Jun 2025":{"cpcs":[],"books":1,"pages":2},"Disp Drop Ship Only":{"cpcs":[],"books":1,"pages":4},"Pepsico-Frito Lay":{"cpcs":[],"books":1,"pages":57},"Bruce Pac Food":{"cpcs":[],"books":1,"pages":1},"Ajinomoto Foods":{"cpcs":["wind"],"books":1,"pages":2},"Maple Leaf Farms":{"cpcs":["MAP"],"books":1,"pages":2},"Mission Foods":{"cpcs":["mfc"],"books":2,"pages":17},"Triumph Foods":{"cpcs":["SBF"],"books":2,"pages":24},"Wayne Farms Sep 2025":{"cpcs":["WAY"],"books":1,"pages":9},"CBRE":{"cpcs":["NET"],"books":2,"pages":26},"Bar S Foods":{"cpcs":["bars"],"books":1,"pages":2},"Aryzta North Am":{"cpcs":["ART"],"books":1,"pages":15},"Land O Lakes":{"cpcs":["LOL"],"books":1,"pages":10},"Caviness Packing":{"cpcs":["CAV"],"books":1,"pages":1},"Ducktrap River of Maine":{"cpcs":[],"books":1,"pages":1},"Western Valley Meat":{"cpcs":[],"books":1,"pages":1},"Artisan Chef":{"cpcs":[],"books":1,"pages":1},"Lopez Foods Sep 2025":{"cpcs":[],"books":1,"pages":1},"Pure Prairie Poultry":{"cpcs":[],"books":1,"pages":4},"Bake Rite Rolls":{"cpcs":[],"books":1,"pages":2},"Peco Foods":{"cpcs":[],"books":1,"pages":2},"Tishcon":{"cpcs":[],"books":1,"pages":1},"Blanket PA":{"cpcs":[],"books":1,"pages":57},"Campbell Soup":{"cpcs":[],"books":1,"pages":33},"Conagra (Treehouse Foods)":{"cpcs":[],"books":1,"pages":27},"General Mills":{"cpcs":[],"books":1,"pages":21},"Pressed Juicery":{"cpcs":[],"books":1,"pages":1},"See's Candy":{"cpcs":[],"books":1,"pages":6},"Vizient":{"cpcs":[],"books":1,"pages":78},"Foodbuy Compass Group":{"cpcs":[],"books":1,"pages":96},"Greater Omaha Packing":{"cpcs":[],"books":1,"pages":2}},"totals":{"pages":1748,"books":105,"libraries":38}};
+
+// --- Setup ---
+const cv=document.getElementById("cv"),C=cv.getContext("2d"),
+      box=document.getElementById("box"),ttEl=document.getElementById("tt"),sel=document.getElementById("sel");
+let mode="overview",hov=null,W=0,H=0,hitboxes=[];
+
+// Colors (RGB tuples for canvas)
+const TEAL=[34,211,238],IND=[129,140,248],MAG=[232,121,249],AMB=[251,191,36];
+function rgba(c,a){return`rgba(${c[0]},${c[1]},${c[2]},${a})`;}
+
+// Vendor selector
+const drillVendors=Object.keys(DATA.vendors).filter(v=>DATA.vendors[v].books.length>=2)
+  .sort((a,b)=>DATA.vendors[b].total_pages-DATA.vendors[a].total_pages);
+drillVendors.forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;sel.appendChild(o);});
+sel.onchange=draw;
+
+document.querySelectorAll(".btn").forEach(b=>b.onclick=()=>{
+  mode=b.dataset.v;
+  document.querySelectorAll(".btn").forEach(x=>x.classList.toggle("on",x===b));
+  sel.style.display=mode==="drill"?"block":"none";
+  hov=null;ttEl.classList.remove("show");draw();
+});
+
+function resize(){
+  const dpr=devicePixelRatio||1,r=box.getBoundingClientRect();
+  W=r.width;H=r.height;
+  cv.width=W*dpr;cv.height=H*dpr;
+  cv.style.width=W+"px";cv.style.height=H+"px";
+  C.setTransform(dpr,0,0,dpr,0,0);
+  draw();
+}
+window.addEventListener("resize",resize);
+
+// --- Drawing helpers ---
+function setFont(weight,size){C.font=weight+" "+size+"px Inter";}
+
+function clip(text,maxW){
+  if(C.measureText(text).width<=maxW)return text;
+  for(let i=text.length-1;i>1;i--){
+    if(C.measureText(text.slice(0,i)+"…").width<=maxW)return text.slice(0,i)+"…";
+  }
+  return"…";
+}
+
+// Compute heights: sqrt-proportional, summing exactly to `total`.
+function layout(values,total,gap,minH){
+  const n=values.length;
+  const usable=total-gap*(n-1);
+  // sqrt share
+  const sq=values.map(v=>Math.sqrt(Math.max(v,0.1)));
+  const sqSum=sq.reduce((a,b)=>a+b,0)||1;
+  let heights=sq.map(s=>(s/sqSum)*usable);
+  // enforce minimum — steal from largest
+  for(let pass=0;pass<5;pass++){
+    let deficit=0;
+    heights=heights.map(h=>{if(h<minH){deficit+=minH-h;return minH;}return h;});
+    if(deficit<=0)break;
+    const maxH=Math.max(...heights);
+    const largeIdx=heights.map((h,i)=>h>minH*2?i:-1).filter(i=>i>=0);
+    const steal=deficit/Math.max(largeIdx.length,1);
+    largeIdx.forEach(i=>{heights[i]=Math.max(minH,heights[i]-steal);});
+  }
+  return heights;
+}
+
+function drawBez(x1,y1,x2,y2,thick,c1,c2,hl){
+  thick=Math.max(1,thick);
+  const cx1=x1+(x2-x1)*.4,cx2=x1+(x2-x1)*.6;
+  C.beginPath();
+  C.moveTo(x1,y1-thick/2);
+  C.bezierCurveTo(cx1,y1-thick/2,cx2,y2-thick/2,x2,y2-thick/2);
+  C.lineTo(x2,y2+thick/2);
+  C.bezierCurveTo(cx2,y2+thick/2,cx1,y1+thick/2,x1,y1+thick/2);
+  C.closePath();
+  const g=C.createLinearGradient(x1,0,x2,0);
+  const a=hl?.3:.08;
+  g.addColorStop(0,rgba(c1,a));g.addColorStop(1,rgba(c2,a));
+  C.fillStyle=g;C.fill();
+}
+
+function drawNode(x,y,w,h,rgb,label,rightLabel,isHov){
+  C.fillStyle=rgba(rgb,isHov?.28:.1);
+  C.strokeStyle=rgba(rgb,isHov?.65:.22);
+  C.lineWidth=isHov?1.5:.5;
+  C.beginPath();C.roundRect(x,y,w,h,4);C.fill();C.stroke();
+  if(h<13)return;
+  const fs=Math.min(10.5,Math.max(8.5,h*.45));
+  setFont("600",fs);
+  const pad=5;
+  const rlW=rightLabel?C.measureText(rightLabel).width+10:0;
+  C.fillStyle=isHov?rgba(rgb,1):"#c8d8f0";C.textAlign="left";
+  C.fillText(clip(label||"",w-pad*2-rlW),x+pad,y+h/2+fs*.35);
+  if(rightLabel){
+    setFont("700",Math.min(9.5,fs));
+    C.fillStyle=rgba(rgb,isHov?1:.65);C.textAlign="right";
+    C.fillText(rightLabel,x+w-pad,y+h/2+fs*.35);
+    C.textAlign="left";
+  }
+}
+
+// ============== OVERVIEW ==============
+function drawOverview(){
+  hitboxes=[];
+  const colW=W/5.5, nw=colW*.72;
+  const x1=colW*.55,x2=colW*2.15,x3=colW*3.75;
+
+  // Headers
+  setFont("700",11);C.fillStyle="#7a8da5";C.textAlign="center";
+  C.fillText("PAGES BY VENDOR",x1+nw/2,22);
+  C.fillText("BOOKS BY CUSTOMER",x2+nw/2,22);
+  C.fillText("CUSTOMER LIBRARIES",x3+nw/2,22);
+  setFont("500",9);C.fillStyle="#4a5568";
+  C.fillText("source → pricing rules",x1+nw/2,35);
+  C.fillText("deals → containers",x2+nw/2,35);
+  C.fillText("CPC assignment targets",x3+nw/2,35);
+  C.textAlign="left";
+
+  const TOP=44,GAP=2,AREA=H-TOP-8;
+
+  // --- Left: vendors ---
+  const vendors=Object.entries(DATA.vendors).sort((a,b)=>b[1].total_pages-a[1].total_pages);
+  const vH=layout(vendors.map(v=>v[1].total_pages),AREA,GAP,16);
+  let py=TOP;const vnodes=[];
+  vendors.forEach(([name,v],i)=>{
+    const h=vH[i];
+    const isH=hov&&hov.id==="v-"+name;
+    drawNode(x1,py,nw,h,TEAL,name,v.total_pages.toLocaleString(),isH);
+    vnodes.push({id:"v-"+name,name,x:x1,y:py,w:nw,h,type:"vendor",data:v});
+    hitboxes.push(vnodes[vnodes.length-1]);
+    py+=h+GAP;
+  });
+
+  // --- Right: libraries ---
+  const libs=Object.entries(DATA.libraries).sort((a,b)=>b[1].pages-a[1].pages);
+  const lH=layout(libs.map(l=>l[1].pages),AREA,GAP,8);
+  let ly=TOP;const lnodes=[];
+  libs.forEach(([name,l],i)=>{
+    const h=lH[i];
+    const isH=hov&&hov.id==="l-"+name;
+    drawNode(x3,ly,nw,h,MAG,name,l.pages+"pg",isH);
+    lnodes.push({id:"l-"+name,name,x:x3,y:ly,w:nw,h,type:"library",data:l});
+    hitboxes.push(lnodes[lnodes.length-1]);
+    ly+=h+GAP;
+  });
+
+  // --- Center: books grouped by customer ---
+  const bCust={};
+  for(const v of Object.values(DATA.vendors))
+    for(const b of v.books)
+      for(const c of b.customers){
+        if(!bCust[c])bCust[c]={count:0,pages:0,items:0};
+        bCust[c].count++;bCust[c].pages+=b.pages;bCust[c].items+=b.items;
+      }
+  const bGroups=Object.entries(bCust).sort((a,b)=>b[1].pages-a[1].pages);
+  const bH=layout(bGroups.map(b=>b[1].pages),AREA,GAP,10);
+  let by=TOP;const bnodes=[];
+  bGroups.forEach(([name,b],i)=>{
+    const h=bH[i];
+    const isH=hov&&hov.id==="b-"+name;
+    drawNode(x2,by,nw,h,IND,name,b.count+(b.count===1?"bk":" bk"),isH);
+    bnodes.push({id:"b-"+name,name,x:x2,y:by,w:nw,h,type:"bookgrp",data:b});
+    hitboxes.push(bnodes[bnodes.length-1]);
+    by+=h+GAP;
+  });
+
+  // --- Flows: vendors → book groups ---
+  for(const vn of vnodes){
+    const vd=DATA.vendors[vn.name];if(!vd)continue;
+    for(const bn of bnodes){
+      let fl=0;
+      for(const bk of vd.books)for(const c of bk.customers)if(c===bn.name)fl+=bk.pages;
+      if(!fl)continue;
+      const thick=Math.max(1,Math.sqrt(fl)*1.1);
+      const hl=hov&&(hov.id===vn.id||hov.id===bn.id);
+      drawBez(vn.x+vn.w,vn.y+vn.h/2,bn.x,bn.y+bn.h/2,thick,TEAL,IND,hl);
+    }
+  }
+
+  // --- Flows: book groups → libraries ---
+  for(const bn of bnodes){
+    for(const ln of lnodes){
+      if(bn.name===ln.name){
+        const thick=Math.max(1,Math.sqrt(bn.data.pages)*.85);
+        const hl=hov&&(hov.id===bn.id||hov.id===ln.id);
+        drawBez(bn.x+bn.w,bn.y+bn.h/2,ln.x,ln.y+ln.h/2,thick,IND,MAG,hl);
+      }
+    }
+  }
+
+  // Redraw nodes on top of flows
+  py=TOP;
+  vendors.forEach(([name,v],i)=>{
+    const h=vH[i];const isH=hov&&hov.id==="v-"+name;
+    drawNode(x1,py,nw,h,TEAL,name,v.total_pages.toLocaleString(),isH);py+=h+GAP;
+  });
+  by=TOP;
+  bGroups.forEach(([name,b],i)=>{
+    const h=bH[i];const isH=hov&&hov.id==="b-"+name;
+    drawNode(x2,by,nw,h,IND,name,b.count+(b.count===1?"bk":" bk"),isH);by+=h+GAP;
+  });
+  ly=TOP;
+  libs.forEach(([name,l],i)=>{
+    const h=lH[i];const isH=hov&&hov.id==="l-"+name;
+    drawNode(x3,ly,nw,h,MAG,name,l.pages+"pg",isH);ly+=h+GAP;
+  });
+}
+
+// ============== BY VENDOR ==============
+function drawVendorView(){
+  hitboxes=[];
+  const vendors=Object.entries(DATA.vendors).sort((a,b)=>b[1].total_pages-a[1].total_pages);
+  const rowH=Math.max(24,Math.min(36,(H-30)/vendors.length-1));
+  const maxPg=Math.max(...vendors.map(v=>v[1].total_pages));
+  const nameW=W*.14;
+
+  setFont("700",10);C.fillStyle="#7a8da5";C.textAlign="left";C.fillText("VENDOR",10,17);
+  C.textAlign="center";C.fillText("PAGES",nameW+W*.1,17);C.fillText("BOOKS",W*.48,17);C.fillText("→ CUSTOMERS",W*.78,17);
+  C.textAlign="left";
+
+  let y=28;
+  for(const[name,v]of vendors){
+    const isH=hov&&hov.id==="vr-"+name;
+    if(isH){C.fillStyle="rgba(129,140,248,.05)";C.fillRect(0,y,W,rowH);}
+
+    setFont(isH?"700":"600",10.5);C.fillStyle=isH?"#e8edf5":"#c0cde0";
+    C.fillText(clip(name,nameW-10),10,y+rowH/2+4);
+
+    // Page bar
+    const bx=nameW+6,barMax=W*.14,barW=Math.max(5,(v.total_pages/maxPg)*barMax);
+    C.fillStyle=isH?"rgba(34,211,238,.3)":"rgba(34,211,238,.12)";
+    C.beginPath();C.roundRect(bx,y+5,barW,rowH-10,3);C.fill();
+    setFont("700",9);C.fillStyle=isH?"#67e8f9":"#22d3ee";
+    C.fillText(v.total_pages.toLocaleString(),bx+barW+5,y+rowH/2+3.5);
+
+    // Book chips
+    let cx2=W*.39;
+    for(const b of v.books){
+      const bw=Math.max(5,Math.min(36,(b.pages/40)*26));
+      C.fillStyle=isH?"rgba(129,140,248,.28)":"rgba(129,140,248,.12)";
+      C.beginPath();C.roundRect(cx2,y+6,bw,rowH-12,3);C.fill();
+      cx2+=bw+2;
+    }
+    setFont("600",9);C.fillStyle=isH?"#a5b4fc":"#818cf8";
+    C.fillText(v.books.length+" books",cx2+4,y+rowH/2+3.5);
+
+    // Customer tags
+    const custs=[...new Set(v.books.flatMap(b=>b.customers))];
+    let lx=W*.62;
+    setFont("600",8.5);
+    for(const c of custs){
+      const tw=C.measureText(c).width+10;
+      if(lx+tw>W-8)break;
+      C.fillStyle=isH?"rgba(232,121,249,.22)":"rgba(232,121,249,.08)";
+      C.beginPath();C.roundRect(lx,y+7,tw,rowH-14,3);C.fill();
+      C.fillStyle=isH?"#f0abfc":"#b898c8";
+      C.fillText(c,lx+5,y+rowH/2+3);
+      lx+=tw+3;
+    }
+
+    hitboxes.push({id:"vr-"+name,name,x:0,y,w:W,h:rowH,type:"vendor-row",data:v});
+    C.strokeStyle="#1a2235";C.lineWidth=.5;C.beginPath();C.moveTo(0,y+rowH);C.lineTo(W,y+rowH);C.stroke();
+    y+=rowH+1;
+  }
+}
+
+// ============== DRILL-DOWN ==============
+function drawDrill(){
+  hitboxes=[];
+  const vname=sel.value||drillVendors[0];
+  const v=DATA.vendors[vname];if(!v)return;
+
+  const colW=W/5.5,nw=colW*.82;
+  const x1=colW*.35,x2=colW*1.9,x3=colW*3.55;
+
+  setFont("700",11);C.fillStyle="#7a8da5";C.textAlign="center";
+  C.fillText("PAGES",x1+nw/2,20);C.fillText("BOOKS",x2+nw/2,20);C.fillText("LIBRARIES",x3+nw/2,20);
+
+  setFont("700",12);C.fillStyle="#22d3ee";C.fillText(vname,W/2,42);
+  setFont("500",10);C.fillStyle="#5a7a90";
+  C.fillText(v.total_pages+" pages across "+v.books.length+" books",W/2,56);
+  C.textAlign="left";
+
+  const TOP=68,GAP=6,AREA=H-TOP-8;
+  const sorted=[...v.books].sort((a,b)=>b.pages-a.pages);
+  const bH=layout(sorted.map(b=>b.pages),AREA,GAP,40);
+
+  let by=TOP;
+  sorted.forEach((b,i)=>{
+    const h=bH[i];
+    const isH=hov&&hov.id==="db-"+b.bid;
+
+    // Book node
+    drawNode(x2,by,nw,h,IND,b.name,null,isH);
+    // Sub-info inside book node
+    if(h>30){
+      setFont("500",9);C.fillStyle=isH?"#8899b0":"#5a6a80";
+      C.fillText(b.pages+" pages · "+b.items+" items · "+b.status,x2+5,by+h/2+13);
+    }
+
+    // Page node (left)
+    const ph=h*.6;const ppy=by+(h-ph)/2;
+    drawNode(x1,ppy,nw,ph,TEAL,b.pages+" pages",b.items+" items",isH);
+    drawBez(x1+nw,ppy+ph/2,x2,by+h/2,Math.max(2,ph*.25),TEAL,IND,isH);
+
+    // Library nodes (right)
+    const custs=[...new Set(b.customers)];
+    if(!custs.length)custs.push("(unassigned)");
+    const lhEach=Math.max(18,Math.min(26,(h-4)/custs.length-2));
+    let ly=by+Math.max(0,(h-custs.length*(lhEach+2))/2);
+    for(const c of custs){
+      const isUn=c.includes("unassigned");
+      drawNode(x3,ly,nw,lhEach,isUn?AMB:MAG,c,null,isH);
+      drawBez(x2+nw,by+h/2,x3,ly+lhEach/2,Math.max(1,lhEach*.15),IND,isUn?AMB:MAG,isH);
+      ly+=lhEach+2;
+    }
+
+    hitboxes.push({id:"db-"+b.bid,x:x2,y:by,w:nw,h,type:"drill-book",data:b});
+    by+=h+GAP;
+  });
+}
+
+// ============== DRAW ==============
+function draw(){
+  C.clearRect(0,0,W,H);
+  if(mode==="overview")drawOverview();
+  else if(mode==="vendor")drawVendorView();
+  else drawDrill();
+}
+
+// ============== HOVER ==============
+cv.addEventListener("mousemove",e=>{
+  const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+  let found=null;
+  for(const n of hitboxes)if(mx>=n.x&&mx<=n.x+n.w&&my>=n.y&&my<=n.y+n.h){found=n;break;}
+  if(found!==hov){hov=found;draw();}
+  showTT(e);
+},{passive:true});
+cv.addEventListener("mouseleave",()=>{hov=null;ttEl.classList.remove("show");draw();});
+
+function tr(l,v){return`<div class="r"><span class="l">${l}</span><span class="v">${v}</span></div>`;}
+
+function showTT(e){
+  if(!hov){ttEl.classList.remove("show");return;}
+  const n=hov;let h="";
+
+  if(n.type==="vendor"){
+    const d=n.data;
+    h=`<h3>${n.name}</h3><div class="sub">Vendor — Page Source</div>`;
+    h+=tr("Total Pages",d.total_pages.toLocaleString());
+    h+=tr("Books",d.books.length);
+    h+="<hr>";
+    for(const b of d.books.slice(0,10))
+      h+=`<div class="r"><span class="l" style="color:#818cf8">${b.customer||"(unassigned)"}</span><span class="v">${b.pages}pg · ${b.items} items</span></div>`;
+    if(d.books.length>10)h+=`<div class="r"><span class="l">+${d.books.length-10} more…</span></div>`;
+  } else if(n.type==="bookgrp"){
+    h=`<h3>${n.name}</h3><div class="sub">Customer — Book Group</div>`;
+    h+=tr("Books",n.data.count);h+=tr("Total Pages",n.data.pages.toLocaleString());h+=tr("Total Items",n.data.items.toLocaleString());
+  } else if(n.type==="library"){
+    const d=n.data;
+    h=`<h3>${n.name}</h3><div class="sub">Customer Library</div>`;
+    h+=tr("CPC Codes",d.cpcs.length?d.cpcs.join(", "):"(none — needs assignment)");
+    h+=tr("Books",d.books);h+=tr("Total Pages",d.pages.toLocaleString());
+  } else if(n.type==="vendor-row"){
+    const d=n.data;
+    h=`<h3>${n.name}</h3><div class="sub">Vendor Overview</div>`;
+    h+=tr("Total Pages",d.total_pages.toLocaleString());h+=tr("Books",d.books.length);
+    h+="<hr>";
+    for(const b of d.books.slice(0,12))
+      h+=`<div class="r"><span class="l" style="color:#818cf8">${b.name.substring(0,36)}</span><span class="v">${b.pages}pg</span></div>`;
+    if(d.books.length>12)h+=`<div class="r"><span class="l">+${d.books.length-12} more…</span></div>`;
+  } else if(n.type==="drill-book"){
+    const b=n.data;
+    h=`<h3>${b.name}</h3><div class="sub">${b.bid} · ${b.status}</div>`;
+    h+=tr("Pages",b.pages);h+=tr("Items",b.items);h+=tr("Customer",b.customer);
+    if(b.cpcs.length)h+=tr("CPCs",b.cpcs.join(", "));
+    else h+=`<div class="r"><span class="l" style="color:#fbbf24">⚠ No CPC — needs library assignment</span></div>`;
+  }
+
+  ttEl.innerHTML=h;ttEl.classList.add("show");
+  const r=box.getBoundingClientRect();
+  let tx=e.clientX-r.left+16,ty=e.clientY-r.top-8;
+  if(tx+390>r.width)tx=e.clientX-r.left-395;
+  if(ty+ttEl.offsetHeight>r.height)ty=r.height-ttEl.offsetHeight-8;
+  if(ty<0)ty=4;
+  ttEl.style.left=tx+"px";ttEl.style.top=ty+"px";
+}
+
+resize();
+</script>
+</body>
+</html>
