@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Freight Audit Savings — Waterfall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f6f8;--surface:#fff;--surface2:#f9fafb;
+  --border:#e3e7ed;--text-primary:#111827;--text-secondary:#4b5563;--text-muted:#9ca3af;
+  --green:#1e8a4a;--green-bg:#dcfce7;--red:#c0392b;--red-bg:#fee2e2;
+  --toggle-bg:#d1d5db;--toggle-knob:#fff;
+  --week-active-bg:#1a73e8;--week-active-text:#fff;--week-inactive:#6b7280;
+  --shadow:0 1px 6px rgba(0,0,0,.08),0 4px 20px rgba(0,0,0,.04);
+  --chart-bg:#f8fafc;--chart-border:#dce3eb;
+}
+[data-theme="dark"]{
+  --bg:#0d1117;--surface:#161b27;--surface2:#1e2533;
+  --border:#2e3a4e;--text-primary:#e8edf5;--text-secondary:#b0bdd0;--text-muted:#6b7f99;
+  --green:#4ade80;--green-bg:#0c2b1c;--red:#fc8181;--red-bg:#2d1214;
+  --toggle-bg:#2e3a4e;--toggle-knob:#e8edf5;
+  --week-active-bg:#4f93f5;--week-active-text:#0d1117;--week-inactive:#94a3b8;
+  --shadow:0 1px 8px rgba(0,0,0,.5);
+  --chart-bg:#0f1520;--chart-border:#1e2a3a;
+}
+[data-theme="dark"] .dm-knob{transform:translateX(13px)}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text-primary)}
+.widget{height:100%;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.header{padding:16px 20px 10px;flex-shrink:0;display:flex;align-items:flex-start;justify-content:space-between}
+.header-left{display:flex;flex-direction:column;gap:2px}
+.header-right{display:flex;align-items:center;gap:10px;padding-top:2px}
+.eyebrow{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted)}
+.title{font-size:18px;font-weight:800;color:var(--text-primary);line-height:1.2}
+.subtitle{font-size:11px;color:var(--text-muted);font-weight:500;margin-top:2px}
+.controls{display:flex;align-items:center;gap:6px;padding:0 20px 10px;flex-shrink:0}
+.week-btn{font-size:11.5px;font-weight:600;padding:5px 13px;border-radius:6px;border:none;cursor:pointer;background:transparent;color:var(--week-inactive);transition:all .16s;font-family:'Inter',sans-serif}
+.week-btn:hover{color:var(--text-primary)}
+.week-btn.active{background:var(--week-active-bg);color:var(--week-active-text);box-shadow:0 1px 5px rgba(26,115,232,.3)}
+.reset-btn{height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;color:var(--text-muted);font-family:'Inter',sans-serif;font-size:11px;font-weight:600;padding:0 10px;transition:all .16s}
+.reset-btn:hover{color:var(--text-primary);border-color:var(--text-muted)}
+.dm-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;opacity:.6;transition:opacity .15s;user-select:none;padding:2px 4px}
+.dm-toggle:hover{opacity:1}
+.dm-icon{font-size:10px;color:var(--text-secondary);display:flex;align-items:center;width:12px;justify-content:center}
+.dm-track{width:28px;height:15px;background:var(--toggle-bg);border-radius:8px;position:relative;transition:background .2s;flex-shrink:0}
+.dm-knob{width:11px;height:11px;background:var(--toggle-knob);border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.chart-area{flex:1;margin:0 20px 16px;padding:16px;background:var(--chart-bg);border:1px solid var(--chart-border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.summary-row{display:flex;gap:12px;margin-bottom:12px;flex-shrink:0}
+.stat-card{flex:1;padding:8px 12px;border-radius:6px;background:var(--surface);border:1px solid var(--chart-border)}
+.stat-label{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)}
+.stat-value{font-size:18px;font-weight:800;line-height:1.3}
+.stat-sub{font-size:10px;font-weight:600;color:var(--text-muted);margin-top:1px}
+.wf-wrap{flex:1;position:relative;min-height:0;overflow:visible}
+.wf-canvas{width:100%;height:100%;display:block}
+.info-card{position:absolute;width:260px;min-height:60px;background:var(--surface);border:1px solid var(--chart-border);border-radius:8px;padding:0;box-shadow:var(--shadow);z-index:20;opacity:0;pointer-events:none;transition:opacity .15s;overflow:visible;min-width:180px;max-width:500px;min-height:60px;font-size:11px}
+.info-card.visible{opacity:1;pointer-events:none}
+.info-card.pinned{border-color:var(--week-active-bg);box-shadow:0 0 0 1px var(--week-active-bg),var(--shadow);cursor:move;pointer-events:auto}
+.info-card-inner{overflow-y:auto;max-height:100%;border-radius:8px}
+.ic-accent{position:absolute;top:0;left:0;bottom:0;width:4px;border-radius:8px 0 0 8px}
+.ic-handle{position:absolute;z-index:25}
+.ic-handle-tl{top:-3px;left:-3px;width:12px;height:12px;cursor:nwse-resize}
+.ic-handle-tr{top:-3px;right:-3px;width:12px;height:12px;cursor:nesw-resize}
+.ic-handle-bl{bottom:-3px;left:-3px;width:12px;height:12px;cursor:nesw-resize}
+.ic-handle-br{bottom:-3px;right:-3px;width:12px;height:12px;cursor:nwse-resize}
+.ic-handle-t{top:-3px;left:12px;right:12px;height:6px;cursor:ns-resize}
+.ic-handle-b{bottom:-3px;left:12px;right:12px;height:6px;cursor:ns-resize}
+.ic-handle-l{left:-3px;top:12px;bottom:12px;width:6px;cursor:ew-resize}
+.ic-handle-r{right:-3px;top:12px;bottom:12px;width:6px;cursor:ew-resize}
+.info-card-header{display:flex;align-items:center;justify-content:space-between;padding:.7em .9em .5em;user-select:none;border-bottom:1px solid var(--chart-border)}
+.info-card-title{font-size:.9em;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)}
+.info-card-pin{font-size:.7em;opacity:0.5;font-weight:600;color:var(--text-muted)}
+.info-card-body{padding:.5em .9em .9em;overflow-y:auto}
+.ic-item{padding:.35em 0;border-bottom:1px solid var(--chart-border)}
+.ic-item:last-child{border-bottom:none}
+.ic-carr{display:flex;justify-content:space-between;align-items:center}
+.ic-carr-id{font-size:1em;font-weight:700;color:var(--text-primary)}
+.ic-carr-val{font-size:1em;font-weight:700}
+.ic-desc{font-size:.82em;color:var(--text-muted);margin-top:.2em;line-height:1.35}
+.ic-total{display:flex;justify-content:space-between;padding:.5em 0 .2em;border-top:1.5px solid var(--chart-border);margin-top:.35em}
+.ic-total-label{font-size:.9em;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted)}
+.ic-total-val{font-size:1.1em;font-weight:800}
+.legend{display:flex;gap:12px;margin-left:auto;align-items:center}
+.legend-item{display:flex;align-items:center;gap:5px}
+.legend-dot{width:10px;height:10px;border-radius:2px}
+.legend-label{font-size:10px;font-weight:600;color:var(--text-muted)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="header">
+    <div class="header-left">
+      <span class="eyebrow">Hantover Inc. &middot; Freight</span>
+      <span class="title">Freight Audit Savings</span>
+      <span class="subtitle">Billed vs. recovered — audit &amp; duplicate bill savings by week</span>
+    </div>
+    <div class="header-right">
+      <div class="dm-toggle" onclick="toggleDark()" title="Toggle dark mode">
+        <span class="dm-icon">&#9728;</span>
+        <div class="dm-track"><div class="dm-knob"></div></div>
+        <span class="dm-icon">&#9790;</span>
+      </div>
+    </div>
+  </div>
+  <div class="controls">
+    <button class="week-btn active" data-week="all">All</button>
+    <button class="week-btn" data-week="W2-16">W2-16</button>
+    <button class="week-btn" data-week="W2-23">W2-23</button>
+    <button class="week-btn" data-week="W3-2">W3-2</button>
+    <button class="reset-btn" onclick="resetAll()" title="Reset all">&#8634; Reset</button>
+    <div class="legend" id="legendRow"></div>
+  </div>
+  <div class="chart-area">
+    <div class="summary-row">
+      <div class="stat-card"><div class="stat-label">Billed</div><div class="stat-value" id="s-billed">—</div><div class="stat-sub" id="s-bills">—</div></div>
+      <div class="stat-card"><div class="stat-label">Total Savings</div><div class="stat-value" id="s-savings" style="color:var(--green)">—</div><div class="stat-sub" id="s-rate">—</div></div>
+      <div class="stat-card"><div class="stat-label">Net Paid</div><div class="stat-value" id="s-paid">—</div><div class="stat-sub" id="s-pct">—</div></div>
+    </div>
+    <div class="wf-wrap" id="wfWrap">
+      <canvas class="wf-canvas" id="wfCanvas"></canvas>
+    </div>
+  </div>
+</div>
+<script>
+const DATA={"W2-16":{"totals":{"billed":5649.49,"paid":3188.48,"auditSvgs":1492.67,"dupSvgs":968.34,"totalSvgs":2461.01,"savingsRate":43.6,"bills":10},"carriers":[{"id":"CD585","billed":2943.01,"paid":2086.73,"auditSvgs":856.28,"dupSvgs":0},{"id":"RLCA","billed":1798.61,"paid":944.46,"auditSvgs":237.86,"dupSvgs":616.29},{"id":"FXNL","billed":555.82,"paid":157.29,"auditSvgs":398.53,"dupSvgs":0},{"id":"FEC*","billed":257.05,"paid":0,"auditSvgs":0,"dupSvgs":257.05},{"id":"DAFG","billed":95,"paid":0,"auditSvgs":0,"dupSvgs":95}],"items":[{"carr":"CD585","pro":"A9685338BD","billed":1961.93,"paid":1501.93,"auditSvgs":460,"dupSvgs":0,"desc":"Per Krista T w/Hant per Brian's email — pay $1,501.93"},{"carr":"CD585","pro":"A9786382","billed":981.08,"paid":584.8,"auditSvgs":396.28,"dupSvgs":0,"desc":"Per Krista T w/Hant per Brian's email — pay $584.80"},{"carr":"DAFG","pro":"783300298","billed":95,"paid":0,"auditSvgs":0,"dupSvgs":95,"desc":"Duplicate bill"},{"carr":"FEC*","pro":"911797447","billed":213.83,"paid":0,"auditSvgs":0,"dupSvgs":213.83,"desc":"Duplicate bill"},{"carr":"FEC*","pro":"911800817","billed":43.22,"paid":0,"auditSvgs":0,"dupSvgs":43.22,"desc":"Duplicate bill"},{"carr":"FXNL","pro":"5132609845BD","billed":338,"paid":0,"auditSvgs":338,"dupSvgs":0,"desc":"Per dims on BOL 83x14x8\" — photo shows forklift not at starting position"},{"carr":"FXNL","pro":"5586587786","billed":217.82,"paid":157.29,"auditSvgs":60.53,"dupSvgs":0,"desc":"Per Google Maps — going to a business"},{"carr":"RLCA","pro":"I787867272","billed":275.09,"paid":209.68,"auditSvgs":65.41,"dupSvgs":0,"desc":"Per pricing agreement min $155.00 — no inspection cert provided"},{"carr":"RLCA","pro":"I787867326","billed":907.23,"paid":734.78,"auditSvgs":172.45,"dupSvgs":0,"desc":"Per BOL zip code 88008 — billing error"},{"carr":"RLCA","pro":"I789188958","billed":616.29,"paid":0,"auditSvgs":0,"dupSvgs":616.29,"desc":"Duplicate bill"}]},"W2-23":{"totals":{"billed":3230.16,"paid":556.09,"auditSvgs":2674.07,"dupSvgs":0,"totalSvgs":2674.07,"savingsRate":82.8,"bills":4},"carriers":[{"id":"CD585","billed":1684.81,"paid":0,"auditSvgs":1684.81,"dupSvgs":0},{"id":"UPGF","billed":885.7,"paid":0,"auditSvgs":885.7,"dupSvgs":0},{"id":"FXNL","billed":469.95,"paid":401.39,"auditSvgs":68.56,"dupSvgs":0},{"id":"RLCA","billed":189.7,"paid":154.7,"auditSvgs":35,"dupSvgs":0}],"items":[{"carr":"CD585","pro":"A10011246","billed":1684.81,"paid":0,"auditSvgs":1684.81,"dupSvgs":0,"desc":"Not paying — not showing up on aging report"},{"carr":"FXNL","pro":"7929460696","billed":469.95,"paid":401.39,"auditSvgs":68.56,"dupSvgs":0,"desc":"Billing error — billed as one desc, multiple desc & class"},{"carr":"RLCA","pro":"I787843332","billed":189.7,"paid":154.7,"auditSvgs":35,"dupSvgs":0,"desc":"Per Google Maps — going to a business with a dock"},{"carr":"UPGF","pro":"296717186","billed":885.7,"paid":0,"auditSvgs":885.7,"dupSvgs":0,"desc":"Per inv and Krista — col inv, s/b billed to Cargill"}]},"W3-2":{"totals":{"billed":4707.78,"paid":935,"auditSvgs":3772.78,"dupSvgs":0,"totalSvgs":3772.78,"savingsRate":80.1,"bills":9},"carriers":[{"id":"CD585","billed":2199.15,"paid":0,"auditSvgs":2199.15,"dupSvgs":0},{"id":"FXFE","billed":1082.69,"paid":640.81,"auditSvgs":441.88,"dupSvgs":0},{"id":"SAIA","billed":637.7,"paid":0,"auditSvgs":637.7,"dupSvgs":0},{"id":"CNWY","billed":444.41,"paid":0,"auditSvgs":444.41,"dupSvgs":0},{"id":"RLCA","billed":190.35,"paid":155.35,"auditSvgs":35,"dupSvgs":0},{"id":"FXNL","billed":151.68,"paid":138.84,"auditSvgs":12.84,"dupSvgs":0},{"id":"UC402","billed":1.8,"paid":0,"auditSvgs":1.8,"dupSvgs":0}],"items":[{"carr":"CD585","pro":"A10045090","billed":2199.15,"paid":0,"auditSvgs":2199.15,"dupSvgs":0,"desc":"Per Krista T w/Hant — per CCFS email, sending corrected inv"},{"carr":"CNWY","pro":"304199265","billed":444.41,"paid":0,"auditSvgs":444.41,"dupSvgs":0,"desc":"Per BOL s/b billed 3rd party to Edward Don & Co — billing error"},{"carr":"FXFE","pro":"5172605454","billed":445.22,"paid":228.7,"auditSvgs":216.52,"dupSvgs":0,"desc":"Using wrong 3rd party acct number — s/b acct# 768366659"},{"carr":"FXFE","pro":"7929461201","billed":118.56,"paid":0,"auditSvgs":118.56,"dupSvgs":0,"desc":"Billing error — s/b paid 3rd party by S&C, already sent"},{"carr":"FXFE","pro":"9311886813","billed":518.91,"paid":412.11,"auditSvgs":106.8,"dupSvgs":0,"desc":"Using wrong 3rd party — correct acct 76836659"},{"carr":"FXNL","pro":"7929461002","billed":151.68,"paid":138.84,"auditSvgs":12.84,"dupSvgs":0,"desc":"CL changed to 85 w/o inspection cert — req to be corrected to match BOL"},{"carr":"RLCA","pro":"I195154236","billed":190.35,"paid":155.35,"auditSvgs":35,"dupSvgs":0,"desc":"Per Google Maps — business with a dock, not residential delivery"},{"carr":"SAIA","pro":"10838511900","billed":637.7,"paid":0,"auditSvgs":637.7,"dupSvgs":0,"desc":"Per Krista T w/Hant — do not pay, sending corrected inv"},{"carr":"UC402","pro":"2080138916","billed":1.8,"paid":0,"auditSvgs":1.8,"dupSvgs":0,"desc":"Per Krista T w/Hant — do not pay late fees"}]}};
+const WEEKS=['W2-16','W2-23','W3-2'];
+// Bar colors: teal(billed), indigo(audit), amber(dup), magenta(paid) — same both modes
+const BAR_L={billed:'#0891b2',audit:'#4f46e5',dup:'#d97706',paid:'#c026d3'};
+const BAR_D={billed:'#22d3ee',audit:'#818cf8',dup:'#fbbf24',paid:'#e879f9'};
+const BAR_HL={billed:'#06b6d4',audit:'#6366f1',dup:'#f59e0b',paid:'#d946ef'};
+const BAR_HD={billed:'#67e8f9',audit:'#a5b4fc',dup:'#fcd34d',paid:'#f0abfc'};
+const BAR_LABELS={billed:'Billed',audit:'Audit Savings',dup:'Duplicates',paid:'Net Paid'};
+
+const $=s=>document.querySelector(s);
+const fmt=v=>'$'+v.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+const fmt2=v=>'$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+let dark=false,activeWeek='all',hoveredBar=-1,pinnedType=null,animProgress=0,animId=null;
+const canvas=$('#wfCanvas'),ctx=canvas.getContext('2d');
+let dpr=window.devicePixelRatio||1,W,H,bars=[];
+
+function pinnedIdx(){if(!pinnedType)return-1;for(let i=0;i<bars.length;i++){if(bars[i].type===pinnedType)return i;}return-1;}
+// Info card state
+let cardEl=null;
+
+// Darker variants for text outline
+const BAR_STROKE_L={billed:'#065666',audit:'#312e81',dup:'#92400e',paid:'#701a75'};
+const BAR_STROKE_D={billed:'#0e7490',audit:'#4338ca',dup:'#b45309',paid:'#a21caf'};
+function barStroke(type){return dark?BAR_STROKE_D[type]:BAR_STROKE_L[type];}
+
+function isDark(){return dark;}
+function getCSS(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+function barCol(type,hov){return hov?(dark?BAR_HD[type]:BAR_HL[type]):(dark?BAR_D[type]:BAR_L[type]);}
+function resize(){const r=canvas.parentElement.getBoundingClientRect();W=r.width;H=r.height;canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);}
+function toggleDark(){dark=!dark;document.documentElement.setAttribute('data-theme',dark?'dark':'');buildLegend();buildBars();draw();if(cardEl&&cardEl.classList.contains('visible'))refreshCard();}
+
+function getAllTotals(){let b=0,p=0,a=0,d=0,n=0;WEEKS.forEach(w=>{const t=DATA[w].totals;b+=t.billed;p+=t.paid;a+=t.auditSvgs;d+=t.dupSvgs;n+=t.bills;});const ts=a+d;return{billed:b,paid:p,auditSvgs:a,dupSvgs:d,totalSvgs:ts,savingsRate:b>0?Math.round(ts/b*1000)/10:0,bills:n};}
+function getActiveTotals(){return activeWeek==='all'?getAllTotals():DATA[activeWeek].totals;}
+function getActiveCarriers(){if(activeWeek==='all'){const m={};WEEKS.forEach(w=>{DATA[w].carriers.forEach(c=>{if(!m[c.id])m[c.id]={id:c.id,billed:0,paid:0,auditSvgs:0,dupSvgs:0};m[c.id].billed+=c.billed;m[c.id].paid+=c.paid;m[c.id].auditSvgs+=c.auditSvgs;m[c.id].dupSvgs+=c.dupSvgs;});});return Object.values(m).sort((a,b)=>b.billed-a.billed);}return DATA[activeWeek].carriers;}
+function getActiveItems(){if(activeWeek==='all'){let a=[];WEEKS.forEach(w=>{DATA[w].items.forEach(it=>{a.push({...it,week:w});});});return a;}return DATA[activeWeek].items;}
+
+function getPrevWeek(){const wi=WEEKS.indexOf(activeWeek);return wi>0?WEEKS[wi-1]:null;}
+function deltaHTML(cur,prev,invert){
+  if(prev==null||prev===0)return'';
+  const d=cur-prev,pct=Math.round(d/prev*100);
+  const up=invert?(d<0):(d>0);
+  const col=up?'var(--green)':'var(--red)';
+  const arrow=d>0?'\u25B2':'\u25BC';
+  return `<span style="color:${col};font-size:9px;font-weight:700"> ${arrow} ${Math.abs(pct)}%</span>`;
+}
+function updateSummary(){const d=getActiveTotals();$('#s-billed').textContent=fmt(d.billed);$('#s-bills').textContent=d.bills+' audited bill'+(d.bills!==1?'s':'');$('#s-savings').textContent=fmt(d.totalSvgs);$('#s-rate').textContent=d.savingsRate+'% recovery rate';$('#s-paid').textContent=fmt(d.paid);const pp=d.billed>0?Math.round(d.paid/d.billed*100):0;$('#s-pct').textContent=pp+'% of billed amount';
+// WoW deltas
+const pw=getPrevWeek();
+if(pw&&activeWeek!=='all'){const p=DATA[pw].totals;$('#s-billed').innerHTML=fmt(d.billed)+deltaHTML(d.billed,p.billed,false);$('#s-savings').innerHTML=fmt(d.totalSvgs)+deltaHTML(d.totalSvgs,p.totalSvgs,false);$('#s-paid').innerHTML=fmt(d.paid)+deltaHTML(d.paid,p.paid,true);}
+}
+
+function buildLegend(){
+  const d=getActiveTotals();const hasDup=d.dupSvgs>0;
+  const items=[{type:'billed',label:'Billed'},{type:'audit',label:'Audit Savings'}];
+  if(hasDup)items.push({type:'dup',label:'Duplicate Recovery'});
+  items.push({type:'paid',label:'Net Paid'});
+  $('#legendRow').innerHTML=items.map(it=>`<div class="legend-item"><div class="legend-dot" style="background:${barCol(it.type,false)}"></div><span class="legend-label">${it.label}</span></div>`).join('');
+}
+
+function buildBars(){const d=getActiveTotals();const hasDup=d.dupSvgs>0;const sc=hasDup?4:3;const pL=50,pR=40,pT=24,pB=38;const uW=W-pL-pR;const bW=Math.min(uW/(sc*1.7),110);const gap=(uW-bW*sc)/(sc+1);const mx=d.billed*1.1;const sY=(H-pT-pB)/mx;bars=[];let x=pL+gap;
+const bH=d.billed*sY,bY=H-pB-bH;bars.push({x,y:bY,w:bW,h:bH,label:'Billed',value:d.billed,type:'billed',textY:bY+16});x+=bW+gap;
+const aH=d.auditSvgs*sY;bars.push({x,y:bY,w:bW,h:aH,label:'Audit Savings',value:d.auditSvgs,type:'audit',connFrom:bY,textY:bY+16});x+=bW+gap;
+if(hasDup){const dT=bY+aH,dH=d.dupSvgs*sY;bars.push({x,y:dT,w:bW,h:dH,label:'Duplicates',value:d.dupSvgs,type:'dup',connFrom:dT,textY:dH>24?dT+16:dT-10});x+=bW+gap;}
+const pH=d.paid*sY,pY=H-pB-pH;const lB=hasDup?(bY+aH+d.dupSvgs*sY):(bY+aH);bars.push({x,y:pY,w:bW,h:Math.max(pH,2),label:'Net Paid',value:d.paid,type:'paid',connFrom:lB,textY:pH>24?pY+16:pY-10});}
+
+function roundRect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.quadraticCurveTo(x+w,y,x+w,y+r);c.lineTo(x+w,y+h-r);c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);c.lineTo(x+r,y+h);c.quadraticCurveTo(x,y+h,x,y+h-r);c.lineTo(x,y+r);c.quadraticCurveTo(x,y,x+r,y);c.closePath();}
+
+function draw(){
+ctx.clearRect(0,0,W,H);const textCol=getCSS('--text-primary');const mutedCol=getCSS('--text-muted');const borderCol=getCSS('--chart-border');const pB=38;
+ctx.strokeStyle=borderCol;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(30,H-pB);ctx.lineTo(W-10,H-pB);ctx.stroke();
+const active=pinnedIdx()>=0?pinnedIdx():hoveredBar;
+for(let i=0;i<bars.length;i++){const b=bars[i];const p=Math.min(animProgress,1);const bh=b.h*p;const by=(b.type==='billed'||b.type==='paid')?b.y+(b.h-bh):b.y;const isA=active===i;
+ctx.save();const bColor=barCol(b.type,isA);ctx.fillStyle=bColor;ctx.globalAlpha=isA?1:0.85;
+ctx.shadowColor=bColor;ctx.shadowBlur=isA?(dark?14:8):(dark?6:3);
+roundRect(ctx,b.x,by,b.w,bh,4);ctx.fill();ctx.shadowBlur=0;
+ctx.restore();
+if(p>0.5){ctx.save();const tAlpha=Math.min((p-0.5)*4,1);ctx.globalAlpha=tAlpha;const fs=Math.max(10,Math.min(15,b.w*0.14));ctx.font=`700 ${fs}px Inter,system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';const tx=b.x+b.w/2,ty=b.textY;ctx.strokeStyle=barStroke(b.type);ctx.lineWidth=3;ctx.lineJoin='round';ctx.strokeText(fmt(b.value),tx,ty);ctx.fillStyle='#ffffff';ctx.fillText(fmt(b.value),tx,ty);ctx.restore();}
+if(p>0.3){ctx.save();ctx.globalAlpha=Math.min((p-0.3)*3,1);ctx.font='600 11px Inter,system-ui';ctx.textAlign='center';ctx.fillStyle=mutedCol;ctx.fillText(b.label,b.x+b.w/2,H-pB+15);
+if(b.type==='audit'||b.type==='dup'){const d=getActiveTotals();const pct=d.billed>0?Math.round(b.value/d.billed*100):0;ctx.font='700 10px Inter,system-ui';ctx.fillStyle=barCol(b.type,false);ctx.fillText('\u2212'+pct+'%',b.x+b.w/2,H-pB+27);}ctx.restore();}}
+
+// Ghost bar + savings callout on Net Paid bar
+if(animProgress>=0.8&&bars.length>=3){
+  const p=Math.min(animProgress,1);
+  const ghostAlpha=Math.min((animProgress-0.8)*5,1);
+  const first=bars[0],last=bars[bars.length-1];
+  const d=getActiveTotals();
+  const paidBar=last;
+  const billedTop=first.y;
+  const paidTop=paidBar.y;
+  const paidBot=paidBar.y+paidBar.h;
+  const ghostH=paidBot-billedTop;
+
+  // Ghost outline: full billed height behind the paid bar
+  ctx.save();
+  ctx.globalAlpha=ghostAlpha*0.15;
+  ctx.setLineDash([4,4]);
+  ctx.strokeStyle=dark?'#e8edf5':'#111827';
+  ctx.lineWidth=1.5;
+  roundRect(ctx,paidBar.x,billedTop,paidBar.w,ghostH,4);
+  ctx.stroke();
+  ctx.restore();
+
+  // Diagonal hatch fill in the savings gap
+  ctx.save();
+  ctx.globalAlpha=ghostAlpha*0.06;
+  ctx.beginPath();
+  roundRect(ctx,paidBar.x,billedTop,paidBar.w,paidTop-billedTop,4);
+  ctx.clip();
+  ctx.strokeStyle=getCSS('--green');
+  ctx.lineWidth=1;
+  for(let ly=billedTop-paidBar.w;ly<paidTop+paidBar.w;ly+=8){
+    ctx.beginPath();ctx.moveTo(paidBar.x,ly);ctx.lineTo(paidBar.x+paidBar.w,ly+paidBar.w);ctx.stroke();
+  }
+  ctx.restore();
+
+  // Large savings number in the gap
+  const gapH=paidTop-billedTop;
+  if(gapH>30){
+    const gapMid=billedTop+gapH/2;
+    ctx.save();
+    ctx.globalAlpha=ghostAlpha*0.85;
+    // Size the text relative to gap height
+    const savFontSize=Math.min(Math.max(14,gapH*0.28),28);
+    ctx.font=`800 ${savFontSize}px Inter,system-ui`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    const savText=fmt(d.totalSvgs);
+    // Outlined text: dark bg, green fill
+    ctx.strokeStyle=dark?'rgba(0,0,0,0.6)':'rgba(255,255,255,0.8)';
+    ctx.lineWidth=4;ctx.lineJoin='round';
+    ctx.strokeText(savText,paidBar.x+paidBar.w/2,gapMid-savFontSize*0.35);
+    ctx.fillStyle=getCSS('--green');
+    ctx.fillText(savText,paidBar.x+paidBar.w/2,gapMid-savFontSize*0.35);
+    // "saved" label below
+    const subSize=Math.min(Math.max(9,savFontSize*0.5),14);
+    ctx.font=`700 ${subSize}px Inter,system-ui`;
+    ctx.strokeText('saved',paidBar.x+paidBar.w/2,gapMid+savFontSize*0.35);
+    ctx.fillText('saved',paidBar.x+paidBar.w/2,gapMid+savFontSize*0.35);
+    ctx.restore();
+  }
+
+  // Savings percentage below the gap
+  if(gapH>20){
+    ctx.save();
+    ctx.globalAlpha=ghostAlpha*0.6;
+    ctx.font='700 10px Inter,system-ui';
+    ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.fillStyle=getCSS('--green');
+    const pct=d.billed>0?d.savingsRate:0;
+    ctx.fillText(pct+'% recovery',paidBar.x+paidBar.w/2,billedTop-14);
+    ctx.restore();
+  }
+}}
+
+function animate(){if(animId)cancelAnimationFrame(animId);animProgress=0;const st=performance.now(),dur=550;function tick(now){const t=Math.min((now-st)/dur,1);animProgress=1-Math.pow(1-t,3);draw();if(t<1)animId=requestAnimationFrame(tick);}animId=requestAnimationFrame(tick);}
+
+// ── Info Card (draggable from anywhere, resizable from all 4 corners) ──
+function createOverlay(cursor){
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;cursor:'+cursor;
+  document.body.appendChild(ov);return ov;
+}
+function ensureCard(){
+  if(cardEl)return;
+  cardEl=document.createElement('div');cardEl.className='info-card';
+  cardEl.innerHTML='<div class="ic-handle ic-handle-tl" data-corner="tl"></div><div class="ic-handle ic-handle-tr" data-corner="tr"></div><div class="ic-handle ic-handle-bl" data-corner="bl"></div><div class="ic-handle ic-handle-br" data-corner="br"></div><div class="ic-handle ic-handle-t" data-corner="t"></div><div class="ic-handle ic-handle-b" data-corner="b"></div><div class="ic-handle ic-handle-l" data-corner="l"></div><div class="ic-handle ic-handle-r" data-corner="r"></div><div class="ic-accent"></div><div class="info-card-inner"><div class="info-card-header"><span class="info-card-title"></span><span class="info-card-pin"></span></div><div class="info-card-body"></div></div>';
+  document.querySelector('.widget').appendChild(cardEl);
+  cardEl.addEventListener('mousedown',e=>{
+    if(!pinnedType)return;
+    const wr=document.querySelector('.widget').getBoundingClientRect();
+    const cr=cardEl.getBoundingClientRect();
+    e.preventDefault();
+    const handle=e.target.closest('.ic-handle');
+    if(handle){
+      const corner=handle.dataset.corner;
+      const sx=e.clientX,sy=e.clientY,sw=cr.width,sh=cr.height,sl=cr.left-wr.left,st=cr.top-wr.top;
+      const minW=180,minH=60;
+      const cursorMap={tl:'nwse-resize',tr:'nesw-resize',bl:'nesw-resize',br:'nwse-resize',t:'ns-resize',b:'ns-resize',l:'ew-resize',r:'ew-resize'};
+      const ov=createOverlay(cursorMap[corner]||'nwse-resize');
+      let raf=null;
+      ov.addEventListener('mousemove',e2=>{
+        if(raf)return;raf=requestAnimationFrame(()=>{raf=null;
+          const dx=e2.clientX-sx,dy=e2.clientY-sy;let nw,nh;
+          if(corner==='br'){cardEl.style.width=Math.max(minW,sw+dx)+'px';cardEl.style.height=Math.max(minH,sh+dy)+'px';}
+          else if(corner==='bl'){nw=Math.max(minW,sw-dx);cardEl.style.width=nw+'px';cardEl.style.left=(sl+(sw-nw))+'px';cardEl.style.right='auto';cardEl.style.height=Math.max(minH,sh+dy)+'px';}
+          else if(corner==='tr'){cardEl.style.width=Math.max(minW,sw+dx)+'px';nh=Math.max(minH,sh-dy);cardEl.style.height=nh+'px';cardEl.style.top=(st+(sh-nh))+'px';}
+          else if(corner==='tl'){nw=Math.max(minW,sw-dx);nh=Math.max(minH,sh-dy);cardEl.style.width=nw+'px';cardEl.style.left=(sl+(sw-nw))+'px';cardEl.style.right='auto';cardEl.style.height=nh+'px';cardEl.style.top=(st+(sh-nh))+'px';}
+          else if(corner==='r'){cardEl.style.width=Math.max(minW,sw+dx)+'px';}
+          else if(corner==='l'){nw=Math.max(minW,sw-dx);cardEl.style.width=nw+'px';cardEl.style.left=(sl+(sw-nw))+'px';cardEl.style.right='auto';}
+          else if(corner==='b'){cardEl.style.height=Math.max(minH,sh+dy)+'px';}
+          else if(corner==='t'){nh=Math.max(minH,sh-dy);cardEl.style.height=nh+'px';cardEl.style.top=(st+(sh-nh))+'px';}
+          cardEl.style.fontSize=Math.max(9,Math.min(20,(cardEl.offsetWidth/260)*11))+'px';
+        });
+      });
+      ov.addEventListener('mouseup',()=>{ov.remove();},{once:true});
+      return;
+    }
+    const ox=e.clientX-(cr.left-wr.left),oy=e.clientY-(cr.top-wr.top);
+    const ov=createOverlay('move');
+    ov.addEventListener('mousemove',e2=>{
+      cardEl.style.left=Math.max(0,Math.min(wr.width-40,e2.clientX-wr.left-ox))+'px';
+      cardEl.style.top=Math.max(0,Math.min(wr.height-40,e2.clientY-wr.top-oy))+'px';
+      cardEl.style.right='auto';
+    });
+    ov.addEventListener('mouseup',()=>{ov.remove();},{once:true});
+  });
+}
+
+function buildCardHTML(idx){
+  const b=bars[idx];if(!b)return{title:'',html:''};
+  const carriers=getActiveCarriers(),items=getActiveItems();
+  let html='',title='';const col=barCol(b.type,false);
+  if(b.type==='billed'){title='Billed by Carrier';carriers.forEach(c=>{html+=`<div class="ic-item"><div class="ic-carr"><span class="ic-carr-id">${c.id}</span><span class="ic-carr-val">${fmt2(c.billed)}</span></div></div>`;});html+=`<div class="ic-total"><span class="ic-total-label">Total</span><span class="ic-total-val">${fmt(b.value)}</span></div>`;}
+  else if(b.type==='audit'){title='Audit Savings Detail';carriers.filter(c=>c.auditSvgs>0).forEach(c=>{const ci=items.filter(it=>it.carr===c.id&&it.auditSvgs>0);html+=`<div class="ic-item"><div class="ic-carr"><span class="ic-carr-id">${esc(c.id)}</span><span class="ic-carr-val" style="color:${col}">${fmt2(c.auditSvgs)}</span></div>${ci.map(it=>`<div class="ic-desc">${esc(it.pro)} — ${esc(it.desc)}</div>`).join('')}</div>`;});html+=`<div class="ic-total"><span class="ic-total-label">Total</span><span class="ic-total-val" style="color:${col}">${fmt(b.value)}</span></div>`;}
+  else if(b.type==='dup'){title='Duplicate Recovery';carriers.filter(c=>c.dupSvgs>0).forEach(c=>{const ci=items.filter(it=>it.carr===c.id&&it.dupSvgs>0);html+=`<div class="ic-item"><div class="ic-carr"><span class="ic-carr-id">${esc(c.id)}</span><span class="ic-carr-val" style="color:${col}">${fmt2(c.dupSvgs)}</span></div>${ci.map(it=>`<div class="ic-desc">${esc(it.pro)} — ${esc(it.desc)}</div>`).join('')}</div>`;});html+=`<div class="ic-total"><span class="ic-total-label">Total</span><span class="ic-total-val" style="color:${col}">${fmt(b.value)}</span></div>`;}
+  else if(b.type==='paid'){title='Net Paid by Carrier';carriers.filter(c=>c.paid>0).forEach(c=>{html+=`<div class="ic-item"><div class="ic-carr"><span class="ic-carr-id">${c.id}</span><span class="ic-carr-val" style="color:${col}">${fmt2(c.paid)}</span></div></div>`;});html+=`<div class="ic-total"><span class="ic-total-label">Total</span><span class="ic-total-val" style="color:${col}">${fmt(b.value)}</span></div>`;}
+  return{title,html};
+}
+
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function showCard(idx,pinned){
+  ensureCard();
+  const{title,html}=buildCardHTML(idx);
+  const b=bars[idx];
+  const accentColor=b?barCol(b.type,false):'transparent';
+  const accent=cardEl.querySelector('.ic-accent');
+  if(accent){accent.style.background=accentColor;accent.style.boxShadow=isDark()?'0 0 6px '+accentColor:'';}
+  cardEl.querySelector('.info-card-title').textContent=title;
+  cardEl.querySelector('.info-card-pin').textContent=pinned?'\uD83D\uDCCC pinned':'hover';
+  cardEl.querySelector('.info-card-body').innerHTML=html;
+  cardEl.classList.add('visible');
+  cardEl.classList.toggle('pinned',!!pinned);
+  if(!pinned||!cardEl.style.left||cardEl.style.right!=='auto'){
+    const chartRect=document.querySelector('.chart-area').getBoundingClientRect();
+    const widgetRect=document.querySelector('.widget').getBoundingClientRect();
+    const offsetTop=chartRect.top-widgetRect.top+8;
+    cardEl.style.right='28px';cardEl.style.left='auto';cardEl.style.top=offsetTop+'px';
+    cardEl.style.width='260px';cardEl.style.height='auto';
+    cardEl.style.fontSize='11px';
+  }
+  const inner=cardEl.querySelector('.info-card-inner');
+  if(inner)inner.style.maxHeight='';
+}
+function refreshCard(){const pi=pinnedIdx();if(pi>=0)showCard(pi,true);else if(hoveredBar>=0)showCard(hoveredBar,false);}
+function hideCard(){if(pinnedType)return;if(cardEl)cardEl.classList.remove('visible','pinned');}
+function hitTest(mx,my){for(let i=0;i<bars.length;i++){const b=bars[i];if(mx>=b.x&&mx<=b.x+b.w&&my>=b.y&&my<=b.y+b.h)return i;}return-1;}
+
+canvas.addEventListener('mousemove',e=>{const r=canvas.getBoundingClientRect();const idx=hitTest(e.clientX-r.left,e.clientY-r.top);if(idx!==hoveredBar){const wasOver=hoveredBar>=0;hoveredBar=idx;canvas.style.cursor=idx>=0?'pointer':'default';draw();if(!pinnedType){if(idx>=0)showCard(idx,false);else if(wasOver)hideCard();}}});
+canvas.addEventListener('mouseleave',()=>{const wasOver=hoveredBar>=0;hoveredBar=-1;draw();if(wasOver)hideCard();});
+canvas.addEventListener('click',e=>{const r=canvas.getBoundingClientRect();const idx=hitTest(e.clientX-r.left,e.clientY-r.top);if(idx>=0){const clickedType=bars[idx].type;if(pinnedType===clickedType){/* no-op: clicking own pinned bar */}else{/* pin new bar (or switch) */pinnedType=clickedType;showCard(idx,true);draw();}}else{/* clicked whitespace — unpin */if(pinnedType){pinnedType=null;hideCard();draw();}}});
+
+function resetAll(){pinnedType=null;hoveredBar=-1;if(cardEl)cardEl.classList.remove('visible','pinned');draw();}
+function setWeek(w){activeWeek=w;document.querySelectorAll('.week-btn').forEach(b=>{b.classList.toggle('active',b.dataset.week===w);});updateSummary();buildLegend();buildBars();const pi=pinnedIdx();if(pinnedType){if(pi>=0)showCard(pi,true);else{/* pinned type doesn't exist this week (e.g. dup) — keep pinned but hide card */if(cardEl)cardEl.classList.remove('visible');}}animate();}
+
+document.querySelectorAll('.week-btn').forEach(b=>{b.addEventListener('click',()=>setWeek(b.dataset.week));});
+let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{resize();buildBars();draw();},100);});
+resize();updateSummary();buildLegend();buildBars();animate();
+</script>
+</body>
+</html>
