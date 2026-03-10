@@ -27,7 +27,7 @@
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{width:100%;height:100%}
   body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text-primary);transition:background .25s,color .25s}
-  .widget{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px 16px;width:100%;height:100%;display:flex;flex-direction:column;box-shadow:var(--shadow);transition:background .25s,border-color .25s}
+  .widget{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px 16px;width:100%;height:100%;display:flex;flex-direction:column;box-shadow:var(--shadow);transition:background .25s,border-color .25s;position:relative}
   .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-shrink:0}
   .header-left{display:flex;flex-direction:column;gap:2px}
   .eyebrow{font-size:10.5px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted)}
@@ -83,10 +83,10 @@
   .hm-fcell{font-size:11px;font-weight:700;color:var(--text-primary);padding:10px 8px;display:flex;align-items:center}
   .hm-fcell:first-child{grid-column:1/3;padding-left:12px;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted)}
   .hm-fcell:last-child{justify-content:flex-end;padding-right:12px}
-  .info-card{position:absolute;z-index:50;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);overflow:hidden;min-width:270px;transition:opacity .15s}
+  .info-card{position:absolute;z-index:50;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);overflow:visible;min-width:180px;transition:opacity .15s;font-size:14px}
   .info-card.hover-card{pointer-events:none}
   .info-card .accent-bar{position:absolute;top:0;left:0;bottom:0;width:4px;border-radius:10px 0 0 10px}
-  .info-card-inner{padding:14px 16px 12px 20px}
+  .info-card-inner{padding:1em 1.1em .85em 1.4em;overflow-y:auto;max-height:100%;border-radius:10px}
   .info-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
   .info-card-type{font-size:14px;font-weight:700;color:var(--text-primary)}
   .info-card-week{font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px}
@@ -99,8 +99,16 @@
   .info-card-carr-id{font-weight:700;color:var(--text-primary);min-width:42px}
   .info-card-carr-bills{font-weight:500;color:var(--text-muted);font-size:9px;white-space:nowrap;min-width:44px;text-align:right}
   .info-card-pin{font-size:9px;color:var(--text-muted);opacity:0.5}
-  .info-card-resize{position:absolute;bottom:0;right:0;width:14px;height:14px;cursor:nwse-resize;opacity:0.2}
-  .info-card-resize:hover{opacity:0.5}
+  .info-card-resize{display:none}
+  .ic-handle{position:absolute;z-index:55}
+  .ic-handle-tl{top:-3px;left:-3px;width:12px;height:12px;cursor:nwse-resize}
+  .ic-handle-tr{top:-3px;right:-3px;width:12px;height:12px;cursor:nesw-resize}
+  .ic-handle-bl{bottom:-3px;left:-3px;width:12px;height:12px;cursor:nesw-resize}
+  .ic-handle-br{bottom:-3px;right:-3px;width:12px;height:12px;cursor:nwse-resize}
+  .ic-handle-t{top:-3px;left:12px;right:12px;height:6px;cursor:ns-resize}
+  .ic-handle-b{bottom:-3px;left:12px;right:12px;height:6px;cursor:ns-resize}
+  .ic-handle-l{left:-3px;top:12px;bottom:12px;width:6px;cursor:ew-resize}
+  .ic-handle-r{right:-3px;top:12px;bottom:12px;width:6px;cursor:ew-resize}
 </style>
 </head>
 <body>
@@ -307,7 +315,7 @@ function buildCardHTML(type,week){
     if(sorted.length>8)carrHTML+=`<div style="font-size:9px;color:var(--text-muted);padding-top:2px">+${sorted.length-8} more</div>`;
   }
 
-  return`<div class="accent-bar" style="background:${col}${dark?";box-shadow:0 0 8px "+col:""}"></div><div class="info-card-inner"><div class="info-card-header"><span class="info-card-type">${type}</span><span class="info-card-week" style="background:${col};color:${dark?"#0d1117":"#fff"}">W${week}</span></div><div class="info-card-val">${fmtShort(v)}</div>${shareHTML}${deltaHtml}${carrHTML}${isPinned?'<div class="info-card-pin">\uD83D\uDCCC pinned</div>':''}</div><div class="info-card-resize">\u25E2</div>`;
+  return`<div class="ic-handle ic-handle-tl" data-corner="tl"></div><div class="ic-handle ic-handle-tr" data-corner="tr"></div><div class="ic-handle ic-handle-bl" data-corner="bl"></div><div class="ic-handle ic-handle-br" data-corner="br"></div><div class="ic-handle ic-handle-t" data-corner="t"></div><div class="ic-handle ic-handle-b" data-corner="b"></div><div class="ic-handle ic-handle-l" data-corner="l"></div><div class="ic-handle ic-handle-r" data-corner="r"></div><div class="accent-bar" style="background:${col}${dark?";box-shadow:0 0 8px "+col:""}"></div><div class="info-card-inner"><div class="info-card-header"><span class="info-card-type">${type}</span><span class="info-card-week" style="background:${col};color:${dark?"#0d1117":"#fff"}">W${week}</span></div><div class="info-card-val">${fmtShort(v)}</div>${shareHTML}${deltaHtml}${carrHTML}${isPinned?'<div class="info-card-pin">\uD83D\uDCCC pinned</div>':''}</div>`;
 }
 
 // Fix #2: position card relative to hovered row
@@ -326,43 +334,74 @@ function renderCards(){
     card.className="info-card hover-card";
     card.innerHTML=buildCardHTML(hovSeg.type,WEEKS[hovSeg.wi]);
     const pos=getCardPosition(hovSeg.type);
-    card.style.right="80px";card.style.top=pos.y+"px";
-    document.getElementById("chart-area").appendChild(card);
+    const caR=document.getElementById("chart-area").getBoundingClientRect(),wgR=document.querySelector(".widget").getBoundingClientRect();
+    card.style.right=(wgR.right-caR.right+80)+"px";card.style.top=(caR.top-wgR.top+pos.y)+"px";
+    document.querySelector(".widget").appendChild(card);
   }
   // Fix #4: always rebuild all pinned cards from scratch
   document.querySelectorAll(".info-card.pinned").forEach(el=>el.remove());
   pinnedCards.forEach((p,i)=>{
     const el=document.createElement("div");
     el.className=`info-card pinned pin-${i}`;
-    el.style.left=(p.x||16+i*20)+"px";
-    el.style.top=(p.y||50+i*30)+"px";
+    const caRect=document.getElementById("chart-area").getBoundingClientRect(),wgRect=document.querySelector(".widget").getBoundingClientRect();
+    const caOffX=caRect.left-wgRect.left,caOffY=caRect.top-wgRect.top;
+    el.style.left=(caOffX+(p.x||16+i*20))+"px";
+    el.style.top=(caOffY+(p.y||50+i*30))+"px";
     if(p.w)el.style.width=p.w+"px";
     if(p.h){el.style.height=p.h+"px";el.style.overflow="auto";}
-    document.getElementById("chart-area").appendChild(el);
+    document.querySelector(".widget").appendChild(el);
     el.innerHTML=buildCardHTML(p.type,p.week);
     setupDrag(el,i);
     setupResize(el,i);
   });
 }
 
+function createOverlay(cursor){
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;cursor:'+cursor;
+  document.body.appendChild(ov);return ov;
+}
 function setupDrag(el,idx){
   el.addEventListener("mousedown",e=>{
-    if(e.target.classList.contains("info-card-resize"))return;
-    const ox=e.clientX,oy=e.clientY,sx=parseInt(el.style.left)||0,sy=parseInt(el.style.top)||0;
-    const move=e2=>{el.style.left=(sx+e2.clientX-ox)+"px";el.style.top=(sy+e2.clientY-oy)+"px";};
-    const up=()=>{document.removeEventListener("mousemove",move);document.removeEventListener("mouseup",up);pinnedCards[idx].x=parseInt(el.style.left);pinnedCards[idx].y=parseInt(el.style.top);};
-    document.addEventListener("mousemove",move);document.addEventListener("mouseup",up);e.preventDefault();
+    const handle=e.target.closest('.ic-handle');
+    const cr=el.getBoundingClientRect();
+    e.preventDefault();
+    if(handle){
+      const corner=handle.dataset.corner;
+      const sx=e.clientX,sy=e.clientY,sw=cr.width,sh=cr.height;
+      const sl=parseInt(el.style.left)||0,st=parseInt(el.style.top)||0;
+      const minW=180,minH=100,baseW=260,baseFontSize=14;
+      const cursorMap={tl:'nwse-resize',tr:'nesw-resize',bl:'nesw-resize',br:'nwse-resize',t:'ns-resize',b:'ns-resize',l:'ew-resize',r:'ew-resize'};
+      const ov=createOverlay(cursorMap[corner]||'nwse-resize');
+      let raf=null;
+      ov.addEventListener('mousemove',e2=>{
+        if(raf)return;raf=requestAnimationFrame(()=>{raf=null;
+          const dx=e2.clientX-sx,dy=e2.clientY-sy;let nw,nh;
+          if(corner==='br'){el.style.width=Math.max(minW,sw+dx)+'px';el.style.height=Math.max(minH,sh+dy)+'px';}
+          else if(corner==='bl'){nw=Math.max(minW,sw-dx);el.style.width=nw+'px';el.style.left=(sl+(sw-nw))+'px';el.style.height=Math.max(minH,sh+dy)+'px';}
+          else if(corner==='tr'){el.style.width=Math.max(minW,sw+dx)+'px';nh=Math.max(minH,sh-dy);el.style.height=nh+'px';el.style.top=(st+(sh-nh))+'px';}
+          else if(corner==='tl'){nw=Math.max(minW,sw-dx);nh=Math.max(minH,sh-dy);el.style.width=nw+'px';el.style.left=(sl+(sw-nw))+'px';el.style.height=nh+'px';el.style.top=(st+(sh-nh))+'px';}
+          else if(corner==='r'){el.style.width=Math.max(minW,sw+dx)+'px';}
+          else if(corner==='l'){nw=Math.max(minW,sw-dx);el.style.width=nw+'px';el.style.left=(sl+(sw-nw))+'px';}
+          else if(corner==='b'){el.style.height=Math.max(minH,sh+dy)+'px';}
+          else if(corner==='t'){nh=Math.max(minH,sh-dy);el.style.height=nh+'px';el.style.top=(st+(sh-nh))+'px';}
+          el.style.overflow='auto';
+          el.style.fontSize=Math.max(9,Math.min(22,(el.offsetWidth/baseW)*baseFontSize))+'px';
+        });
+      });
+      ov.addEventListener('mouseup',()=>{ov.remove();pinnedCards[idx].w=el.offsetWidth;pinnedCards[idx].h=el.offsetHeight;},{once:true});
+      return;
+    }
+    // Drag
+    const ox=e.clientX,oy=e.clientY,sleft=parseInt(el.style.left)||0,stop=parseInt(el.style.top)||0;
+    const ov=createOverlay('move');
+    ov.addEventListener('mousemove',e2=>{
+      el.style.left=(sleft+e2.clientX-ox)+'px';el.style.top=(stop+e2.clientY-oy)+'px';
+    });
+    ov.addEventListener('mouseup',()=>{ov.remove();pinnedCards[idx].x=parseInt(el.style.left);pinnedCards[idx].y=parseInt(el.style.top);},{once:true});
   });
 }
-function setupResize(el,idx){
-  const handle=el.querySelector(".info-card-resize");if(!handle)return;
-  handle.addEventListener("mousedown",e=>{
-    const startW=el.offsetWidth,startH=el.offsetHeight,sx=e.clientX,sy=e.clientY;
-    const move=e2=>{const nw=Math.max(200,startW+e2.clientX-sx),nh=Math.max(120,startH+e2.clientY-sy);el.style.width=nw+"px";el.style.height=nh+"px";el.style.overflow="auto";};
-    const up=()=>{document.removeEventListener("mousemove",move);document.removeEventListener("mouseup",up);pinnedCards[idx].w=el.offsetWidth;pinnedCards[idx].h=el.offsetHeight;};
-    document.addEventListener("mousemove",move);document.addEventListener("mouseup",up);e.preventDefault();e.stopPropagation();
-  });
-}
+function setupResize(el,idx){/* handled in setupDrag */}
 
 function pinSegment(type,wi){
   const wk=WEEKS[wi];
