@@ -128,10 +128,7 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--
     </div>
     <div class="ctrl-right">
       <button class="week-btn" data-week="all">All</button>
-      <button class="week-btn active" data-week="W2-16">W2-16</button>
-      <button class="week-btn" data-week="W2-23">W2-23</button>
-      <button class="week-btn" data-week="W3-2">W3-2</button>
-      <button class="week-btn" data-week="W3-9">W3-9</button>
+      <span id="week-buttons"></span>
     </div>
   </div>
   <div class="chart-area" id="chartArea">
@@ -178,8 +175,8 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 var dark=false,activeCarrier='all',activeWeek='W2-16';
 var hoveredId=null,pinnedCards=[];
 function getCSS(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
-var CCOL_L=['#0891b2','#4f46e5','#c026d3'],CCOL_D=['#22d3ee','#818cf8','#e879f9'];
-var CCOL_HOV_L=['#06b6d4','#6366f1','#d946ef'],CCOL_HOV_D=['#67e8f9','#a5b4fc','#f0abfc'];
+var CCOL_L=['#0891b2','#4f46e5','#c026d3','#d97706','#059669','#dc2626'],CCOL_D=['#22d3ee','#818cf8','#e879f9','#fbbf24','#34d399','#fc8181'];
+var CCOL_HOV_L=['#06b6d4','#6366f1','#d946ef','#f59e0b','#10b981','#ef4444'],CCOL_HOV_D=['#67e8f9','#a5b4fc','#f0abfc','#fcd34d','#6ee7b7','#fca5a5'];
 var CARRIER_IDX={fedex:0,ups:1,ltl:2};
 function carrierColor(c,hov){var ci=CARRIER_IDX[c]||0;return hov?(dark?CCOL_HOV_D[ci]:CCOL_HOV_L[ci]):(dark?CCOL_D[ci]:CCOL_L[ci]);}
 function updateLegendDots(){$s('#leg-fedex').style.background=carrierColor('fedex',false);$s('#leg-ups').style.background=carrierColor('ups',false);$s('#leg-ltl').style.background=carrierColor('ltl',false);}
@@ -191,7 +188,7 @@ function getWeekData(s,wk){if(wk==='all'){var tc=0,ts=0;WEEKS.forEach(function(w
 function avgCost(s,wk){var d=getWeekData(s,wk);return(d&&d.count>0)?d.spend/d.count:0;}
 function getVisible(){return SVCS.filter(function(s){if(activeCarrier!=='all'&&s.carrier!==activeCarrier)return false;var d=getWeekData(s,activeWeek);return d&&d.count>0;});}
 var GMAX_C=0,GMAX_A=0,GMAX_S=0;
-function computeGlobals(){GMAX_C=0;GMAX_A=0;GMAX_S=0;['W2-16','W2-23','W3-2','all'].forEach(function(wk){SVCS.forEach(function(s){var d=getWeekData(s,wk);if(d.count>0){if(d.count>GMAX_C)GMAX_C=d.count;var a=d.spend/d.count;if(a>GMAX_A)GMAX_A=a;if(d.spend>GMAX_S)GMAX_S=d.spend;}});});}
+function computeGlobals(){GMAX_C=0;GMAX_A=0;GMAX_S=0;WEEKS.concat(['all']).forEach(function(wk){SVCS.forEach(function(s){var d=getWeekData(s,wk);if(d.count>0){if(d.count>GMAX_C)GMAX_C=d.count;var a=d.spend/d.count;if(a>GMAX_A)GMAX_A=a;if(d.spend>GMAX_S)GMAX_S=d.spend;}});});}
 function updateSummary(){
   var vis=getVisible(),wk=activeWeek,ts=0,tc=0;
   vis.forEach(function(s){var d=getWeekData(s,wk);tc+=d.count;ts+=d.spend;});
