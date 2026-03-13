@@ -174,6 +174,18 @@ var fmtK=function(v){return v>=10000?'$'+(v/1000).toFixed(1)+'k':v>=1000?'$'+(v/
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 var dark=false,activeCarrier='all',activeWeek=WEEKS[0];
 var hoveredId=null,pinnedCards=[];
+
+// Dynamic week button generation
+(function(){
+  var container=document.getElementById('week-buttons');
+  WEEKS.forEach(function(w,i){
+    var btn=document.createElement('button');
+    btn.className='week-btn'+(i===0?' active':'');
+    btn.dataset.week=w;
+    btn.textContent=w;
+    container.appendChild(btn);
+  });
+})();
 function getCSS(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
 var CCOL_L=['#0891b2','#4f46e5','#c026d3','#d97706','#059669','#dc2626'],CCOL_D=['#22d3ee','#818cf8','#e879f9','#fbbf24','#34d399','#fc8181'];
 var CCOL_HOV_L=['#06b6d4','#6366f1','#d946ef','#f59e0b','#10b981','#ef4444'],CCOL_HOV_D=['#67e8f9','#a5b4fc','#f0abfc','#fcd34d','#6ee7b7','#fca5a5'];
