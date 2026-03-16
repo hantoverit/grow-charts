@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Accessorial Spend Breakdown</title>
+<title>Carrier Accessorial Spend</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -50,7 +50,6 @@
   .sort-btn:last-child{border-radius:0 6px 6px 0}
   .sort-btn:not(:first-child){border-left:none}
   .sort-btn.active{background:var(--week-active-bg);color:var(--week-active-text);border-color:var(--week-active-bg);font-weight:600}
-  .sort-btn.disabled{opacity:0.3;cursor:default;pointer-events:none}
   .reset-btn{height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;color:var(--text-muted);font-size:11px;font-weight:600;font-family:"Inter",sans-serif;transition:all .16s;padding:0 10px;opacity:0.7}
   .reset-btn:hover{opacity:1;border-color:var(--text-muted)}
   .reset-btn.has-pins{opacity:1;color:var(--red);border-color:var(--red);background:var(--red-bg)}
@@ -95,11 +94,10 @@
   .info-card-delta{font-size:11px;font-weight:600;margin-bottom:8px}
   .info-card-divider{height:1px;background:var(--border);margin:8px 0}
   .info-card-section-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);margin-bottom:4px}
-  .info-card-carr{display:flex;align-items:center;font-size:10px;padding:2px 0}
-  .info-card-carr-id{font-weight:700;color:var(--text-primary);min-width:42px}
-  .info-card-carr-bills{font-weight:500;color:var(--text-muted);font-size:9px;white-space:nowrap;min-width:44px;text-align:right}
+  .info-card-row{display:flex;align-items:center;font-size:10px;padding:2px 0}
+  .info-card-row-id{font-weight:700;color:var(--text-primary);min-width:80px}
+  .info-card-row-bills{font-weight:500;color:var(--text-muted);font-size:9px;white-space:nowrap;min-width:44px;text-align:right}
   .info-card-pin{font-size:9px;color:var(--text-muted);opacity:0.5}
-  .info-card-resize{display:none}
   .ic-handle{position:absolute;z-index:55}
   .ic-handle-tl{top:-3px;left:-3px;width:12px;height:12px;cursor:nwse-resize}
   .ic-handle-tr{top:-3px;right:-3px;width:12px;height:12px;cursor:nesw-resize}
@@ -116,7 +114,7 @@
   <div class="header">
     <div class="header-left">
       <span class="eyebrow">Hantover Inc. &middot; Freight</span>
-      <span class="title">Accessorial Spend Breakdown</span>
+      <span class="title">Carrier Accessorial Spend</span>
     </div>
     <div class="header-right">
       <div class="week-toggle">
@@ -132,9 +130,9 @@
   <div class="controls-row">
     <div class="ctrl-left">
       <div class="sort-toggle">
-        <button class="sort-btn active" onclick="setSort('total')">By Total</button>
-        <button class="sort-btn disabled">By Week $</button>
-        <button class="sort-btn disabled">By WoW Δ</button>
+        <button class="sort-btn active" data-sort="total" onclick="setSort('total')">By Total</button>
+        <button class="sort-btn" data-sort="types" onclick="setSort('types')">By # Types</button>
+        <button class="sort-btn" data-sort="wow" onclick="setSort('wow')">By WoW &Delta;</button>
       </div>
       <button class="reset-btn" id="reset-btn" onclick="resetAll()" title="Reset all">&#8634; Reset</button>
     </div>
@@ -144,7 +142,7 @@
   <div class="chart-area" id="chart-area">
     <div class="hm-header">
       <div class="hm-hcell">#</div>
-      <div class="hm-hcell">Type</div>
+      <div class="hm-hcell">Carrier</div>
       <div class="hm-hcell">Spend</div>
       <div class="hm-hcell" id="total-header">Total</div>
     </div>
@@ -154,16 +152,17 @@
 </div>
 <script>
 const WEEKS=["2-16","2-23","3-2","3-9"];
-const DATA={"LIFTGATE": {"2-16": 1443.0, "2-23": 945.97, "3-2": 746.0, "3-9": 646.0}, "CA SURCHAR": {"2-16": 1430.5, "2-23": 542.5, "3-2": 963.5, "3-9": 737.5}, "RES DEL": {"2-16": 1245.06, "2-23": 761.06, "3-2": 682.12, "3-9": 496.59}, "INSPECTION": {"2-16": 775.0, "2-23": 684.0, "3-2": 550.0, "3-9": 465.0}, "OVER DIMEN": {"2-16": 200.0, "2-23": 650.0, "3-2": 550.0, "3-9": 275.0}, "DETENTION": {"2-16": 232.0, "2-23": 778.76, "3-2": 45.0, "3-9": 0}, "NOTIFY": {"2-16": 457.7, "2-23": 339.03, "3-2": 231.39, "3-9": 157.62}, "HIGH COST": {"2-16": 757.0, "2-23": 179.5, "3-2": 50.0, "3-9": 229.5}, "HAZ MAT": {"2-16": 197.0, "2-23": 308.0, "3-2": 429.0, "3-9": 465.0}, "REDELIVERY": {"2-16": 469.15, "2-23": 292.0, "3-2": 0, "3-9": 0}, "MISC": {"2-16": 302.5, "2-23": 194.5, "3-2": 212.5, "3-9": 25.0}, "STORAGE": {"2-16": 0, "2-23": 651.25, "3-2": 0, "3-9": 0}, "LTD ACCESS": {"2-16": 125.0, "2-23": 140.0, "3-2": 354.53, "3-9": 105.0}, "RE-WEIGH": {"2-16": 248.0, "2-23": 165.0, "3-2": 174.0, "3-9": 195.0}, "REMOTE DEL": {"2-16": 162.0, "2-23": 154.5, "3-2": 95.5, "3-9": 0}, "APPT CHG": {"2-16": 67.5, "2-23": 112.5, "3-2": 204.0, "3-9": 67.5}, "PEAK CHG": {"2-16": 135.0, "2-23": 90.0, "3-2": 120.0, "3-9": 135.0}, "SORT/SEG": {"2-16": 0, "2-23": 208.0, "3-2": 0, "3-9": 0}, "EXT LENGTH": {"2-16": 0, "2-23": 0, "3-2": 200.0, "3-9": 0}, "BORDER CHG": {"2-16": 42.0, "2-23": 42.0, "3-2": 93.75, "3-9": 43.75}, "GST": {"2-16": 20.0, "2-23": 66.36, "3-2": 49.82, "3-9": 87.19}, "RECON CHG": {"2-16": 0, "2-23": 84.5, "3-2": 35.0, "3-9": 0}, "INSIDE DEL": {"2-16": 0, "2-23": 60.0, "3-2": 0, "3-9": 70.0}, "FREEZABLE": {"2-16": 35.0, "2-23": 0, "3-2": 0, "3-9": 0}, "CORR BOL": {"2-16": 0, "2-23": 0, "3-2": 10.0, "3-9": 0}};
-const DETAIL={"APPT CHG":{"2-16":{"CNWY":{"s":67.5,"b":1}},"2-23":{"CNWY":{"s":67.5,"b":1},"SAIA":{"s":45.0,"b":1}},"3-2":{"CNWY":{"s":135.0,"b":2},"DOHR":{"s":39.0,"b":1},"MGUL":{"s":30.0,"b":2}},"3-9":{"CNWY":{"s":67.5,"b":1}}},"BORDER CHG":{"2-16":{"CD585":{"s":42.0,"b":1}},"2-23":{"CD585":{"s":42.0,"b":1}},"3-2":{"CD585":{"s":43.75,"b":1},"FXFE":{"s":50.0,"b":1}},"3-9":{"CD585":{"s":43.75,"b":1}}},"CA SURCHAR":{"2-16":{"CNWY":{"s":40.0,"b":2},"FXNL":{"s":53.0,"b":2},"NUMK":{"s":661.5,"b":63},"RLCA":{"s":546.0,"b":21},"SAIA":{"s":130.0,"b":7}},"2-23":{"CNWY":{"s":20.0,"b":1},"DYLT":{"s":20.0,"b":1},"FXNL":{"s":26.5,"b":1},"NUMK":{"s":84.0,"b":8},"RLCA":{"s":312.0,"b":12},"SAIA":{"s":80.0,"b":4}},"3-2":{"CNWY":{"s":60.0,"b":3},"DYLT":{"s":40.0,"b":2},"FXNL":{"s":106.0,"b":4},"NUMK":{"s":154.5,"b":13},"RLCA":{"s":468.0,"b":18},"SAIA":{"s":60.0,"b":4},"UPGF":{"s":75.0,"b":3}},"3-9":{"CNWY":{"s":60.0,"b":3},"FXNL":{"s":79.5,"b":3},"NUMK":{"s":240.0,"b":16},"RLCA":{"s":338.0,"b":13},"SAIA":{"s":20.0,"b":1}}},"DETENTION":{"2-16":{"DOHR":{"s":135.0,"b":1},"FXFE":{"s":97.0,"b":1}},"2-23":{"CNWY":{"s":216.76,"b":1},"DOHR":{"s":45.0,"b":1},"FXFE":{"s":194.0,"b":2},"FXNL":{"s":246.0,"b":1},"SAIA":{"s":77.0,"b":1}},"3-2":{"DOHR":{"s":45.0,"b":1}},"3-9":{}},"FREEZABLE":{"2-16":{"RLCA":{"s":35.0,"b":1}},"3-9":{}},"GST":{"2-16":{"TMBM":{"s":20.0,"b":2}},"2-23":{"TMBM":{"s":66.36,"b":4}},"3-2":{"TMBM":{"s":49.82,"b":3}},"3-9":{"TMBM":{"s":87.19,"b":5}}},"HAZ MAT":{"2-16":{"CNWY":{"s":15.0,"b":1},"DAFG":{"s":5.0,"b":1},"DOHR":{"s":10.0,"b":2},"FXNL":{"s":61.0,"b":1},"NUMK":{"s":20.0,"b":2},"RLCA":{"s":36.0,"b":3},"SAIA":{"s":50.0,"b":1}},"2-23":{"DOHR":{"s":15.0,"b":3},"FXNL":{"s":183.0,"b":3},"RLCA":{"s":60.0,"b":5},"SAIA":{"s":50.0,"b":1}},"3-2":{"DOHR":{"s":5.0,"b":1},"FXFE":{"s":61.0,"b":1},"RLCA":{"s":24.0,"b":2},"TMBM":{"s":324.0,"b":1},"UPGF":{"s":15.0,"b":1}},"3-9":{"DAFG":{"s":5.0,"b":1},"MGUL":{"s":40.0,"b":1},"RLCA":{"s":96.0,"b":8},"TMBM":{"s":324.0,"b":1}}},"HIGH COST":{"2-16":{"CNWY":{"s":276.0,"b":1},"MGUL":{"s":25.0,"b":1},"SAIA":{"s":456.0,"b":3}},"2-23":{"SAIA":{"s":179.5,"b":1}},"3-2":{"CNWY":{"s":50.0,"b":2}},"3-9":{"DOHR":{"s":50.0,"b":1},"SAIA":{"s":179.5,"b":1}}},"INSPECTION":{"2-16":{"AVRT":{"s":25.0,"b":1},"CNWY":{"s":30.0,"b":2},"FXNL":{"s":160.0,"b":4},"RLCA":{"s":560.0,"b":14}},"2-23":{"CNWY":{"s":15.0,"b":1},"DAFG":{"s":32.0,"b":1},"FXFE":{"s":80.0,"b":2},"FXNL":{"s":360.0,"b":9},"RLCA":{"s":80.0,"b":2},"SAIA":{"s":117.0,"b":3}},"3-2":{"CNWY":{"s":60.0,"b":4},"FXNL":{"s":240.0,"b":6},"RLCA":{"s":240.0,"b":6},"UPGF":{"s":10.0,"b":1}},"3-9":{"AVRT":{"s":25.0,"b":1},"FXNL":{"s":120.0,"b":3},"RLCA":{"s":320.0,"b":8}}},"LIFTGATE":{"2-16":{"CD585":{"s":134.0,"b":2},"CNWY":{"s":65.0,"b":1},"DAFG":{"s":40.0,"b":2},"EXLA":{"s":75.0,"b":1},"FXNL":{"s":184.0,"b":2},"MGUL":{"s":50.0,"b":1},"RLCA":{"s":300.0,"b":12},"SAIA":{"s":490.0,"b":7},"USRD":{"s":105.0,"b":1}},"2-23":{"CD585":{"s":328.97,"b":3},"CNWY":{"s":65.0,"b":1},"FXNL":{"s":92.0,"b":1},"RLCA":{"s":250.0,"b":10},"SAIA":{"s":210.0,"b":3}},"3-2":{"CNWY":{"s":65.0,"b":1},"FXNL":{"s":276.0,"b":3},"MGUL":{"s":50.0,"b":1},"RLCA":{"s":225.0,"b":9},"SAIA":{"s":130.0,"b":2}},"3-9":{"FXNL":{"s":276.0,"b":3},"RLCA":{"s":300.0,"b":12},"SAIA":{"s":70.0,"b":1}}},"LTD ACCESS":{"2-16":{"SAIA":{"s":70.0,"b":1},"USRD":{"s":55.0,"b":1}},"2-23":{"DAFG":{"s":35.0,"b":1},"RLCA":{"s":35.0,"b":1},"SAIA":{"s":70.0,"b":1}},"3-2":{"DAFG":{"s":35.0,"b":1},"FXNL":{"s":60.53,"b":1},"RLCA":{"s":105.0,"b":3},"SAIA":{"s":60.0,"b":1},"SEFL":{"s":94.0,"b":1}},"3-9":{"DAFG":{"s":70.0,"b":2},"RLCA":{"s":35.0,"b":1}}},"MISC":{"2-16":{"CD585":{"s":63.5,"b":1},"EXLA":{"s":25.0,"b":1},"MGUL":{"s":80.0,"b":1},"SAIA":{"s":59.0,"b":1},"TMBM":{"s":75.0,"b":1}},"2-23":{"AVRT":{"s":6.0,"b":1},"CD585":{"s":63.5,"b":1},"DAFG":{"s":25.0,"b":1},"DTAF":{"s":100.0,"b":1}},"3-2":{"SAIA":{"s":212.5,"b":2}},"3-9":{"DAFG":{"s":25.0,"b":1}}},"NOTIFY":{"2-16":{"FXFE":{"s":37.54,"b":2},"FXNL":{"s":150.16,"b":8},"SAIA":{"s":270.0,"b":6}},"2-23":{"CD585":{"s":21.1,"b":1},"DOHR":{"s":39.0,"b":1},"FXFE":{"s":37.54,"b":2},"FXNL":{"s":131.39,"b":7},"SAIA":{"s":90.0,"b":2},"UPGF":{"s":20.0,"b":2}},"3-2":{"FXNL":{"s":131.39,"b":7},"SAIA":{"s":90.0,"b":2},"UPGF":{"s":10.0,"b":1}},"3-9":{"FXFE":{"s":18.77,"b":1},"FXNL":{"s":93.85,"b":5},"SAIA":{"s":45.0,"b":1}}},"OVER DIMEN":{"2-16":{"MGUL":{"s":200.0,"b":1}},"2-23":{"FXNL":{"s":375.0,"b":1},"RLCA":{"s":275.0,"b":1}},"3-2":{"RLCA":{"s":550.0,"b":2}},"3-9":{"RLCA":{"s":275.0,"b":1}}},"PEAK CHG":{"2-16":{"FXNL":{"s":135.0,"b":3}},"2-23":{"FXNL":{"s":90.0,"b":2}},"3-2":{"FXNL":{"s":120.0,"b":3}},"3-9":{"FXNL":{"s":135.0,"b":3}}},"RE-WEIGH":{"2-16":{"AVRT":{"s":25.0,"b":1},"CNWY":{"s":105.0,"b":7},"FXNL":{"s":40.0,"b":1},"SAIA":{"s":78.0,"b":2}},"2-23":{"CNWY":{"s":45.0,"b":3},"FXFE":{"s":40.0,"b":1},"FXNL":{"s":80.0,"b":2}},"3-2":{"CNWY":{"s":75.0,"b":5},"FXNL":{"s":40.0,"b":1},"SAIA":{"s":39.0,"b":1},"UPGF":{"s":20.0,"b":2}},"3-9":{"CNWY":{"s":75.0,"b":5},"FXFE":{"s":40.0,"b":1},"FXNL":{"s":80.0,"b":2}}},"REDELIVERY":{"2-16":{"CNWY":{"s":175.5,"b":1},"FXNL":{"s":187.0,"b":1},"RLCA":{"s":106.65,"b":1}},"2-23":{"AVRT":{"s":105.0,"b":1},"FXNL":{"s":187.0,"b":1}},"3-9":{}},"REMOTE DEL":{"2-16":{"SAIA":{"s":162.0,"b":2}},"2-23":{"SAIA":{"s":154.5,"b":2}},"3-2":{"SAIA":{"s":95.5,"b":1}},"3-9":{}},"RES DEL":{"2-16":{"CD585":{"s":134.0,"b":2},"CNWY":{"s":75.0,"b":1},"DAFG":{"s":105.0,"b":3},"EXLA":{"s":75.0,"b":1},"FXNL":{"s":121.06,"b":2},"RLCA":{"s":385.0,"b":11},"SAIA":{"s":350.0,"b":5}},"2-23":{"CNWY":{"s":150.0,"b":2},"FXNL":{"s":121.06,"b":2},"RLCA":{"s":350.0,"b":10},"SAIA":{"s":140.0,"b":2}},"3-2":{"FXNL":{"s":242.12,"b":4},"MGUL":{"s":65.0,"b":1},"RLCA":{"s":245.0,"b":7},"SAIA":{"s":130.0,"b":2}},"3-9":{"FXNL":{"s":181.59,"b":3},"RLCA":{"s":245.0,"b":7},"SAIA":{"s":70.0,"b":1}}},"INSIDE DEL":{"2-23":{"RLCA":{"s":60.0,"b":1}},"3-9":{"USRD":{"s":70.0,"b":1}}},"RECON CHG":{"2-23":{"SAIA":{"s":84.5,"b":1}},"3-2":{"NUMK":{"s":35.0,"b":1}},"3-9":{}},"SORT/SEG":{"2-23":{"FXFE":{"s":208.0,"b":1}},"3-9":{}},"STORAGE":{"2-23":{"CNWY":{"s":441.25,"b":1},"FXNL":{"s":210.0,"b":1}},"3-9":{}},"CORR BOL":{"3-2":{"UPGF":{"s":10.0,"b":1}},"3-9":{}},"EXT LENGTH":{"3-2":{"MGUL":{"s":200.0,"b":1}},"3-9":{}}};
+const DATA={"RLCA":{"name":"R&L Carriers","2-16":1968.65,"2-23":1422.0,"3-2":1857.0,"3-9":1609.0},"FXNL":{"name":"FedEx Freight Economy","2-16":1091.22,"2-23":2101.95,"3-2":1216.04,"3-9":965.94},"SAIA":{"name":"Saia Motor Freight","2-16":2115.0,"2-23":1297.5,"3-2":817.0,"3-9":384.5},"CNWY":{"name":"Con-Way Freight","2-16":849.0,"2-23":1020.51,"3-2":445.0,"3-9":202.5},"NUMK":{"name":"Numark Transport","2-16":681.5,"2-23":84.0,"3-2":189.5,"3-9":240.0},"TMBM":{"name":"T.E.A.M.S.","2-16":95.0,"2-23":66.36,"3-2":373.82,"3-9":411.19},"CD585":{"name":"Cross Country Frt","2-16":373.5,"2-23":455.57,"3-2":43.75,"3-9":43.75},"FXFE":{"name":"FedEx Freight Priority","2-16":134.54,"2-23":559.54,"3-2":111.0,"3-9":58.77},"MGUL":{"name":"Magnum LTL","2-16":355.0,"2-23":0,"3-2":345.0,"3-9":40.0},"DOHR":{"name":"Dohrn Transfer","2-16":145.0,"2-23":99.0,"3-2":89.0,"3-9":50.0},"DAFG":{"name":"Dayton Freight","2-16":150.0,"2-23":92.0,"3-2":35.0,"3-9":100.0},"USRD":{"name":"US Road Freight","2-16":160.0,"2-23":0,"3-2":0,"3-9":70.0},"AVRT":{"name":"Averitt Express","2-16":50.0,"2-23":111.0,"3-2":0,"3-9":25.0},"EXLA":{"name":"Estes Express","2-16":175.0,"2-23":0,"3-2":0,"3-9":0},"UPGF":{"name":"TForce Freight","2-16":0,"2-23":20.0,"3-2":140.0,"3-9":0},"DTAF":{"name":"Data Freight","2-16":0,"2-23":100.0,"3-2":0,"3-9":0},"SEFL":{"name":"Southeastern Frt","2-16":0,"2-23":0,"3-2":94.0,"3-9":0},"DYLT":{"name":"Daylight Transport","2-16":0,"2-23":20.0,"3-2":40.0,"3-9":0}};
+const DETAIL={"RLCA":{"CA SURCHAR":{"2-16":{"s":546,"b":21},"2-23":{"s":312,"b":12},"3-2":{"s":468,"b":18},"3-9":{"s":338,"b":13}},"INSPECTION":{"2-16":{"s":560,"b":14},"2-23":{"s":80,"b":2},"3-2":{"s":240,"b":6},"3-9":{"s":320,"b":8}},"FREEZABLE":{"2-16":{"s":35,"b":1}},"HAZ MAT":{"2-16":{"s":36,"b":3},"2-23":{"s":60,"b":5},"3-2":{"s":24,"b":2},"3-9":{"s":96,"b":8}},"REDELIVERY":{"2-16":{"s":106.65,"b":1}},"RES DEL":{"2-16":{"s":385,"b":11},"2-23":{"s":350,"b":10},"3-2":{"s":245,"b":7},"3-9":{"s":245,"b":7}},"LIFTGATE":{"2-16":{"s":300,"b":12},"2-23":{"s":250,"b":10},"3-2":{"s":225,"b":9},"3-9":{"s":300,"b":12}},"INSIDE DEL":{"2-23":{"s":60,"b":1}},"OVER DIMEN":{"2-23":{"s":275,"b":1},"3-2":{"s":550,"b":2},"3-9":{"s":275,"b":1}},"LTD ACCESS":{"2-23":{"s":35,"b":1},"3-2":{"s":105,"b":3},"3-9":{"s":35,"b":1}}},"FXNL":{"NOTIFY":{"2-16":{"s":150.16,"b":8},"2-23":{"s":131.39,"b":7},"3-2":{"s":131.39,"b":7},"3-9":{"s":93.85,"b":5}},"INSPECTION":{"2-16":{"s":160,"b":4},"2-23":{"s":360,"b":9},"3-2":{"s":240,"b":6},"3-9":{"s":120,"b":3}},"LIFTGATE":{"2-16":{"s":184,"b":2},"2-23":{"s":92,"b":1},"3-2":{"s":276,"b":3},"3-9":{"s":276,"b":3}},"PEAK CHG":{"2-16":{"s":135,"b":3},"2-23":{"s":90,"b":2},"3-2":{"s":120,"b":3},"3-9":{"s":135,"b":3}},"RES DEL":{"2-16":{"s":121.06,"b":2},"2-23":{"s":121.06,"b":2},"3-2":{"s":242.12,"b":4},"3-9":{"s":181.59,"b":3}},"RE-WEIGH":{"2-16":{"s":40,"b":1},"2-23":{"s":80,"b":2},"3-2":{"s":40,"b":1},"3-9":{"s":80,"b":2}},"CA SURCHAR":{"2-16":{"s":53,"b":2},"2-23":{"s":26.5,"b":1},"3-2":{"s":106,"b":4},"3-9":{"s":79.5,"b":3}},"HAZ MAT":{"2-16":{"s":61,"b":1},"2-23":{"s":183,"b":3}},"REDELIVERY":{"2-16":{"s":187,"b":1},"2-23":{"s":187,"b":1}},"DETENTION":{"2-23":{"s":246,"b":1}},"STORAGE":{"2-23":{"s":210,"b":1}},"OVER DIMEN":{"2-23":{"s":375,"b":1}},"LTD ACCESS":{"3-2":{"s":60.53,"b":1}}},"SAIA":{"CA SURCHAR":{"2-16":{"s":130,"b":7},"2-23":{"s":80,"b":4},"3-2":{"s":60,"b":4},"3-9":{"s":20,"b":1}},"HIGH COST":{"2-16":{"s":456,"b":3},"2-23":{"s":179.5,"b":1},"3-9":{"s":179.5,"b":1}},"NOTIFY":{"2-16":{"s":270,"b":6},"2-23":{"s":90,"b":2},"3-2":{"s":90,"b":2},"3-9":{"s":45,"b":1}},"LIFTGATE":{"2-16":{"s":490,"b":7},"2-23":{"s":210,"b":3},"3-2":{"s":130,"b":2},"3-9":{"s":70,"b":1}},"LTD ACCESS":{"2-16":{"s":70,"b":1},"2-23":{"s":70,"b":1},"3-2":{"s":60,"b":1}},"RES DEL":{"2-16":{"s":350,"b":5},"2-23":{"s":140,"b":2},"3-2":{"s":130,"b":2},"3-9":{"s":70,"b":1}},"REMOTE DEL":{"2-16":{"s":162,"b":2},"2-23":{"s":154.5,"b":2},"3-2":{"s":95.5,"b":1}},"HAZ MAT":{"2-16":{"s":50,"b":1},"2-23":{"s":50,"b":1}},"MISC":{"2-16":{"s":59,"b":1},"3-2":{"s":212.5,"b":2}},"RE-WEIGH":{"2-16":{"s":78,"b":2},"3-2":{"s":39,"b":1}},"DETENTION":{"2-23":{"s":77,"b":1}},"INSPECTION":{"2-23":{"s":117,"b":3}},"RECON CHG":{"2-23":{"s":84.5,"b":1}},"APPT CHG":{"2-23":{"s":45,"b":1}}},"CNWY":{"CA SURCHAR":{"2-16":{"s":40,"b":2},"2-23":{"s":20,"b":1},"3-2":{"s":60,"b":3},"3-9":{"s":60,"b":3}},"RE-WEIGH":{"2-16":{"s":105,"b":7},"2-23":{"s":45,"b":3},"3-2":{"s":75,"b":5},"3-9":{"s":75,"b":5}},"HAZ MAT":{"2-16":{"s":15,"b":1}},"LIFTGATE":{"2-16":{"s":65,"b":1},"2-23":{"s":65,"b":1},"3-2":{"s":65,"b":1}},"RES DEL":{"2-16":{"s":75,"b":1},"2-23":{"s":150,"b":2}},"INSPECTION":{"2-16":{"s":30,"b":2},"2-23":{"s":15,"b":1},"3-2":{"s":60,"b":4}},"REDELIVERY":{"2-16":{"s":175.5,"b":1}},"HIGH COST":{"2-16":{"s":276,"b":1},"3-2":{"s":50,"b":2}},"APPT CHG":{"2-16":{"s":67.5,"b":1},"2-23":{"s":67.5,"b":1},"3-2":{"s":135,"b":2},"3-9":{"s":67.5,"b":1}},"STORAGE":{"2-23":{"s":441.25,"b":1}},"DETENTION":{"2-23":{"s":216.76,"b":1}}},"NUMK":{"CA SURCHAR":{"2-16":{"s":661.5,"b":63},"2-23":{"s":84,"b":8},"3-2":{"s":154.5,"b":13},"3-9":{"s":240,"b":16}},"HAZ MAT":{"2-16":{"s":20,"b":2}},"RECON CHG":{"3-2":{"s":35,"b":1}}},"TMBM":{"GST":{"2-16":{"s":20,"b":2},"2-23":{"s":66.36,"b":4},"3-2":{"s":49.82,"b":3},"3-9":{"s":87.19,"b":5}},"MISC":{"2-16":{"s":75,"b":1}},"HAZ MAT":{"3-2":{"s":324,"b":1},"3-9":{"s":324,"b":1}}},"CD585":{"MISC":{"2-16":{"s":63.5,"b":1},"2-23":{"s":63.5,"b":1}},"LIFTGATE":{"2-16":{"s":134,"b":2},"2-23":{"s":328.97,"b":3}},"RES DEL":{"2-16":{"s":134,"b":2}},"BORDER CHG":{"2-16":{"s":42,"b":1},"2-23":{"s":42,"b":1},"3-2":{"s":43.75,"b":1},"3-9":{"s":43.75,"b":1}},"NOTIFY":{"2-23":{"s":21.1,"b":1}}},"FXFE":{"DETENTION":{"2-16":{"s":97,"b":1},"2-23":{"s":194,"b":2}},"NOTIFY":{"2-16":{"s":37.54,"b":2},"2-23":{"s":37.54,"b":2},"3-9":{"s":18.77,"b":1}},"SORT/SEG":{"2-23":{"s":208,"b":1}},"INSPECTION":{"2-23":{"s":80,"b":2}},"RE-WEIGH":{"2-23":{"s":40,"b":1},"3-9":{"s":40,"b":1}},"HAZ MAT":{"3-2":{"s":61,"b":1}},"BORDER CHG":{"3-2":{"s":50,"b":1}}},"MGUL":{"HIGH COST":{"2-16":{"s":25,"b":1}},"LIFTGATE":{"2-16":{"s":50,"b":1},"3-2":{"s":50,"b":1}},"MISC":{"2-16":{"s":80,"b":1}},"OVER DIMEN":{"2-16":{"s":200,"b":1}},"EXT LENGTH":{"3-2":{"s":200,"b":1}},"APPT CHG":{"3-2":{"s":30,"b":2}},"RES DEL":{"3-2":{"s":65,"b":1}},"HAZ MAT":{"3-9":{"s":40,"b":1}}},"DOHR":{"HAZ MAT":{"2-16":{"s":10,"b":2},"2-23":{"s":15,"b":3},"3-2":{"s":5,"b":1}},"DETENTION":{"2-16":{"s":135,"b":1},"2-23":{"s":45,"b":1},"3-2":{"s":45,"b":1}},"NOTIFY":{"2-23":{"s":39,"b":1}},"APPT CHG":{"3-2":{"s":39,"b":1}},"HIGH COST":{"3-9":{"s":50,"b":1}}},"DAFG":{"LIFTGATE":{"2-16":{"s":40,"b":2}},"RES DEL":{"2-16":{"s":105,"b":3}},"HAZ MAT":{"2-16":{"s":5,"b":1},"3-9":{"s":5,"b":1}},"INSPECTION":{"2-23":{"s":32,"b":1}},"MISC":{"2-23":{"s":25,"b":1},"3-9":{"s":25,"b":1}},"LTD ACCESS":{"2-23":{"s":35,"b":1},"3-2":{"s":35,"b":1},"3-9":{"s":70,"b":2}}},"USRD":{"LTD ACCESS":{"2-16":{"s":55,"b":1}},"LIFTGATE":{"2-16":{"s":105,"b":1}},"INSIDE DEL":{"3-9":{"s":70,"b":1}}},"AVRT":{"INSPECTION":{"2-16":{"s":25,"b":1},"3-9":{"s":25,"b":1}},"RE-WEIGH":{"2-16":{"s":25,"b":1}},"MISC":{"2-23":{"s":6,"b":1}},"REDELIVERY":{"2-23":{"s":105,"b":1}}},"EXLA":{"LIFTGATE":{"2-16":{"s":75,"b":1}},"MISC":{"2-16":{"s":25,"b":1}},"RES DEL":{"2-16":{"s":75,"b":1}}},"UPGF":{"NOTIFY":{"2-23":{"s":20,"b":2},"3-2":{"s":10,"b":1}},"CORR BOL":{"3-2":{"s":10,"b":1}},"INSPECTION":{"3-2":{"s":10,"b":1}},"RE-WEIGH":{"3-2":{"s":20,"b":2}},"CA SURCHAR":{"3-2":{"s":75,"b":3}},"HAZ MAT":{"3-2":{"s":15,"b":1}}},"DTAF":{"MISC":{"2-23":{"s":100,"b":1}}},"SEFL":{"LTD ACCESS":{"3-2":{"s":94,"b":1}}},"DYLT":{"CA SURCHAR":{"2-23":{"s":20,"b":1},"3-2":{"s":40,"b":2}}}};
 
 const WCOL_L=["#0891b2","#4f46e5","#c026d3","#d97706","#059669","#dc2626","#7c3aed","#0369a1"];
 const WCOL_D=["#22d3ee","#818cf8","#e879f9","#fbbf24","#34d399","#fc8181","#a78bfa","#38bdf8"];
 const WCOL_HOV_L=["#06b6d4","#6366f1","#d946ef","#f59e0b","#10b981","#ef4444","#8b5cf6","#0284c7"];
 const WCOL_HOV_D=["#67e8f9","#a5b4fc","#f0abfc","#fcd34d","#6ee7b7","#fca5a5","#c4b5fd","#7dd3fc"];
-const SEG_GAP=2; // Fix #7: gap between week segments
+const SEG_GAP=2;
 
 let dark=false,viewWeek="all",sortMode="total",hovRow=null,hovSeg=null;
+let pinnedCards=[];
 
 // Dynamic week button generation
 (function(){
@@ -176,20 +175,20 @@ let dark=false,viewWeek="all",sortMode="total",hovRow=null,hovSeg=null;
     btn.textContent='W'+w;
     toggle.appendChild(btn);
   });
-})(); // Fix #5: default "all"
-let pinnedCards=[];
+})();
 
 function prevWeek(w){const i=WEEKS.indexOf(w);return i>0?WEEKS[i-1]:null;}
-function getTotal(type){return WEEKS.reduce((s,w)=>(s+(DATA[type][w]||0)),0);}
-function getWeekVal(type){return DATA[type][viewWeek]||0;}
-function getWowDelta(type){const w=viewWeek==="all"?WEEKS[WEEKS.length-1]:viewWeek;const pw=prevWeek(w);if(!pw)return 0;return(DATA[type][w]||0)-(DATA[type][pw]||0);}
-function getWeekTotal(wk){let s=0;for(const t of Object.keys(DATA))s+=(DATA[t][wk]||0);return s;}
+function getTotal(carr){return WEEKS.reduce((s,w)=>(s+(DATA[carr][w]||0)),0);}
+function getTypeCount(carr){return DETAIL[carr]?Object.keys(DETAIL[carr]).length:0;}
+function getWeekVal(carr){return DATA[carr][viewWeek]||0;}
+function getWowDelta(carr){const w=viewWeek==="all"?WEEKS[WEEKS.length-1]:viewWeek;const pw=prevWeek(w);if(!pw)return 0;return(DATA[carr][w]||0)-(DATA[carr][pw]||0);}
+function getWeekTotal(wk){let s=0;for(const c of Object.keys(DATA))s+=(DATA[c][wk]||0);return s;}
 function getSorted(){
-  const types=Object.keys(DATA);
-  if(sortMode==="total")types.sort((a,b)=>getTotal(b)-getTotal(a));
-  else if(sortMode==="week"){if(viewWeek==="all")types.sort((a,b)=>getTotal(b)-getTotal(a));else types.sort((a,b)=>(DATA[b][viewWeek]||0)-(DATA[a][viewWeek]||0));}
-  else if(sortMode==="wow")types.sort((a,b)=>Math.abs(getWowDelta(b))-Math.abs(getWowDelta(a)));
-  return types;
+  const carriers=Object.keys(DATA);
+  if(sortMode==="total")carriers.sort((a,b)=>getTotal(b)-getTotal(a));
+  else if(sortMode==="types")carriers.sort((a,b)=>getTypeCount(b)-getTypeCount(a)||(getTotal(b)-getTotal(a)));
+  else if(sortMode==="wow")carriers.sort((a,b)=>Math.abs(getWowDelta(b))-Math.abs(getWowDelta(a)));
+  return carriers;
 }
 function fmtShort(v){if(v>=10000)return"$"+(v/1000).toFixed(1)+"k";if(v>=1000)return"$"+v.toLocaleString("en-US",{minimumFractionDigits:0,maximumFractionDigits:0});if(v>=100)return"$"+v.toFixed(0);if(v>0)return"$"+v.toFixed(2);return"$0";}
 function fmt(v){return"$"+v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});}
@@ -197,7 +196,7 @@ function fmtDelta(v){const a=Math.abs(v),s=v>=0?"+":"\u2212";if(a>=1000)return s
 function deltaColor(d){return d>0?(dark?"#4ade80":"#1e8a4a"):d<0?(dark?"#fc8181":"#c0392b"):(dark?"#6b7f99":"#9ca3af");}
 
 let globalMaxTotal=0;
-(function(){for(const t of Object.keys(DATA)){const tot=getTotal(t);if(tot>globalMaxTotal)globalMaxTotal=tot;}})();
+(function(){for(const c of Object.keys(DATA)){const tot=getTotal(c);if(tot>globalMaxTotal)globalMaxTotal=tot;}})();
 
 function weekColor(wi,hov){return hov?(dark?WCOL_HOV_D[wi]:WCOL_HOV_L[wi]):(dark?WCOL_D[wi]:WCOL_L[wi]);}
 
@@ -207,50 +206,43 @@ function drawOutlinedText(c,text,x,y,align,fs){
   c.strokeText(text,x,y);c.fillStyle="#fff";c.fillText(text,x,y);c.restore();
 }
 
-function drawBar(canvas,type){
+function drawBar(canvas,carr){
   const dpr=window.devicePixelRatio||1;
   const W=canvas.clientWidth,H=canvas.clientHeight;
   if(!W||!H)return;
   canvas.width=W*dpr;canvas.height=H*dpr;
   const c=canvas.getContext("2d");
   c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,W,H);
-  const total=getTotal(type);if(total<=0)return;
-
-  const isMag=(hovRow===type);
+  const total=getTotal(carr);if(total<=0)return;
+  const isMag=(hovRow===carr);
   const isIsolate=(viewWeek!=="all");
   const LABEL_R=isIsolate?52:0;
-  const activeSegs=WEEKS.filter(w=>(DATA[type][w]||0)>0).length;
+  const activeSegs=WEEKS.filter(w=>(DATA[carr][w]||0)>0).length;
   const totalGaps=SEG_GAP*Math.max(0,activeSegs-1);
-  // Sqrt scale: preserves rank order, compresses range so small bars are readable
   const barArea=W-LABEL_R;
   const barW=Math.max(8,(Math.sqrt(total)/Math.sqrt(globalMaxTotal))*(barArea)-totalGaps);
   const baseH=isMag?22:16,popH=isMag?30:24,R=3;
   const baseY=(H-baseH)/2,popY=(H-popH)/2;
-
   canvas._segs=[];
   let x=0,segCount=0;
-
   for(let wi=0;wi<WEEKS.length;wi++){
     const wk=WEEKS[wi];
-    const v=DATA[type][wk]||0;
+    const v=DATA[carr][wk]||0;
     if(v<=0)continue;
-    if(segCount>0)x+=SEG_GAP; // Fix #7: gap between segments
+    if(segCount>0)x+=SEG_GAP;
     segCount++;
     const segW=(v/total)*barW;
     if(segW<0.5){x+=segW;continue;}
-
-    const isHovSeg=(hovSeg&&hovSeg.type===type&&hovSeg.wi===wi);
+    const isHovSeg=(hovSeg&&hovSeg.carr===carr&&hovSeg.wi===wi);
     const isIsolated=isIsolate&&wk===viewWeek;
     const isHidden=isIsolate&&wk!==viewWeek;
-    const isPinned=pinnedCards.some(p=>p.type===type&&p.week===wk);
+    const isPinned=pinnedCards.some(p=>p.carr===carr&&p.week===wk);
     let sy,sh;
     if(isHovSeg||isIsolated){sy=popY;sh=popH;}else{sy=baseY;sh=baseH;}
-
     const col=weekColor(wi,isHovSeg||isIsolated);
     if(isHidden){c.globalAlpha=0.15;c.fillStyle=weekColor(wi,false);}
     else{c.globalAlpha=1;c.fillStyle=col;}
     c.beginPath();c.roundRect(x,sy,segW,sh,R);c.fill();
-
     if((isHovSeg||isIsolated)&&dark){
       c.save();c.shadowColor=col;c.shadowBlur=isMag?16:10;c.strokeStyle=col;c.lineWidth=1.5;
       c.beginPath();c.roundRect(x+0.75,sy+0.75,segW-1.5,sh-1.5,R);c.stroke();c.restore();
@@ -258,50 +250,49 @@ function drawBar(canvas,type){
     if(isPinned){c.save();c.strokeStyle=dark?"rgba(255,255,255,0.6)":"rgba(0,0,0,0.3)";c.lineWidth=2;
     c.beginPath();c.roundRect(x+1,sy+1,segW-2,sh-2,R);c.stroke();c.restore();}
     c.globalAlpha=1;
-
     if((isHovSeg||isIsolated)&&v>0&&!isHidden){
       const valText=fmtShort(v);c.font="700 9.5px Inter,sans-serif";
       if(c.measureText(valText).width+10<segW)drawOutlinedText(c,valText,x+segW/2,sy+sh/2,"center",9.5);
     }
-    canvas._segs.push({type,wi,wk,x:x-1,y:sy-1,w:segW+2,h:sh+2,v});
+    canvas._segs.push({carr,wi,wk,x:x-1,y:sy-1,w:segW+2,h:sh+2,v});
     x+=segW;
   }
-
-  // Fix #1: $0 indicator in isolation mode
   if(isIsolate){
     const ai=WEEKS.indexOf(viewWeek);
-    const v=DATA[type][viewWeek]||0;
+    const v=DATA[carr][viewWeek]||0;
     if(v===0&&total>0){
-      // Show faint dashed bar where the segment would be
       c.save();c.setLineDash([3,3]);c.strokeStyle=dark?"rgba(255,255,255,0.12)":"rgba(0,0,0,0.08)";
       c.lineWidth=1;const dashW=Math.max(20,barW*0.15);
       c.beginPath();c.roundRect(x+SEG_GAP+0.5,baseY+0.5,dashW,baseH-1,R);c.stroke();c.restore();
       c.save();c.font="500 8px Inter,sans-serif";c.textAlign="left";c.textBaseline="middle";
       c.fillStyle=dark?"#6b7f99":"#9ca3af";c.fillText("$0",x+SEG_GAP+dashW+4,H/2);c.restore();
     }
-    // WoW delta after bar
     if(ai>0&&v>0){
-      const pv=DATA[type][WEEKS[ai-1]]||0;
+      const pv=DATA[carr][WEEKS[ai-1]]||0;
       if(pv>0){const d=v-pv,pct=(d/pv)*100,arrow=d>0?"\u25B2":d<0?"\u25BC":"\u2192";
       c.save();c.font="600 8.5px Inter,sans-serif";c.textAlign="left";c.textBaseline="middle";c.fillStyle=deltaColor(d);c.fillText(arrow+Math.abs(pct).toFixed(0)+"%",x+6,H/2);c.restore();}
       else if(pv===0){c.save();c.font="600 8.5px Inter,sans-serif";c.textAlign="left";c.textBaseline="middle";c.fillStyle=dark?"#4ade80":"#1e8a4a";c.fillText("\u25CF new",x+6,H/2);c.restore();}
     } else if(ai>0&&v===0){
-      const pv=DATA[type][WEEKS[ai-1]]||0;
+      const pv=DATA[carr][WEEKS[ai-1]]||0;
       if(pv>0){c.save();c.font="600 8.5px Inter,sans-serif";c.textAlign="left";c.textBaseline="middle";c.fillStyle=dark?"#fc8181":"#c0392b";c.fillText("\u25BC gone",x+SEG_GAP+30,H/2);c.restore();}
     }
   }
 }
 
 // ── INFO CARD ──
-function buildCardHTML(type,week){
+function buildCardHTML(carr,week){
   const wi=WEEKS.indexOf(week);
-  const v=DATA[type][week]||0;
-  const pw=prevWeek(week);const pv=pw?(DATA[type][pw]||0):0;
+  const v=DATA[carr][week]||0;
+  const pw=prevWeek(week);const pv=pw?(DATA[carr][pw]||0):0;
   const col=dark?WCOL_D[wi]:WCOL_L[wi];
-  const carriers=DETAIL[type]&&DETAIL[type][week]?DETAIL[type][week]:{};
-  const sorted=Object.entries(carriers).sort((a,b)=>b[1].s-a[1].s);
-  const isPinned=pinnedCards.some(p=>p.type===type&&p.week===week);
-  // Fix #10: share of total
+  const types=DETAIL[carr]||{};
+  // Gather type spend for this week
+  const typeWeek=[];
+  for(const[t,wks]of Object.entries(types)){
+    if(wks[week]&&wks[week].s>0)typeWeek.push([t,wks[week]]);
+  }
+  typeWeek.sort((a,b)=>b[1].s-a[1].s);
+  const isPinned=pinnedCards.some(p=>p.carr===carr&&p.week===week);
   const weekTot=getWeekTotal(week);
   const sharePct=weekTot>0?((v/weekTot)*100).toFixed(1):"0";
   const shareHTML=`<div class="info-card-share">${sharePct}% of W${week} total (${fmtShort(weekTot)})</div>`;
@@ -313,47 +304,48 @@ function buildCardHTML(type,week){
     else if(v===0&&pv>0)deltaHtml=`<div class="info-card-delta" style="color:${dark?"#fc8181":"#c0392b"}">\u25BC Gone (was ${fmtShort(pv)})</div>`;
   } else deltaHtml=`<div class="info-card-delta" style="color:var(--text-muted)">\u2014 Baseline week</div>`;
 
-  let carrHTML="";
-  if(sorted.length>0){
-    const maxCarrS=sorted[0][1].s;
-    const weekCol=dark?WCOL_D[wi]:WCOL_L[wi];const hr=parseInt(weekCol.slice(1,3),16),hg=parseInt(weekCol.slice(3,5),16),hb=parseInt(weekCol.slice(5,7),16);
+  let typeHTML="";
+  if(typeWeek.length>0){
+    const maxTS=typeWeek[0][1].s;
+    const weekCol=dark?WCOL_D[wi]:WCOL_L[wi];
+    // Extract RGB from hex for rgba tint
+    const hr=parseInt(weekCol.slice(1,3),16),hg=parseInt(weekCol.slice(3,5),16),hb=parseInt(weekCol.slice(5,7),16);
     const barTint=`rgba(${hr},${hg},${hb},${dark?0.25:0.2})`;
-    carrHTML=`<div class="info-card-divider"></div><div class="info-card-section-title">Carrier Breakdown</div>`;
-    for(const[carr,d]of sorted.slice(0,8)){
-      const barPct=maxCarrS>0?Math.max(4,(d.s/maxCarrS)*100):0;
-      carrHTML+=`<div class="info-card-carr"><span class="info-card-carr-id">${carr}</span><div style="flex:1;height:14px;position:relative;margin:0 6px;border-radius:3px;overflow:hidden"><div style="position:absolute;left:0;top:0;bottom:0;width:${barPct}%;background:${barTint};border-radius:3px"></div><span style="position:relative;z-index:1;font-size:9px;font-weight:700;color:var(--text-primary);padding-left:4px;line-height:14px">${fmtShort(d.s)}</span></div><span class="info-card-carr-bills">${d.b} bill${d.b>1?"s":""}</span></div>`;
+    typeHTML=`<div class="info-card-divider"></div><div class="info-card-section-title">Accessorial Type Breakdown</div>`;
+    for(const[t,d]of typeWeek.slice(0,8)){
+      const barPct=maxTS>0?Math.max(4,(d.s/maxTS)*100):0;
+      typeHTML+=`<div class="info-card-row"><span class="info-card-row-id">${t}</span><div style="flex:1;height:14px;position:relative;margin:0 6px;border-radius:3px;overflow:hidden"><div style="position:absolute;left:0;top:0;bottom:0;width:${barPct}%;background:${barTint};border-radius:3px"></div><span style="position:relative;z-index:1;font-size:9px;font-weight:700;color:var(--text-primary);padding-left:4px;line-height:14px">${fmtShort(d.s)}</span></div><span class="info-card-row-bills">${d.b} bill${d.b>1?"s":""}</span></div>`;
     }
-    if(sorted.length>8)carrHTML+=`<div style="font-size:9px;color:var(--text-muted);padding-top:2px">+${sorted.length-8} more</div>`;
+    if(typeWeek.length>8)typeHTML+=`<div style="font-size:9px;color:var(--text-muted);padding-top:2px">+${typeWeek.length-8} more</div>`;
   }
 
-  return`<div class="ic-handle ic-handle-tl" data-corner="tl"></div><div class="ic-handle ic-handle-tr" data-corner="tr"></div><div class="ic-handle ic-handle-bl" data-corner="bl"></div><div class="ic-handle ic-handle-br" data-corner="br"></div><div class="ic-handle ic-handle-t" data-corner="t"></div><div class="ic-handle ic-handle-b" data-corner="b"></div><div class="ic-handle ic-handle-l" data-corner="l"></div><div class="ic-handle ic-handle-r" data-corner="r"></div><div class="accent-bar" style="background:${col}${dark?";box-shadow:0 0 8px "+col:""}"></div><div class="info-card-inner"><div class="info-card-header"><span class="info-card-type">${type}</span><span class="info-card-week" style="background:${col};color:${dark?"#0d1117":"#fff"}">W${week}</span></div><div class="info-card-val">${fmtShort(v)}</div>${shareHTML}${deltaHtml}${carrHTML}${isPinned?'<div class="info-card-pin">\uD83D\uDCCC pinned</div>':''}</div>`;
+  return`<div class="ic-handle ic-handle-tl" data-corner="tl"></div><div class="ic-handle ic-handle-tr" data-corner="tr"></div><div class="ic-handle ic-handle-bl" data-corner="bl"></div><div class="ic-handle ic-handle-br" data-corner="br"></div><div class="ic-handle ic-handle-t" data-corner="t"></div><div class="ic-handle ic-handle-b" data-corner="b"></div><div class="ic-handle ic-handle-l" data-corner="l"></div><div class="ic-handle ic-handle-r" data-corner="r"></div><div class="accent-bar" style="background:${col}${dark?";box-shadow:0 0 8px "+col:""}"></div><div class="info-card-inner"><div class="info-card-header"><span class="info-card-type">${carr} <span style="font-size:10px;font-weight:500;color:var(--text-muted)">${DATA[carr].name}</span></span><span class="info-card-week" style="background:${col};color:${dark?"#0d1117":"#fff"}">W${week}</span></div><div class="info-card-val">${fmtShort(v)}</div>${shareHTML}${deltaHtml}${typeHTML}${isPinned?'<div class="info-card-pin">\uD83D\uDCCC pinned</div>':''}</div>`;
 }
 
-// Fix #2: position card relative to hovered row
-function getCardPosition(type){
+function getCardPosition(carr){
   const chartEl=document.getElementById("chart-area");
   const chartH=chartEl.clientHeight;
-  const cardEstH=280; // estimated card height
+  const cardEstH=280;
   const y=Math.max(10,Math.round((chartH-cardEstH)/2));
   return{y};
 }
 
 function renderCards(){
   document.querySelectorAll(".info-card:not(.pinned)").forEach(el=>el.remove());
-  if(hovSeg&&!pinnedCards.some(p=>p.type===hovSeg.type&&p.week===WEEKS[hovSeg.wi])){
+  if(hovSeg&&!pinnedCards.some(p=>p.carr===hovSeg.carr&&p.week===WEEKS[hovSeg.wi])){
     const card=document.createElement("div");
     card.className="info-card hover-card";
-    card.innerHTML=buildCardHTML(hovSeg.type,WEEKS[hovSeg.wi]);
-    const pos=getCardPosition(hovSeg.type);
+    card.innerHTML=buildCardHTML(hovSeg.carr,WEEKS[hovSeg.wi]);
+    const pos=getCardPosition(hovSeg.carr);
     const caR=document.getElementById("chart-area").getBoundingClientRect(),wgR=document.querySelector(".widget").getBoundingClientRect();
     card.style.right=(wgR.right-caR.right+80)+"px";card.style.top=(caR.top-wgR.top+pos.y)+"px";
+    card.style.opacity="1";
     document.querySelector(".widget").appendChild(card);
   }
-  // Fix #4: always rebuild all pinned cards from scratch
   document.querySelectorAll(".info-card.pinned").forEach(el=>el.remove());
   pinnedCards.forEach((p,i)=>{
     const el=document.createElement("div");
-    el.className=`info-card pinned pin-${i}`;
+    el.className=`info-card pinned pin-${i}`;el.style.opacity="1";
     const caRect=document.getElementById("chart-area").getBoundingClientRect(),wgRect=document.querySelector(".widget").getBoundingClientRect();
     const caOffX=caRect.left-wgRect.left,caOffY=caRect.top-wgRect.top;
     el.style.left=(caOffX+(p.x||16+i*20))+"px";
@@ -361,9 +353,8 @@ function renderCards(){
     if(p.w)el.style.width=p.w+"px";
     if(p.h){el.style.height=p.h+"px";el.style.overflow="auto";}
     document.querySelector(".widget").appendChild(el);
-    el.innerHTML=buildCardHTML(p.type,p.week);
+    el.innerHTML=buildCardHTML(p.carr,p.week);
     setupDrag(el,i);
-    setupResize(el,i);
   });
 }
 
@@ -403,7 +394,6 @@ function setupDrag(el,idx){
       ov.addEventListener('mouseup',()=>{ov.remove();pinnedCards[idx].w=el.offsetWidth;pinnedCards[idx].h=el.offsetHeight;},{once:true});
       return;
     }
-    // Drag
     const ox=e.clientX,oy=e.clientY,sleft=parseInt(el.style.left)||0,stop=parseInt(el.style.top)||0;
     const ov=createOverlay('move');
     ov.addEventListener('mousemove',e2=>{
@@ -412,86 +402,86 @@ function setupDrag(el,idx){
     ov.addEventListener('mouseup',()=>{ov.remove();const ca2=document.getElementById("chart-area").getBoundingClientRect(),wg2=document.querySelector(".widget").getBoundingClientRect();pinnedCards[idx].x=parseInt(el.style.left)-(ca2.left-wg2.left);pinnedCards[idx].y=parseInt(el.style.top)-(ca2.top-wg2.top);},{once:true});
   });
 }
-function setupResize(el,idx){/* handled in setupDrag */}
 
-function pinSegment(type,wi){
+function pinSegment(carr,wi){
   const wk=WEEKS[wi];
-  const exists=pinnedCards.findIndex(p=>p.type===type&&p.week===wk);
+  const exists=pinnedCards.findIndex(p=>p.carr===carr&&p.week===wk);
   if(exists>=0)pinnedCards.splice(exists,1);
-  else pinnedCards.push({type,week:wk,x:16+pinnedCards.length*20,y:50+pinnedCards.length*30});
+  else pinnedCards.push({carr,week:wk,x:16+pinnedCards.length*20,y:50+pinnedCards.length*30});
   renderCards();redrawBars();
 }
 
 function render(){
-  const types=getSorted();
+  const carriers=getSorted();
   const scroll=document.getElementById("hm-scroll");
   const footer=document.getElementById("hm-footer");
 
-  // Fix #8: dynamic header label
   document.getElementById("total-header").textContent=viewWeek==="all"?"Total":"W"+viewWeek;
 
   let html="";
-  types.forEach((type,idx)=>{
-    const total=getTotal(type);
-    const displayTotal=viewWeek==="all"?total:(DATA[type][viewWeek]||0);
+  carriers.forEach((carr,idx)=>{
+    const total=getTotal(carr);
+    const displayTotal=viewWeek==="all"?total:(DATA[carr][viewWeek]||0);
     let trendHtml="";
     if(viewWeek==="all"){
-      const lv=DATA[type][WEEKS[WEEKS.length-1]]||0,pv=DATA[type][WEEKS[WEEKS.length-2]]||0;
+      const lv=DATA[carr][WEEKS[WEEKS.length-1]]||0,pv=DATA[carr][WEEKS[WEEKS.length-2]]||0;
       if(lv>0&&pv>0){const d=lv-pv;trendHtml=`<span style="font-size:8px;color:${deltaColor(d)};margin-left:3px">${d>=0?"\u25B2":"\u25BC"}</span>`;}
       else if(lv>0&&pv===0)trendHtml=`<span style="font-size:8px;color:${dark?"#4ade80":"#1e8a4a"};margin-left:3px">\u25CF</span>`;
       else if(lv===0&&pv>0)trendHtml=`<span style="font-size:8px;color:${dark?"#fc8181":"#c0392b"};margin-left:3px">\u25BC</span>`;
     }
-    html+=`<div class="hm-row" data-type="${type}"><div class="hm-rank">${idx+1}</div><div class="hm-label">${type}</div><div class="hm-bar-cell"><canvas class="hm-bar-canvas" data-type="${type}"></canvas></div><div class="hm-total">${displayTotal>0?fmtShort(displayTotal):"\u2014"}${trendHtml}</div></div>`;
+    const label=`<span style="font-weight:700">${carr}</span> <span style="font-size:9px;color:var(--text-muted);margin-left:3px">${DATA[carr].name}</span>`;
+    html+=`<div class="hm-row" data-carr="${carr}"><div class="hm-rank">${idx+1}</div><div class="hm-label">${label}</div><div class="hm-bar-cell"><canvas class="hm-bar-canvas" data-carr="${carr}"></canvas></div><div class="hm-total">${displayTotal>0?fmtShort(displayTotal):"\u2014"}${trendHtml}</div></div>`;
   });
   scroll.innerHTML=html;
-  requestAnimationFrame(()=>{document.querySelectorAll(".hm-bar-canvas").forEach(cv=>drawBar(cv,cv.dataset.type));});
+  requestAnimationFrame(()=>{document.querySelectorAll(".hm-bar-canvas").forEach(cv=>drawBar(cv,cv.dataset.carr));});
 
-  // Footer — Fix #9: show context in middle cell
   let footTotal=0;
-  if(viewWeek==="all")for(const t of types)footTotal+=getTotal(t);
-  else for(const t of types)footTotal+=(DATA[t][viewWeek]||0);
-  const footMiddle=viewWeek==="all"?`${types.length} types \u00b7 ${WEEKS.length} weeks`:`${types.filter(t=>(DATA[t][viewWeek]||0)>0).length} active types`;
+  if(viewWeek==="all")for(const c of carriers)footTotal+=getTotal(c);
+  else for(const c of carriers)footTotal+=(DATA[c][viewWeek]||0);
+  const footMiddle=viewWeek==="all"?`${carriers.length} carriers \u00b7 ${WEEKS.length} weeks`:`${carriers.filter(c=>(DATA[c][viewWeek]||0)>0).length} active carriers`;
   footer.innerHTML=`<div class="hm-fcell">Total</div><div class="hm-fcell" style="padding-left:10px;font-size:9px;font-weight:600;color:var(--text-muted)">${footMiddle}</div><div class="hm-fcell">${fmt(footTotal)}</div>`;
 
   const legEl=document.getElementById("legend");
   legEl.innerHTML=WEEKS.map((w,i)=>`<span><span class="leg-swatch" style="background:${dark?WCOL_D[i]:WCOL_L[i]}"></span>W${w}</span>`).join("");
 
   ["all",...WEEKS].forEach(w=>{const id=w==="all"?"btn-all":"btn-"+w.replace("-","");const el=document.getElementById(id);if(el)el.classList.toggle("active",viewWeek===w);});
-  document.querySelectorAll(".sort-btn:not(.disabled)").forEach(b=>b.classList.add("active"));
+  document.querySelectorAll(".sort-btn").forEach(b=>{
+    b.classList.toggle("active",b.dataset.sort===sortMode);
+  });
   document.getElementById("reset-btn").classList.toggle("has-pins",pinnedCards.length>0);
   renderCards();
 }
 
-function redrawBars(){document.querySelectorAll(".hm-bar-canvas").forEach(cv=>drawBar(cv,cv.dataset.type));}
-function resetAll(){pinnedCards=[];hovSeg=null;hovRow=null;document.querySelectorAll(".info-card").forEach(el=>el.remove());render();}
+function redrawBars(){document.querySelectorAll(".hm-bar-canvas").forEach(cv=>drawBar(cv,cv.dataset.carr));}
+function resetAll(){pinnedCards=[];hovSeg=null;hovRow=null;viewWeek="all";sortMode="total";document.querySelectorAll(".info-card").forEach(el=>el.remove());render();}
 function setWeek(w){viewWeek=w;render();}
 function setSort(m){if(m===sortMode)return;sortMode=m;render();}
 function toggleDark(){dark=!dark;document.documentElement.setAttribute("data-theme",dark?"dark":"");render();}
 
-// ── EVENTS — Fix #6: full RAF throttle ──
+// ── EVENTS — RAF throttle ──
 let hovPending=false;
 document.addEventListener("DOMContentLoaded",()=>{
   const scrollEl=document.getElementById("hm-scroll");
 
   scrollEl.addEventListener("mousemove",e=>{
     const row=e.target.closest(".hm-row");
-    const type=row?row.dataset.type:null;
+    const carr=row?row.dataset.carr:null;
     let newSeg=null;
-    if(type&&row){
+    if(carr&&row){
       const cv=row.querySelector(".hm-bar-canvas");
       if(cv&&cv._segs){
         const rect=cv.getBoundingClientRect();
         const mx=e.clientX-rect.left,my=e.clientY-rect.top;
-        for(const seg of cv._segs){if(mx>=seg.x&&mx<=seg.x+seg.w&&my>=seg.y&&my<=seg.y+seg.h)newSeg={type:seg.type,wi:seg.wi};}
+        for(const seg of cv._segs){if(mx>=seg.x&&mx<=seg.x+seg.w&&my>=seg.y&&my<=seg.y+seg.h)newSeg={carr:seg.carr,wi:seg.wi};}
       }
     }
-    const rowChanged=(type!==hovRow);
-    const segChanged=(!hovSeg&&newSeg)||(!newSeg&&hovSeg)||(hovSeg&&newSeg&&(hovSeg.type!==newSeg.type||hovSeg.wi!==newSeg.wi));
+    const rowChanged=(carr!==hovRow);
+    const segChanged=(!hovSeg&&newSeg)||(!newSeg&&hovSeg)||(hovSeg&&newSeg&&(hovSeg.carr!==newSeg.carr||hovSeg.wi!==newSeg.wi));
     if(rowChanged||segChanged){
-      hovRow=type;hovSeg=newSeg;
+      hovRow=carr;hovSeg=newSeg;
       if(!hovPending){hovPending=true;requestAnimationFrame(()=>{
         hovPending=false;
-        scrollEl.querySelectorAll(".hm-row").forEach(r=>r.classList.toggle("magnified",hovRow!==null&&r.dataset.type===hovRow));
+        scrollEl.querySelectorAll(".hm-row").forEach(r=>r.classList.toggle("magnified",hovRow!==null&&r.dataset.carr===hovRow));
         redrawBars();renderCards();
       });}
     }
@@ -503,7 +493,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     redrawBars();renderCards();
   });
 
-  scrollEl.addEventListener("click",e=>{if(hovSeg)pinSegment(hovSeg.type,hovSeg.wi);});
+  scrollEl.addEventListener("click",e=>{if(hovSeg)pinSegment(hovSeg.carr,hovSeg.wi);});
   scrollEl.addEventListener("dblclick",e=>{e.preventDefault();resetAll();});
 });
 

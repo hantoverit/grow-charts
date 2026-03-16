@@ -275,12 +275,23 @@ function draw(t){
 function animate(){if(animId)cancelAnimationFrame(animId);animStart=performance.now();(function frame(){var t=Math.min(1,(performance.now()-animStart)/animDuration);draw(t);if(t<1)animId=requestAnimationFrame(frame);})();}
 function startFade(){fading=true;fadeStart=performance.now();draw(1);}
 function refresh(anim){var old=bubbles.length?bubbles.slice():null;buildBubbles();updateSummary();if(anim&&old){prevBubbles=old;animate();}else{prevBubbles=null;startFade();}}
-function hitTest(mx,my){var dOrd=bubbles.slice().sort(function(a,b){var ap=pinned(a.svc.id)?2:a.svc.id===hoveredId?1:0,bp=pinned(b.svc.id)?2:b.svc.id===hoveredId?1:0;if(ap!==bp)return ap-bp;return b.r-a.r;});for(var i=dOrd.length-1;i>=0;i--){var b=dOrd[i],dx=mx-b.x,dy=my-b.y,hr=Math.max(b.r,8)+4;if(dx*dx+dy*dy<=hr*hr)return b;}return null;}
+function hitTest(mx,my){
+  // First pass: exact hit inside bubble (priority — always wins)
+  var dOrd=bubbles.slice().sort(function(a,b){var ap=pinned(a.svc.id)?2:a.svc.id===hoveredId?1:0,bp=pinned(b.svc.id)?2:b.svc.id===hoveredId?1:0;if(ap!==bp)return ap-bp;return b.r-a.r;});
+  for(var i=dOrd.length-1;i>=0;i--){var b=dOrd[i],dx=mx-b.x,dy=my-b.y;if(dx*dx+dy*dy<=b.r*b.r)return b;}
+  // Second pass: nearest neighbor within max reach (Voronoi claim)
+  var maxReach=80,best=null,bestDist=Infinity;
+  for(var j=0;j<bubbles.length;j++){var b2=bubbles[j],dx2=mx-b2.x,dy2=my-b2.y,dist=Math.sqrt(dx2*dx2+dy2*dy2)-b2.r;
+    if(dist<bestDist&&dist<maxReach){bestDist=dist;best=b2;}}
+  return best;
+}
 var _hovRAF=false;
 canvas.addEventListener('mousemove',function(e){if(_hovRAF)return;_hovRAF=true;requestAnimationFrame(function(){_hovRAF=false;var r=canvas.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top,hit=hitTest(mx,my);
   if(hit){canvas.style.cursor='pointer';if(hoveredId!==hit.svc.id){hoveredId=hit.svc.id;draw(1);if(!pinned(hit.svc.id))showHoverCard(hit.svc);}}
   else{canvas.style.cursor='default';if(hoveredId!==null){hoveredId=null;draw(1);rmHover();}}});});
-canvas.addEventListener('click',function(e){var r=canvas.getBoundingClientRect(),hit=hitTest(e.clientX-r.left,e.clientY-r.top);if(hit)togglePin(hit.svc.id);});
+canvas.addEventListener('click',function(e){var r=canvas.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top,hit=hitTest(mx,my);
+  if(hit){togglePin(hit.svc.id);}
+  else if(pinnedCards.length>0){pinnedCards=[];hoveredId=null;document.querySelectorAll('.info-card').forEach(function(el){el.remove();});updReset();draw(1);}});
 canvas.addEventListener('mouseleave',function(){hoveredId=null;rmHover();draw(1);});
 
 // === Multi-pin card system ===
@@ -290,10 +301,10 @@ function buildCardHTML(svc){
   h+='<div class="ic-handle ic-handle-tl" data-corner="tl"></div><div class="ic-handle ic-handle-tr" data-corner="tr"></div><div class="ic-handle ic-handle-bl" data-corner="bl"></div><div class="ic-handle ic-handle-br" data-corner="br"></div><div class="ic-handle ic-handle-t" data-corner="t"></div><div class="ic-handle ic-handle-b" data-corner="b"></div><div class="ic-handle ic-handle-l" data-corner="l"></div><div class="ic-handle ic-handle-r" data-corner="r"></div>';
   h+='<div class="info-card-inner"><div class="info-card-header"><span class="info-card-title">'+esc(svc.label)+'</span><span class="info-card-pin">'+(isPn?'\uD83D\uDCCC pinned':'click to pin')+'</span></div><div class="info-card-body"><div class="ic-grid">';
   WEEKS.forEach(function(wk,wi){var d=svc[wk],a=d.count>0?d.spend/d.count:0,delta='';
-    if(wi>0){var pd=svc[WEEKS[wi-1]],pa=pd.count>0?pd.spend/pd.count:0;if(pa>0&&a>0){var pc=Math.round((a-pa)/pa*100),ar=pc>0?'\u25B2':pc<0?'\u25BC':'',dc=pc>0?'var(--red)':pc<0?'var(--green)':'var(--text-muted)';delta='<span style="color:'+dc+'">'+ar+Math.abs(pc)+'%</span>';}}
-    h+='<div class="ic-week-block"><span class="ic-wk">'+(wk===activeWeek?'\u25B6 ':'')+wk+'</span><span class="ic-val">'+fmt2(a)+'</span><span class="ic-delta">'+delta+'</span></div>';
+    if(wi>0){var pd=svc[WEEKS[wi-1]];if(pd.spend>0&&d.spend>0){var pc=Math.round((d.spend-pd.spend)/pd.spend*100),ar=pc>0?'\u25B2':pc<0?'\u25BC':'',dc=pc>0?'var(--red)':pc<0?'var(--green)':'var(--text-muted)';delta='<span style="color:'+dc+'">'+ar+Math.abs(pc)+'%</span>';}}
+    h+='<div class="ic-week-block"><span class="ic-wk">'+(wk===activeWeek?'\u25B6 ':'')+wk+'</span><span class="ic-val">'+fmtK(d.spend)+'</span><span class="ic-delta">'+delta+'</span></div>';
     h+='<div class="ic-detail-row"><span class="ic-detail-label">Shipments</span><span class="ic-detail-val">'+d.count.toLocaleString()+'</span><span class="ic-detail-spacer"></span></div>';
-    h+='<div class="ic-detail-row"><span class="ic-detail-label">Total Spend</span><span class="ic-detail-val">'+fmtK(d.spend)+'</span><span class="ic-detail-spacer"></span></div>';});
+    h+='<div class="ic-detail-row"><span class="ic-detail-label">Avg / Shipment</span><span class="ic-detail-val">'+fmt2(a)+'</span><span class="ic-detail-spacer"></span></div>';});
   var tc=0,ts=0;WEEKS.forEach(function(w){tc+=svc[w].count;ts+=svc[w].spend;});var ta=tc?ts/tc:0;
   h+='<div class="ic-total-sep"></div><span class="ic-total-label">'+WEEKS.length+'-Week Total</span><span class="ic-total-val">'+fmtK(ts)+'</span><span class="ic-total-spacer"></span>';
   h+='<div class="ic-detail-row"><span class="ic-detail-label">Total Shipments</span><span class="ic-detail-val">'+tc.toLocaleString()+'</span><span class="ic-detail-spacer"></span></div>';
@@ -321,7 +332,7 @@ function setupDrag(el,idx){el.addEventListener('mousedown',function(e){var cr=el
     ov.addEventListener('mouseup',function(){ov.remove();pinnedCards[idx].w=el.offsetWidth;pinnedCards[idx].h=el.offsetHeight;},{once:true});return;}
   var ox=e.clientX,oy=e.clientY,sl2=parseInt(el.style.left)||0,st2=parseInt(el.style.top)||0;var ov=mkOv('move');
   ov.addEventListener('mousemove',function(e2){el.style.left=(sl2+e2.clientX-ox)+'px';el.style.top=(st2+e2.clientY-oy)+'px';});
-  ov.addEventListener('mouseup',function(){ov.remove();pinnedCards[idx].x=parseInt(el.style.left);pinnedCards[idx].y=parseInt(el.style.top);},{once:true});});}
+  ov.addEventListener('mouseup',function(){ov.remove();var ca2=$s('#chartArea').getBoundingClientRect(),wg2=$s('.widget').getBoundingClientRect();pinnedCards[idx].x=parseInt(el.style.left)-(ca2.left-wg2.left);pinnedCards[idx].y=parseInt(el.style.top)-(ca2.top-wg2.top);},{once:true});});}
 function mkOv(cur){var ov=document.createElement('div');ov.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;cursor:'+cur;document.body.appendChild(ov);return ov;}
 function updReset(){$s('#resetBtn').classList.toggle('has-pins',pinnedCards.length>0);}
 function flashEl(el){if(!el)return;el.style.position='relative';var fl=el.querySelector('.flash-overlay');if(!fl){fl=document.createElement('div');fl.className='flash-overlay';el.appendChild(fl);}fl.classList.remove('active');void fl.offsetWidth;fl.classList.add('active');}
