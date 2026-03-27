@@ -203,8 +203,81 @@ const DATA={"W2-16":{"totals":{"billed":5649.49,"paid":3188.48,"auditSvgs":1492.
       }
     ]
   }
+,
+  "W3-23": {
+    "totals": {
+      "billed": 778.18,
+      "paid": 606.37,
+      "auditSvgs": 128.77,
+      "dupSvgs": 43.04,
+      "totalSvgs": 171.81,
+      "savingsRate": 22.1,
+      "bills": 4
+    },
+    "carriers": [
+      {
+        "id": "RLCA",
+        "billed": 563.51,
+        "paid": 493.51,
+        "auditSvgs": 70,
+        "dupSvgs": 0
+      },
+      {
+        "id": "FXNL",
+        "billed": 171.63,
+        "paid": 112.86,
+        "auditSvgs": 58.77,
+        "dupSvgs": 0
+      },
+      {
+        "id": "FEC*",
+        "billed": 43.04,
+        "paid": 0,
+        "auditSvgs": 0,
+        "dupSvgs": 43.04
+      }
+    ],
+    "items": [
+      {
+        "carr": "FEC*",
+        "pro": "916808706",
+        "paid": 0,
+        "billed": 43.04,
+        "auditSvgs": 0,
+        "dupSvgs": 43.04,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FXNL",
+        "pro": "8565181096BD",
+        "paid": 112.86,
+        "billed": 171.63,
+        "auditSvgs": 58.77,
+        "dupSvgs": 0,
+        "desc": "PER LOA & DLVY RECEIPT SHIPMENT DID NOT GO OU FOR DLVY. RESD NOT VAL"
+      },
+      {
+        "carr": "RLCA",
+        "pro": "I787866363",
+        "paid": 331.34,
+        "billed": 366.34,
+        "auditSvgs": 35,
+        "dupSvgs": 0,
+        "desc": "PER GOOGLE MAPS GOING TO A BUSINESS NOT A RESIDENTIAL DLVY"
+      },
+      {
+        "carr": "RLCA",
+        "pro": "I787866498",
+        "paid": 162.17,
+        "billed": 197.17,
+        "auditSvgs": 35,
+        "dupSvgs": 0,
+        "desc": "PER GOOGLE MAPS GOING TO BUSINESS NOT A RESD DLVY"
+      }
+    ]
+  }
 };
-const WEEKS=['W2-16','W2-23','W3-2','W3-9','W3-16'];
+const WEEKS=['W2-16','W2-23','W3-2','W3-9','W3-16','W3-23'];
 
 // Dynamic week button generation
 (function(){
