@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html data-theme="dark" lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -42,7 +42,7 @@
   .dm-toggle:hover{opacity:1}
   .dm-icon{font-size:10px;color:var(--text-secondary);display:flex;align-items:center;width:12px;justify-content:center}
   .dm-track{width:28px;height:15px;background:var(--toggle-bg);border-radius:8px;position:relative;transition:background .2s;flex-shrink:0}
-  .dm-knob{width:11px;height:11px;background:var(--toggle-knob);border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .dm-knob{width:11px;height:11px;background:var(--toggle-knob);border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
   [data-theme="dark"] .dm-knob{transform:translateX(13px)}
   .divider{height:1px;background:var(--border);margin-bottom:16px;flex-shrink:0}
   .kpi-area{flex:1;min-height:0;background:var(--chart-bg);border:1px solid var(--chart-border);border-radius:8px;padding:16px;display:flex;align-items:center;transition:background .25s,border-color .25s}
@@ -103,16 +103,13 @@
   </div>
 </div>
 <script>
-const WEEKS=["2-16","2-23","3-2","3-9","3-16","3-23","3-30"];
+const WEEKS=["2-16","2-23","3-2","3-9"];
 const data={
   "2-16":{totalShipments:468,avgPaidPerShipment:358.94,totalFreightPaid:167983.23,avgWeightPerShipment:1367,totalWeight:639576},
   "2-23":{totalShipments:362,avgPaidPerShipment:446.89,totalFreightPaid:161775.24,avgWeightPerShipment:1393,totalWeight:504412},
   "3-2":{totalShipments:369,avgPaidPerShipment:428.71,totalFreightPaid:158194.40,avgWeightPerShipment:1465,totalWeight:540732},
   "3-9":{totalShipments:317,avgPaidPerShipment:427.30,totalFreightPaid:135453.12,avgWeightPerShipment:1460,totalWeight:463010}
-,
-  "3-16":{totalShipments:331,avgPaidPerShipment:26.3,totalFreightPaid:147522.76,avgWeightPerShipment:445.688097,totalWeight:560946},
-  "3-23":{totalShipments:370,avgPaidPerShipment:25.87,totalFreightPaid:158662.76,avgWeightPerShipment:428.81827,totalWeight:613382},
-  "3-30":{totalShipments:387,avgPaidPerShipment:37.74,totalFreightPaid:176845.25,avgWeightPerShipment:456.96447,totalWeight:468561}};
+};
 const metrics=[
   {key:"totalShipments",      label:"Total Shipments",      format:"integer", unit:null},
   {key:"avgPaidPerShipment",  label:"Avg Paid / Shipment",  format:"currency",unit:null},
@@ -120,7 +117,7 @@ const metrics=[
   {key:"avgWeightPerShipment",label:"Avg Weight / Shipment",format:"integer", unit:"lbs"},
   {key:"totalWeight",         label:"Total Weight",         format:"integer", unit:"lbs"}
 ];
-let currentWeek=WEEKS[WEEKS.length-1],darkMode=false;
+let currentWeek=WEEKS[WEEKS.length-1],dark=true;
 
 // Dynamic week button generation
 (function(){
@@ -165,7 +162,7 @@ function render(){
   });
 }
 function setWeek(w){currentWeek=w;render();}
-function toggleDark(){darkMode=!darkMode;document.documentElement.setAttribute("data-theme",darkMode?"dark":"");}
+function toggleDark(){dark=!dark;document.documentElement.setAttribute("data-theme",dark?"dark":"");}
 render();
 </script>
 </body>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html data-theme="dark" lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -47,7 +47,7 @@
   .dm-toggle:hover{opacity:1}
   .dm-icon{font-size:10px;color:var(--text-secondary);display:flex;align-items:center;width:12px;justify-content:center}
   .dm-track{width:28px;height:15px;background:var(--toggle-bg);border-radius:8px;position:relative;transition:background .2s;flex-shrink:0}
-  .dm-knob{width:11px;height:11px;background:var(--toggle-knob);border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .dm-knob{width:11px;height:11px;background:var(--toggle-knob);border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
   [data-theme="dark"] .dm-knob{transform:translateX(13px)}
   .divider{height:1px;background:var(--border);margin:10px 0;flex-shrink:0}
   .treemap-wrap{position:relative;width:100%;flex:1;min-height:0;border-radius:8px;overflow:hidden;border:1px solid var(--chart-border);background:var(--chart-bg)}
@@ -91,23 +91,20 @@
   <div class="legend" id="legend"></div>
 </div>
 <script>
-const WEEKS=["2-16","2-23","3-2","3-9","3-16","3-23","3-30"];
+const WEEKS=["2-16","2-23","3-2","3-9"];
 const RAW={
   "2-16":{AM:1934.20,AT:13210.88,AV:29104.12,CA:5120.33,CO:2387.45,DC:4521.90,FM:1876.33,FR:9102.44,HB:2801.22,HZ:6890.11,KC:87234.18,NW:834.56,WC:4965.71},
   "2-23":{AM:1726.35,AT:12404.52,AV:27684.35,CA:4808.52,CO:2049.26,DC:4088.86,FM:2008.74,FR:8641.71,HB:2519.47,HZ:6136.56,KC:84699.06,NW:722.04,WC:4285.80},
   "3-2":{AM:590.64,AT:12150.07,AV:28723.14,CA:1739.97,CO:3783.60,DC:4037.77,FM:1111.65,FR:12608.60,HB:5023.40,HZ:5211.53,KC:75890.10,NW:2690.56,SP:4.26,WC:4629.11},
   "3-9":{AM:1656.77,AT:10843.31,AV:27093.13,CA:1831.03,CO:3518.60,DC:3438.64,FM:342.91,FR:11060.27,HB:2178.32,HZ:3488.93,KC:67178.46,NW:935.36,WC:1887.39}
-,
-  "3-16":{AM:1975.71,AT:17498.92,AV:25795.88,CA:1945.05,CO:2305.23,DC:4417.97,FM:471.67,FR:7614.33,HB:4214.53,HZ:3892.15,KC:70203.36,NW:624.63,WC:6563.33},
-  "3-23":{AM:3339.4,AT:14684.01,AV:29701.03,CA:2683.04,CO:3572.6,DC:5422.88,FM:3032.9,FR:9267.85,HB:2663.57,HZ:6227.06,KC:71977.75,NW:2108.77,WC:3981.9},
-  "3-30":{AM:907.04,AT:13255.97,AV:42660.65,CA:1633.46,CO:2072.25,DC:2930.06,FM:1736.53,FR:10036.87,HB:5109.11,HZ:4186.04,KC:83547.81,NW:1094.86,WC:7674.6}};
+};
 const LABELS={AM:"Amelia",AT:"Atlanta",AV:"Avon",CA:"Canada",CO:"Colorado",DC:"DC Metro",FM:"Farmer's Mkt",FR:"Franklin",HB:"Harrisburg",HZ:"Hazleton",KC:"Kansas City",NW:"Northwest",SP:"Springfield",WC:"West Coast"};
 // Fixed color index per account — assigned by best-ever Total Paid rank across all weeks
 const ACCT_COLORS={KC:0,AV:1,AT:2,FR:3,HZ:4,CA:5,HB:6,WC:7,DC:8,CO:9,NW:10,AM:11,FM:12,SP:13};
 const PAL_L=["#1a73e8","#d93025","#0f9d58","#f4a623","#9c27b0","#00acc1","#e53935","#1565c0","#2e7d32","#ef6c00","#6a1b9a","#00838f","#d84315","#1e88e5"];
 const PAL_D=["#60a5fa","#f87171","#4ade80","#fbbf24","#c084fc","#22d3ee","#fb7185","#38bdf8","#86efac","#fcd34d","#d8b4fe","#67e8f9","#fca5a5","#7dd3fc"];
 
-let week=WEEKS[WEEKS.length-1], dark=false, hov=null, pinnedKey="KC";
+let week=WEEKS[WEEKS.length-1], dark=true, hov=null, pinnedKey="KC";
 
 // Dynamic week button generation
 (function(){
@@ -473,6 +470,8 @@ document.getElementById("canvas").addEventListener("click",e=>{
   if(f) pinKey(f.k);
 });
 
+document.getElementById("canvas").addEventListener("dblclick",(e)=>{e.preventDefault();resetAll();});
+
 function render(fromWeek){
   updateHeader();updateLegend();spCanvas=null;
   WEEKS.forEach(w=>{
@@ -484,6 +483,7 @@ function render(fromWeek){
   else drawCanvas();
 }
 function setWeek(w){const from=week;week=w;hov=null;cachedBox=null;render(from);}
+function resetAll(){week=WEEKS[WEEKS.length-1];pinnedKey="KC";hov=null;cachedBox=null;spCanvas=null;render();}
 function toggleDark(){dark=!dark;spCanvas=null;document.documentElement.setAttribute("data-theme",dark?"dark":"");render();}
 let resizeTimer;
 window.addEventListener("resize",()=>{
