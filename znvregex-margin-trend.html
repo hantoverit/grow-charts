@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html data-theme="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Margin Trend</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f4f6f8;--surface:#fff;--surface2:#f9fafb;--border:#e3e7ed;
+    --text-primary:#111827;--text-secondary:#4b5563;--text-muted:#9ca3af;
+    --accent:#1a73e8;--accent-dim:#e8f0fd;--accent-text:#1a73e8;
+    --green:#1e8a4a;--green-bg:#dcfce7;--red:#c0392b;--red-bg:#fee2e2;
+    --toggle-bg:#d1d5db;--toggle-knob:#fff;
+    --week-active-bg:#1a73e8;--week-active-text:#fff;--week-inactive:#6b7280;
+    --shadow:0 1px 6px rgba(0,0,0,.08),0 4px 20px rgba(0,0,0,.04);
+    --chart-bg:#f8fafc;--chart-border:#dce3eb;
+    --bar-fill:#1a73e8;--bar-fill-a:rgba(26,115,232,.7);
+    --line-stroke:#e8a024;--dot-fill:#e8a024;
+    --gridline:rgba(0,0,0,.06);--axis-text:#6b7280;
+    --tooltip-bg:rgba(255,255,255,.96);--tooltip-border:#dce3eb;--tooltip-text:#111827;--tooltip-muted:#6b7280;
+  }
+  [data-theme="dark"] {
+    --bg:#0d1117;--surface:#161b27;--surface2:#1e2533;--border:#2e3a4e;
+    --text-primary:#e8edf5;--text-secondary:#b0bdd0;--text-muted:#6b7f99;
+    --accent:#4f93f5;--accent-dim:#1a2d50;--accent-text:#7db3f8;
+    --green:#4ade80;--green-bg:#0c2b1c;--red:#fc8181;--red-bg:#2d1214;
+    --toggle-bg:#2e3a4e;--toggle-knob:#e8edf5;
+    --week-active-bg:#4f93f5;--week-active-text:#0d1117;--week-inactive:#94a3b8;
+    --shadow:0 1px 8px rgba(0,0,0,.5);
+    --chart-bg:#0f1520;--chart-border:#1e2a3a;
+    --bar-fill:#4f93f5;--bar-fill-a:rgba(79,147,245,.65);
+    --line-stroke:#f59e0b;--dot-fill:#f59e0b;
+    --gridline:rgba(255,255,255,.06);--axis-text:#6b7f99;
+    --tooltip-bg:rgba(22,27,39,.96);--tooltip-border:#2e3a4e;--tooltip-text:#e8edf5;--tooltip-muted:#6b7f99;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%}
+  body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text-primary);transition:background .25s,color .25s}
+  .widget{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px 16px;width:100%;height:100%;display:flex;flex-direction:column;box-shadow:var(--shadow);transition:background .25s,border-color .25s}
+  .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-shrink:0}
+  .header-left{display:flex;flex-direction:column;gap:2px}
+  .eyebrow{font-size:10.5px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted)}
+  .title{font-size:16px;font-weight:700;color:var(--text-primary);letter-spacing:-.02em}
+  .header-right{display:flex;align-items:center;gap:14px}
+  .view-toggle{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px;gap:2px}
+  .view-btn{font-size:11.5px;font-weight:600;padding:5px 13px;border-radius:6px;border:none;cursor:pointer;background:transparent;color:var(--week-inactive);transition:all .16s;font-family:"Inter",sans-serif}
+  .view-btn.active{background:var(--week-active-bg);color:var(--week-active-text);box-shadow:0 1px 5px rgba(26,115,232,.3)}
+  .dm-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;opacity:.6;transition:opacity .15s;user-select:none;padding:2px 4px}
+  .dm-toggle:hover{opacity:1}
+  .dm-icon{font-size:10px;color:var(--text-secondary);display:flex;align-items:center;width:12px;justify-content:center}
+  .dm-track{width:28px;height:15px;background:var(--toggle-bg);border-radius:8px;position:relative;transition:background .2s;flex-shrink:0}
+  .dm-knob{width:11px;height:11px;background:var(--toggle-knob);border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+  [data-theme="dark"] .dm-knob{transform:translateX(13px)}
+  .divider{height:1px;background:var(--border);margin-bottom:12px;flex-shrink:0}
+  .chart-area{flex:1;min-height:0;background:var(--chart-bg);border:1px solid var(--chart-border);border-radius:8px;padding:12px 16px 8px;position:relative;transition:background .25s,border-color .25s;overflow:hidden}
+  canvas{display:block;width:100%;height:100%}
+  .legend{display:flex;gap:16px;justify-content:flex-end;padding:8px 0 0;flex-shrink:0}
+  .legend-item{display:flex;align-items:center;gap:5px;font-size:10.5px;font-weight:500;color:var(--text-muted)}
+  .legend-swatch{width:12px;height:3px;border-radius:2px}
+  .legend-dot{width:7px;height:7px;border-radius:50%}
+  .tooltip{position:absolute;pointer-events:none;background:var(--tooltip-bg);border:1px solid var(--tooltip-border);border-radius:8px;padding:10px 12px;font-size:11px;box-shadow:0 4px 16px rgba(0,0,0,.15);opacity:0;transition:opacity .12s;z-index:10;min-width:140px}
+  .tooltip.show{opacity:1}
+  .tt-label{font-weight:600;color:var(--tooltip-text);margin-bottom:6px;font-size:11.5px}
+  .tt-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:3px}
+  .tt-key{color:var(--tooltip-muted);font-weight:500}
+  .tt-val{font-weight:600;color:var(--tooltip-text);font-variant-numeric:tabular-nums}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="header">
+    <div class="header-left">
+      <div class="eyebrow">ZNVREGEX · Trend</div>
+      <div class="title">Margin Trend</div>
+    </div>
+    <div class="header-right">
+      <div class="view-toggle" id="viewToggle">
+        <button class="view-btn" data-view="monthly" onclick="setView('monthly')">Monthly</button>
+        <button class="view-btn active" data-view="weekly" onclick="setView('weekly')">Weekly</button>
+      </div>
+      <div class="dm-toggle" onclick="toggleDark()">
+        <span class="dm-icon">☀</span>
+        <div class="dm-track"><div class="dm-knob"></div></div>
+        <span class="dm-icon">☽</span>
+      </div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="chart-area" id="chartArea">
+    <canvas id="canvas"></canvas>
+    <div class="tooltip" id="tooltip"></div>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--bar-fill)"></div>MDSE Sales</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--line-stroke)"></div>GP %</div>
+  </div>
+</div>
+<script>
+// === DATA ===
+const MONTHLY=[
+  {label:"Mar '25",mdse:270844.10,gp:40859.89,gpPct:15.09,inv:125,dates:4},
+  {label:"Apr '25",mdse:1412038.14,gp:223533.55,gpPct:15.83,inv:1736,dates:30},
+  {label:"May '25",mdse:1504674.96,gp:236896.53,gpPct:15.74,inv:1719,dates:31},
+  {label:"Jun '25",mdse:1573347.63,gp:242580.87,gpPct:15.42,inv:1584,dates:30},
+  {label:"Jul '25",mdse:1428768.03,gp:228450.46,gpPct:15.99,inv:1780,dates:30},
+  {label:"Aug '25",mdse:1615924.83,gp:253449.49,gpPct:15.68,inv:1803,dates:31},
+  {label:"Sep '25",mdse:1706028.92,gp:265635.32,gpPct:15.57,inv:1768,dates:30},
+  {label:"Oct '25",mdse:1493621.95,gp:240981.18,gpPct:16.13,inv:2271,dates:31},
+  {label:"Nov '25",mdse:1973700.67,gp:303742.85,gpPct:15.39,inv:2068,dates:30},
+  {label:"Dec '25",mdse:1751631.54,gp:280806.04,gpPct:16.03,inv:2409,dates:30},
+  {label:"Jan '26",mdse:1610833.39,gp:258200.60,gpPct:16.03,inv:2564,dates:30},
+  {label:"Feb '26",mdse:1682920.51,gp:269871.64,gpPct:16.04,inv:2606,dates:28},
+  {label:"Mar '26",mdse:5185980.44,gp:694352.82,gpPct:13.39,inv:3174,dates:31},
+  {label:"Apr '26",mdse:2417277.96,gp:293059.16,gpPct:12.12,inv:708,dates:6}
+];
+
+const WEEKLY=[
+  {label:"W1",yr:2025,wk:1,mdse:184077.32,gp:29072.85,gpPct:15.79,inv:254,dates:3},
+  {label:"W13",yr:2025,wk:13,mdse:152001.48,gp:23744.90,gpPct:15.62,inv:125,dates:3},
+  {label:"W14",yr:2025,wk:14,mdse:351793.27,gp:54975.84,gpPct:15.63,inv:375,dates:7},
+  {label:"W15",yr:2025,wk:15,mdse:351211.19,gp:56098.06,gpPct:15.97,inv:420,dates:7},
+  {label:"W16",yr:2025,wk:16,mdse:337035.14,gp:52715.70,gpPct:15.64,inv:412,dates:7},
+  {label:"W17",yr:2025,wk:17,mdse:322997.00,gp:51436.47,gpPct:15.92,inv:369,dates:7},
+  {label:"W18",yr:2025,wk:18,mdse:339467.05,gp:52346.98,gpPct:15.42,inv:381,dates:7},
+  {label:"W19",yr:2025,wk:19,mdse:327378.80,gp:52017.74,gpPct:15.89,inv:366,dates:7},
+  {label:"W20",yr:2025,wk:20,mdse:346823.41,gp:54231.27,gpPct:15.64,inv:397,dates:7},
+  {label:"W21",yr:2025,wk:21,mdse:331566.09,gp:53001.17,gpPct:15.99,inv:405,dates:7},
+  {label:"W22",yr:2025,wk:22,mdse:446425.04,gp:67889.24,gpPct:15.21,inv:360,dates:7},
+  {label:"W23",yr:2025,wk:23,mdse:326758.96,gp:50575.36,gpPct:15.48,inv:382,dates:7},
+  {label:"W24",yr:2025,wk:24,mdse:336407.69,gp:53565.29,gpPct:15.92,inv:408,dates:7},
+  {label:"W25",yr:2025,wk:25,mdse:330364.44,gp:51515.60,gpPct:15.59,inv:397,dates:7},
+  {label:"W26",yr:2025,wk:26,mdse:341534.00,gp:52589.82,gpPct:15.40,inv:412,dates:7},
+  {label:"W27",yr:2025,wk:27,mdse:315306.30,gp:50149.44,gpPct:15.90,inv:340,dates:6},
+  {label:"W28",yr:2025,wk:28,mdse:355773.35,gp:56682.61,gpPct:15.93,inv:447,dates:7},
+  {label:"W29",yr:2025,wk:29,mdse:359563.39,gp:56646.96,gpPct:15.75,inv:371,dates:7},
+  {label:"W30",yr:2025,wk:30,mdse:335085.62,gp:52727.11,gpPct:15.74,inv:404,dates:7},
+  {label:"W31",yr:2025,wk:31,mdse:356564.94,gp:56172.87,gpPct:15.75,inv:396,dates:7},
+  {label:"W32",yr:2025,wk:32,mdse:359027.73,gp:57059.50,gpPct:15.89,inv:401,dates:7},
+  {label:"W33",yr:2025,wk:33,mdse:348937.90,gp:53878.40,gpPct:15.44,inv:379,dates:7},
+  {label:"W34",yr:2025,wk:34,mdse:374586.16,gp:59242.48,gpPct:15.82,inv:429,dates:7},
+  {label:"W35",yr:2025,wk:35,mdse:358988.74,gp:56507.98,gpPct:15.74,inv:455,dates:7},
+  {label:"W36",yr:2025,wk:36,mdse:471193.57,gp:72815.79,gpPct:15.45,inv:380,dates:7},
+  {label:"W37",yr:2025,wk:37,mdse:365218.86,gp:56290.12,gpPct:15.41,inv:447,dates:7},
+  {label:"W38",yr:2025,wk:38,mdse:373201.73,gp:57440.42,gpPct:15.39,inv:420,dates:7},
+  {label:"W39",yr:2025,wk:39,mdse:349333.30,gp:55890.72,gpPct:16.00,inv:417,dates:7},
+  {label:"W40",yr:2025,wk:40,mdse:350438.30,gp:56736.33,gpPct:16.19,inv:477,dates:7},
+  {label:"W41",yr:2025,wk:41,mdse:342467.39,gp:54934.53,gpPct:16.04,inv:471,dates:7},
+  {label:"W42",yr:2025,wk:42,mdse:363540.03,gp:57031.16,gpPct:15.69,inv:465,dates:7},
+  {label:"W43",yr:2025,wk:43,mdse:355631.29,gp:56992.90,gpPct:16.03,inv:507,dates:7},
+  {label:"W44",yr:2025,wk:44,mdse:385460.60,gp:62378.62,gpPct:16.18,inv:615,dates:7},
+  {label:"W45",yr:2025,wk:45,mdse:396124.46,gp:61658.17,gpPct:15.57,inv:547,dates:7},
+  {label:"W46",yr:2025,wk:46,mdse:403992.10,gp:62312.64,gpPct:15.42,inv:522,dates:7},
+  {label:"W47",yr:2025,wk:47,mdse:387334.36,gp:62234.34,gpPct:16.07,inv:519,dates:7},
+  {label:"W48",yr:2025,wk:48,mdse:629415.55,gp:93643.61,gpPct:14.88,inv:375,dates:7},
+  {label:"W49",yr:2025,wk:49,mdse:385835.72,gp:63367.96,gpPct:16.42,inv:652,dates:7},
+  {label:"W50",yr:2025,wk:50,mdse:428284.23,gp:70665.07,gpPct:16.50,inv:613,dates:7},
+  {label:"W51",yr:2025,wk:51,mdse:277198.63,gp:46094.61,gpPct:16.63,inv:562,dates:7},
+  {label:"W52",yr:2025,wk:52,mdse:476235.64,gp:71605.55,gpPct:15.04,inv:352,dates:6},
+  {label:"W1",yr:2026,wk:1,mdse:194635.38,gp:29581.16,gpPct:15.20,inv:206,dates:3},
+  {label:"W2",yr:2026,wk:2,mdse:370507.43,gp:59803.19,gpPct:16.14,inv:517,dates:7},
+  {label:"W3",yr:2026,wk:3,mdse:380722.82,gp:59510.40,gpPct:15.63,inv:559,dates:7},
+  {label:"W4",yr:2026,wk:4,mdse:387580.45,gp:62717.58,gpPct:16.18,inv:663,dates:7},
+  {label:"W5",yr:2026,wk:5,mdse:408587.68,gp:64760.18,gpPct:15.85,inv:644,dates:7},
+  {label:"W6",yr:2026,wk:6,mdse:441280.03,gp:69509.61,gpPct:15.75,inv:691,dates:7},
+  {label:"W7",yr:2026,wk:7,mdse:391167.21,gp:63217.14,gpPct:16.16,inv:610,dates:7},
+  {label:"W8",yr:2026,wk:8,mdse:417301.70,gp:65637.35,gpPct:15.73,inv:637,dates:7},
+  {label:"W9",yr:2026,wk:9,mdse:433171.57,gp:71507.54,gpPct:16.51,inv:689,dates:7},
+  {label:"W10",yr:2026,wk:10,mdse:398483.23,gp:63823.27,gpPct:16.02,inv:616,dates:7},
+  {label:"W11",yr:2026,wk:11,mdse:397719.02,gp:65457.65,gpPct:16.46,inv:681,dates:7},
+  {label:"W12",yr:2026,wk:12,mdse:504616.43,gp:77205.60,gpPct:15.30,inv:516,dates:7},
+  {label:"W13",yr:2026,wk:13,mdse:2528363.42,gp:314996.28,gpPct:12.46,inv:908,dates:7},
+  {label:"W14",yr:2026,wk:14,mdse:3066097.50,gp:378781.18,gpPct:12.35,inv:983,dates:7},
+  {label:"W15",yr:2026,wk:15,mdse:576778.43,gp:68976.09,gpPct:11.96,inv:206,dates:1}
+];
+
+let currentView='weekly';
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+const chartArea=document.getElementById('chartArea');
+const tooltip=document.getElementById('tooltip');
+let dpr=window.devicePixelRatio||1;
+let W,H,hoverIdx=-1;
+
+// Layout constants
+const PAD={top:24,right:58,bottom:40,left:62};
+
+function getData(){return currentView==='monthly'?MONTHLY:WEEKLY;}
+
+function fmt$(v){
+  if(v>=1e6)return'$'+((v/1e6).toFixed(v>=1e7?1:2))+'M';
+  if(v>=1e3)return'$'+((v/1e3).toFixed(v>=1e5?0:1))+'K';
+  return'$'+v.toFixed(0);
+}
+function fmtPct(v){return v.toFixed(2)+'%';}
+
+function getCSS(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+
+function resize(){
+  const r=chartArea.getBoundingClientRect();
+  W=r.width-32; H=r.height-20; // account for padding
+  canvas.width=W*dpr; canvas.height=H*dpr;
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+
+function draw(){
+  const data=getData();
+  const n=data.length;
+  ctx.clearRect(0,0,W,H);
+
+  const plotL=PAD.left, plotR=W-PAD.right, plotT=PAD.top, plotB=H-PAD.bottom;
+  const plotW=plotR-plotL, plotH=plotB-plotT;
+
+  // Scales
+  const maxMdse=Math.max(...data.map(d=>d.mdse))*1.08;
+  const gpVals=data.map(d=>d.gpPct);
+  const gpMin=Math.floor(Math.min(...gpVals)-0.5);
+  const gpMax=Math.ceil(Math.max(...gpVals)+0.5);
+
+  // Bar geometry
+  const barGap=currentView==='monthly'?0.3:0.15;
+  const slotW=plotW/n;
+  const barW=slotW*(1-barGap);
+
+  // Colors
+  const barFill=getCSS('--bar-fill');
+  const barFillA=getCSS('--bar-fill-a');
+  const lineStroke=getCSS('--line-stroke');
+  const gridline=getCSS('--gridline');
+  const axisText=getCSS('--axis-text');
+  const textPrimary=getCSS('--text-primary');
+
+  // Gridlines (left axis — MDSE)
+  const nTicks=5;
+  ctx.strokeStyle=gridline;
+  ctx.lineWidth=1;
+  ctx.font='500 10px Inter,sans-serif';
+  ctx.textAlign='right';
+  ctx.fillStyle=axisText;
+  for(let i=0;i<=nTicks;i++){
+    const v=maxMdse*i/nTicks;
+    const y=plotB-(v/maxMdse)*plotH;
+    ctx.beginPath();ctx.moveTo(plotL,y);ctx.lineTo(plotR,y);ctx.stroke();
+    ctx.fillText(fmt$(v),plotL-8,y+3.5);
+  }
+
+  // Right axis labels (GP%)
+  const gpTicks=5;
+  ctx.textAlign='left';
+  for(let i=0;i<=gpTicks;i++){
+    const v=gpMin+(gpMax-gpMin)*i/gpTicks;
+    const y=plotB-((v-gpMin)/(gpMax-gpMin))*plotH;
+    ctx.fillStyle=lineStroke;
+    ctx.fillText(v.toFixed(1)+'%',plotR+8,y+3.5);
+  }
+
+  // Bars
+  const barRadius=currentView==='monthly'?4:2;
+  data.forEach((d,i)=>{
+    const x=plotL+i*slotW+(slotW-barW)/2;
+    const barH=(d.mdse/maxMdse)*plotH;
+    const y=plotB-barH;
+    ctx.fillStyle=(hoverIdx===i)?barFill:barFillA;
+    roundedRect(ctx,x,y,barW,barH,barRadius);
+    ctx.fill();
+  });
+
+  // GP% line
+  const linePoints=data.map((d,i)=>{
+    const x=plotL+i*slotW+slotW/2;
+    const y=plotB-((d.gpPct-gpMin)/(gpMax-gpMin))*plotH;
+    return{x,y};
+  });
+
+  ctx.strokeStyle=lineStroke;
+  ctx.lineWidth=2;
+  ctx.lineJoin='round';
+  ctx.lineCap='round';
+  ctx.beginPath();
+  linePoints.forEach((p,i)=>{i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);});
+  ctx.stroke();
+
+  // Dots
+  linePoints.forEach((p,i)=>{
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,hoverIdx===i?5:3,0,Math.PI*2);
+    ctx.fillStyle=lineStroke;
+    ctx.fill();
+    if(hoverIdx===i){
+      ctx.strokeStyle=getCSS('--surface');
+      ctx.lineWidth=2;
+      ctx.stroke();
+    }
+  });
+
+  // X labels
+  ctx.fillStyle=axisText;
+  ctx.textAlign='center';
+  ctx.font='500 10px Inter,sans-serif';
+  const labelStep=currentView==='weekly'?Math.ceil(n/20):1;
+  data.forEach((d,i)=>{
+    if(i%labelStep!==0&&i!==n-1)return;
+    const x=plotL+i*slotW+slotW/2;
+    let lbl=d.label;
+    if(currentView==='weekly'&&d.yr){
+      lbl=d.yr===2026?d.label+"'26":d.label;
+    }
+    ctx.save();
+    if(currentView==='weekly'&&n>30){
+      ctx.translate(x,plotB+8);
+      ctx.rotate(-Math.PI/4);
+      ctx.textAlign='right';
+      ctx.fillText(lbl,0,0);
+    } else {
+      ctx.fillText(lbl,x,plotB+16);
+    }
+    ctx.restore();
+  });
+
+  // Axis titles
+  ctx.save();
+  ctx.font='600 10px Inter,sans-serif';
+  ctx.fillStyle=barFill;
+  ctx.textAlign='center';
+  ctx.translate(14,plotT+plotH/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText('MDSE Sales',0,0);
+  ctx.restore();
+
+  ctx.save();
+  ctx.font='600 10px Inter,sans-serif';
+  ctx.fillStyle=lineStroke;
+  ctx.textAlign='center';
+  ctx.translate(W-8,plotT+plotH/2);
+  ctx.rotate(Math.PI/2);
+  ctx.fillText('GP %',0,0);
+  ctx.restore();
+
+  // Hover crosshair
+  if(hoverIdx>=0&&hoverIdx<n){
+    const x=plotL+hoverIdx*slotW+slotW/2;
+    ctx.strokeStyle=gridline;
+    ctx.lineWidth=1;
+    ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(x,plotT);ctx.lineTo(x,plotB);ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
+function roundedRect(ctx,x,y,w,h,r){
+  r=Math.min(r,h/2,w/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.lineTo(x+w-r,y);
+  ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h);
+  ctx.lineTo(x,y+h);
+  ctx.lineTo(x,y+r);
+  ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
+function hitTest(mx,my){
+  const data=getData();
+  const n=data.length;
+  const plotL=PAD.left, plotR=W-PAD.right, plotT=PAD.top, plotB=H-PAD.bottom;
+  const slotW=(plotR-plotL)/n;
+  if(mx<plotL||mx>plotR||my<plotT-10||my>plotB+10)return-1;
+  const idx=Math.floor((mx-plotL)/slotW);
+  return Math.max(0,Math.min(n-1,idx));
+}
+
+function showTooltip(idx,mx,my){
+  const data=getData();
+  const d=data[idx];
+  let label=d.label;
+  if(currentView==='weekly'&&d.yr)label+=` (${d.yr})`;
+
+  const delta=idx>0?(d.gpPct-data[idx-1].gpPct):null;
+  const deltaHtml=delta!==null?`<div class="tt-row"><span class="tt-key">GP% Δ</span><span class="tt-val" style="color:${delta>=0?getCSS('--green'):getCSS('--red')}">${delta>=0?'+':''}${delta.toFixed(2)}pp</span></div>`:'';
+
+  tooltip.innerHTML=`
+    <div class="tt-label">${label}</div>
+    <div class="tt-row"><span class="tt-key">MDSE</span><span class="tt-val">${fmt$(d.mdse)}</span></div>
+    <div class="tt-row"><span class="tt-key">GP</span><span class="tt-val">${fmt$(d.gp)}</span></div>
+    <div class="tt-row"><span class="tt-key">GP%</span><span class="tt-val">${fmtPct(d.gpPct)}</span></div>
+    <div class="tt-row"><span class="tt-key">Invoices</span><span class="tt-val">${d.inv.toLocaleString()}</span></div>
+    ${deltaHtml}
+  `;
+  tooltip.classList.add('show');
+
+  // Position
+  const tr=chartArea.getBoundingClientRect();
+  const tw=tooltip.offsetWidth, th=tooltip.offsetHeight;
+  let tx=mx+12, ty=my-th/2;
+  if(tx+tw>tr.width-20)tx=mx-tw-12;
+  ty=Math.max(4,Math.min(tr.height-th-4,ty));
+  tooltip.style.left=tx+'px';
+  tooltip.style.top=ty+'px';
+}
+
+canvas.addEventListener('mousemove',e=>{
+  const r=canvas.getBoundingClientRect();
+  const mx=e.clientX-r.left, my=e.clientY-r.top;
+  const idx=hitTest(mx,my);
+  if(idx!==hoverIdx){
+    hoverIdx=idx;
+    draw();
+    if(idx>=0)showTooltip(idx,mx,my);
+    else tooltip.classList.remove('show');
+  } else if(idx>=0){
+    showTooltip(idx,mx,my);
+  }
+});
+canvas.addEventListener('mouseleave',()=>{
+  hoverIdx=-1;draw();tooltip.classList.remove('show');
+});
+
+function setView(v){
+  currentView=v;
+  document.querySelectorAll('.view-btn').forEach(b=>{
+    b.classList.toggle('active',b.dataset.view===v);
+  });
+  hoverIdx=-1;
+  tooltip.classList.remove('show');
+  draw();
+}
+
+function toggleDark(){
+  const html=document.documentElement;
+  html.dataset.theme=html.dataset.theme==='dark'?'light':'dark';
+  requestAnimationFrame(draw);
+}
+
+function init(){
+  dpr=window.devicePixelRatio||1;
+  resize();
+  draw();
+}
+
+window.addEventListener('resize',()=>{resize();draw();});
+init();
+</script>
+</body>
+</html>
