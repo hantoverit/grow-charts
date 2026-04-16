@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html data-theme="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amazon Deep Dive — ZNVREGEX M6</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f6f8;--surface:#fff;--surface2:#f9fafb;
+  --border:#e3e7ed;--text-primary:#111827;--text-secondary:#4b5563;--text-muted:#9ca3af;
+  --green:#1e8a4a;--green-bg:#dcfce7;--red:#c0392b;--red-bg:#fee2e2;
+  --toggle-bg:#d1d5db;--toggle-knob:#fff;
+  --active-bg:#1a73e8;--active-text:#fff;--inactive:#6b7280;
+  --shadow:0 1px 6px rgba(0,0,0,.08),0 4px 20px rgba(0,0,0,.04);
+  --chart-bg:#f8fafc;--chart-border:#dce3eb;
+  --accent:#1a73e8;
+  --z-neg:#ef4444;--z-low:#f97316;--z-mid:#eab308;--z-good:#22c55e;--z-great:#06b6d4;--z-zero:#94a3b8;
+}
+[data-theme="dark"]{
+  --bg:#0d1117;--surface:#161b27;--surface2:#1e2533;
+  --border:#2e3a4e;--text-primary:#e8edf5;--text-secondary:#b0bdd0;--text-muted:#6b7f99;
+  --green:#4ade80;--green-bg:#0c2b1c;--red:#fc8181;--red-bg:#2d1214;
+  --toggle-bg:#2e3a4e;--toggle-knob:#e8edf5;
+  --active-bg:#4f93f5;--active-text:#0d1117;--inactive:#94a3b8;
+  --shadow:0 1px 8px rgba(0,0,0,.5);
+  --chart-bg:#0f1520;--chart-border:#1e2a3a;
+  --accent:#4f93f5;
+  --z-neg:#f87171;--z-low:#fb923c;--z-mid:#fbbf24;--z-good:#4ade80;--z-great:#22d3ee;--z-zero:#64748b;
+}
+[data-theme="dark"] .dm-knob{transform:translateX(13px)}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text-primary)}
+.widget{height:100%;display:flex;flex-direction:column;overflow:hidden}
+
+/* header */
+.header{padding:13px 20px 7px;flex-shrink:0;display:flex;align-items:flex-start;justify-content:space-between}
+.hl{display:flex;flex-direction:column;gap:2px}
+.eyebrow{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--text-muted)}
+.title{font-size:17px;font-weight:800;color:var(--text-primary);letter-spacing:-.025em;line-height:1.2}
+.subtitle{font-size:11px;color:var(--text-muted);font-weight:500;margin-top:1px}
+.hr{display:flex;align-items:center;gap:10px;padding-top:2px}
+.dm-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;opacity:.6;transition:opacity .15s;user-select:none;padding:2px 4px}
+.dm-toggle:hover{opacity:1}
+.dm-icon{font-size:10px;color:var(--text-secondary);display:flex;align-items:center;width:12px;justify-content:center}
+.dm-track{width:28px;height:15px;background:var(--toggle-bg);border-radius:8px;position:relative;transition:background .2s;flex-shrink:0}
+.dm-knob{width:11px;height:11px;background:var(--toggle-knob);border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+
+/* kpi strip */
+.kpi-strip{display:flex;gap:7px;padding:0 20px;flex-shrink:0;margin-bottom:4px}
+.kpi{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px 10px}
+.kpi-lbl{font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)}
+.kpi-val{font-size:15px;font-weight:700;color:var(--text-primary);letter-spacing:-.02em;line-height:1.3}
+.kpi-val.pos{color:var(--z-good)}.kpi-val.neg{color:var(--z-neg)}
+.kpi-sub{font-size:9px;color:var(--text-muted)}
+
+/* controls */
+.ctrl-row{display:flex;align-items:center;gap:6px;padding:4px 20px;flex-shrink:0}
+.seg{display:flex;border:1px solid var(--border);border-radius:7px;overflow:hidden;background:var(--surface2)}
+.seg-btn{font-size:11px;font-weight:600;padding:5px 12px;border:none;cursor:pointer;background:transparent;color:var(--inactive);transition:all .15s;font-family:'Inter',sans-serif;white-space:nowrap}
+.seg-btn:not(:last-child){border-right:1px solid var(--border)}
+.seg-btn.active{background:var(--active-bg);color:var(--active-text)}
+.sw{position:relative;margin-left:auto}
+.si{font-family:'Inter',sans-serif;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text-primary);padding:5px 10px 5px 26px;border-radius:7px;width:168px;outline:none;transition:border-color .15s}
+.si:focus{border-color:var(--accent)}
+.si::placeholder{color:var(--text-muted)}
+.sicon{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:12px;pointer-events:none}
+.rst{height:28px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;display:flex;align-items:center;gap:4px;color:var(--text-muted);font-family:'Inter',sans-serif;font-size:11px;font-weight:600;padding:0 10px;transition:all .15s}
+.rst:hover{color:var(--text-primary);border-color:var(--text-muted)}
+.rst.has-pins{color:var(--red);border-color:var(--red);background:var(--red-bg)}
+
+/* chart */
+.chart-area{flex:1;min-height:0;margin:0 20px 12px;background:var(--chart-bg);border:1px solid var(--chart-border);border-radius:8px;position:relative;overflow:hidden;transition:background .25s,border-color .25s}
+canvas{display:block;width:100%;height:100%}
+.empty{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--text-muted);pointer-events:none}
+
+/* legend */
+.legend{display:flex;align-items:center;gap:10px;padding:0 20px 10px;flex-shrink:0;flex-wrap:wrap}
+.li{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;color:var(--text-muted)}
+.ld{width:8px;height:8px;border-radius:50%}
+.lb{width:12px;height:8px;border-radius:2px;background:var(--accent);opacity:.75}
+.ll{width:16px;height:2px;flex-shrink:0;border-top:2px dashed #f97316}
+.lsep{width:1px;height:12px;background:var(--border)}
+.lctr{font-size:9px;color:var(--text-muted);margin-left:auto}
+
+/* info cards */
+.ic{position:fixed;background:var(--surface);border:1px solid var(--chart-border);border-radius:10px;box-shadow:var(--shadow);z-index:200;min-width:190px;max-width:520px;overflow:visible;font-size:11px;animation:fu .15s ease}
+.ic.pinned{border-color:var(--active-bg);box-shadow:0 0 0 1px var(--active-bg),var(--shadow);cursor:move}
+@keyframes fu{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+.ic-acc{position:absolute;top:0;left:0;bottom:0;width:4px;border-radius:10px 0 0 10px}
+.ic-h{position:absolute;z-index:210}
+.ic-h-tl{top:-4px;left:-4px;width:12px;height:12px;cursor:nwse-resize}
+.ic-h-tr{top:-4px;right:-4px;width:12px;height:12px;cursor:nesw-resize}
+.ic-h-bl{bottom:-4px;left:-4px;width:12px;height:12px;cursor:nesw-resize}
+.ic-h-br{bottom:-4px;right:-4px;width:12px;height:12px;cursor:nwse-resize}
+.ic-in{padding:.9em 1.1em .9em 1.45em;overflow:hidden}
+.ic-hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:.7em;margin-bottom:.45em}
+.ic-id{font-size:1.09em;font-weight:700;color:var(--accent)}
+.ic-x{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.27em;line-height:1;padding:0;transition:color .12s;flex-shrink:0}
+.ic-x:hover{color:var(--text-primary)}
+.ic-desc{font-size:.95em;color:var(--text-muted);line-height:1.35;margin-bottom:.64em}
+.ic-grid{display:grid;grid-template-columns:1fr 1fr;gap:.36em .9em}
+.ic-kv{display:flex;flex-direction:column;gap:.09em}
+.ic-k{font-size:.82em;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted)}
+.ic-v{font-size:1.18em;font-weight:700;color:var(--text-primary)}
+.ic-v.pos{color:var(--z-good)}.ic-v.neg{color:var(--z-neg)}.ic-v.warn{color:var(--z-mid)}
+.ic-note{font-size:.82em;color:var(--z-low);font-style:italic;margin-top:.55em;line-height:1.3}
+/* overlay created dynamically per-drag via mkOv() */
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="header">
+    <div class="hl">
+      <span class="eyebrow">ZNVREGEX M6 &middot; Amazon Channel</span>
+      <span class="title">Amazon Deep Dive</span>
+      <span class="subtitle">MDSE concentration (Pareto) + GP% alignment &mdash; Rep 296 &middot; <span id="sub-count">175</span> SKUs</span>
+    </div>
+    <div class="hr">
+      <div class="dm-toggle" id="dmt">
+        <span class="dm-icon">&#9728;</span>
+        <div class="dm-track"><div class="dm-knob"></div></div>
+        <span class="dm-icon">&#9790;</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="kpi-strip" id="kpi-strip">
+    <div class="kpi"><div class="kpi-lbl">Channel MDSE</div><div class="kpi-val" id="k-mdse">—</div><div class="kpi-sub">Rep 296 total</div></div>
+    <div class="kpi"><div class="kpi-lbl">Gross Profit</div><div class="kpi-val pos" id="k-gp">—</div><div class="kpi-sub">Net after drag</div></div>
+    <div class="kpi"><div class="kpi-lbl">Channel GP%</div><div class="kpi-val pos" id="k-gpPct">—</div><div class="kpi-sub">vs 15.0% overall</div></div>
+    <div class="kpi"><div class="kpi-lbl">Profitable SKUs</div><div class="kpi-val" id="k-pos">—</div><div class="kpi-sub" id="k-pos-sub">—</div></div>
+    <div class="kpi"><div class="kpi-lbl">Loss SKUs</div><div class="kpi-val neg" id="k-neg">—</div><div class="kpi-sub" id="k-neg-sub">—</div></div>
+    <div class="kpi"><div class="kpi-lbl">Zero-Revenue SKUs</div><div class="kpi-val" id="k-addon">—</div><div class="kpi-sub" id="k-addon-sub">$0 MDSE, cost only</div></div>
+  </div>
+
+  <div class="ctrl-row">
+    <div class="seg" id="topn">
+      <button class="seg-btn active" data-v="25">Top 25</button>
+      <button class="seg-btn" data-v="50">Top 50</button>
+      <button class="seg-btn" data-v="9999">All 175</button>
+    </div>
+    <div class="seg" id="srt">
+      <button class="seg-btn active" data-v="mdse">MDSE</button>
+      <button class="seg-btn" data-v="gp">GP $</button>
+      <button class="seg-btn" data-v="gpPct">GP %</button>
+    </div>
+    <div class="sw"><span class="sicon">⌕</span><input class="si" id="srch" type="text" placeholder="Item # or keyword…"></div>
+    <button class="rst" id="rst">Reset</button>
+  </div>
+
+  <div class="chart-area" id="ca">
+    <canvas id="cv"></canvas>
+    <div class="empty" id="empty">No items match</div>
+  </div>
+
+  <div class="legend">
+    <div class="li"><div class="lb"></div>MDSE bar</div>
+    <div class="li"><div class="ll"></div>Cumulative %</div>
+    <div class="lsep"></div>
+    <div class="li"><div class="ld" style="background:var(--z-neg)"></div>Negative</div>
+    <div class="li"><div class="ld" style="background:var(--z-low)"></div>0–15%</div>
+    <div class="li"><div class="ld" style="background:var(--z-mid)"></div>15–50%</div>
+    <div class="li"><div class="ld" style="background:var(--z-good)"></div>50–75%</div>
+    <div class="li"><div class="ld" style="background:var(--z-great)"></div>75%+</div>
+    <div class="li"><div class="ld" style="background:var(--z-zero)"></div>No Revenue</div>
+    <div class="lsep"></div>
+    <div class="li" style="font-size:9px">▲▼ = GP% beyond ±100% axis</div>
+    <div class="lctr" id="ctr"></div>
+  </div>
+</div>
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+const RAW=[
+["22917", "GLOVE NITRILE DISPOSAB", 13170.0, 2389.67, 10780.33, 162, 81.86],
+["22916", "GLOVE NITRILE DISPOSAB", 12277.89, 2182.2, 10095.69, 151, 82.23],
+["22915", "GLOVE NITRILE DISPOSAB", 4459.53, 783.03, 3676.5, 95, 82.44],
+["22918", "GLOVE NITRILE DISPOSAB", 2783.2, 477.94, 2305.26, 46, 82.83],
+["29077", "DISPENSER, NXT PURELL", 2122.73, 627.2, 1495.53, 26, 70.45],
+["30711", "GLOVE NITRILE DISPOSAB", 1475.45, 379.15, 1096.3, 51, 74.3],
+["22919", "GLOVE NITRILE DISPOSAB", 1053.88, 178.99, 874.89, 24, 83.02],
+["76309", "GLOVE GOLDEN GRAB-IT 1", 1319.89, 590.12, 729.77, 20, 55.29],
+["39397", "GLOVE NITRILE DISPOSAB", 836.53, 223.85, 612.68, 15, 73.24],
+["48839", "NOZZLE INSULATED WATER", 891.94, 307.92, 584.02, 19, 65.48],
+["25032", "THERMOMETER 35132 -100", 6504.0, 6008.84, 495.16, 19, 7.61],
+["140037", "BANTEX COHESIVE GAUZE", 774.4, 322.47, 451.93, 5, 58.36],
+["52950", "GLOVE NITRILE DISPOSAB", 525.0, 105.3, 419.7, 11, 79.94],
+["87772", "SLEEVE NEXT GEN 18\" LO", 550.73, 153.33, 397.4, 7, 72.16],
+["40430", "FROCK TYVEK WH XLRG SN", 524.04, 224.53, 299.51, 6, 57.15],
+["30710", "GLOVE NITRILE DISPOSAB", 358.8, 90.57, 268.23, 14, 74.76],
+["17933", "GLOVE WHIZARD VS10 SZ-", 326.39, 66.56, 259.83, 13, 79.61],
+["27250", "BOOT PVC SZ MEDIUM PT", 325.15, 84.0, 241.15, 8, 74.17],
+["34363", "GLOVE INSULATOR WHITE", 278.85, 46.89, 231.96, 9, 83.18],
+["68077", "NOZZLE INSULATED WATER", 324.35, 104.07, 220.28, 5, 67.91],
+["18416", "KNIFE BONING 5\" SUPERF", 319.84, 109.23, 210.61, 11, 65.85],
+["30713", "GLOVE NITRILE DISPOSAB", 249.55, 61.6, 187.95, 9, 75.32],
+["90598", "WIPER KC 41200-50 WYPA", 1763.82, 1598.68, 165.14, 5, 9.36],
+["38784", "EYEWASH SPRAYHEAD ASSE", 298.99, 136.56, 162.43, 2, 54.33],
+["52949", "GLOVE NITRILE DISPOSAB", 211.0, 49.08, 161.92, 6, 76.74],
+["52951", "GLOVE NITRILE DISPOSAB", 196.0, 39.0, 157.0, 3, 80.1],
+["30712", "GLOVE NITRILE DISPOSAB", 204.7, 50.5, 154.2, 6, 75.33],
+["34980", "GLOVE NITRILE DISPOSAB", 215.91, 65.35, 150.56, 4, 69.73],
+["34979", "GLOVE NITRILE DISPOSAB", 215.91, 68.62, 147.29, 5, 68.22],
+["53720", "FACESHIELD VISOR MESH", 200.0, 54.7, 145.3, 9, 72.65],
+["15217", "SLEEVE POLYURATHANE ON", 186.75, 41.65, 145.1, 4, 77.7],
+["46780", "3803H BONER 3 3/4\" SHO", 159.92, 25.84, 134.08, 10, 83.84],
+["12013", "EYEWEAR KLONDIKE CLEAR", 162.15, 43.01, 119.14, 7, 73.48],
+["12016", "EYEWEAR KLONDIKE REDUC", 146.81, 31.92, 114.89, 8, 78.26],
+["76907", "COVERALL TYVEK ZIPPER", 300.1, 196.08, 104.02, 2, 34.66],
+["47140", "SCABBARD KNIFE KS41 5\"", 139.96, 36.24, 103.72, 4, 74.11],
+["36989", "BOOT PVC SZ 15 PT 14\"", 150.3, 48.44, 101.86, 3, 67.77],
+["46198", "GLOVE HYFLEX GREY PU C", 176.5, 76.44, 100.06, 5, 56.69],
+["84846", "BOOT PVC SZ LARGE PT 4", 140.0, 40.0, 100.0, 8, 71.43],
+["22355", "HANDLE, BROOM 6361 THR", 130.05, 30.96, 99.09, 9, 76.19],
+["10249", "FACESHIELD CLEAR 8\" X", 108.5, 15.07, 93.43, 1, 86.11],
+["14373", "BOOT PVC SZ 8 PT 15\"", 137.98, 45.18, 92.8, 2, 67.26],
+["50907", "FLASHLIGHT HOLSTER PLA", 119.94, 30.9, 89.04, 6, 74.24],
+["24492", "8\" TRIMMING KNIFE STIF", 129.95, 42.85, 87.1, 5, 67.03],
+["51612", "GLOVE LATEX 17 MIL BLU", 102.98, 17.64, 85.34, 2, 82.87],
+["40186", "APRON VINYL 18MIL 56-1", 101.86, 16.69, 85.17, 3, 83.61],
+["76207", "GLOVE NITRILE DISPOSAB", 128.25, 43.5, 84.75, 3, 66.08],
+["60022", "GLOVE NITRILE DISPOSAB", 114.95, 33.17, 81.78, 4, 71.14],
+["33038", "HAND CLEANER GOJO NATU", 93.11, 15.72, 77.39, 1, 83.12],
+["72639", "BOOT PVC 81011 SZ13 PT", 105.98, 35.58, 70.4, 2, 66.43],
+["12265", "GOJO 9034-12 DISPENSER", 102.15, 33.0, 69.15, 3, 67.69],
+["76205", "GLOVE NITRILE DISPOSAB", 103.96, 36.31, 67.65, 2, 65.07],
+["32384", "COVERALL TYVEK YELLOW", 2599.88, 2534.83, 65.05, 11, 2.5],
+["34978", "GLOVE NITRILE DISPOSAB", 95.96, 30.99, 64.97, 3, 67.71],
+["51347", "GLOVE LATEX DISPOSABLE", 79.98, 16.0, 63.98, 1, 79.99],
+["40411", "BOUFFANT FOLDED 19\" WH", 67.0, 3.54, 63.46, 3, 94.72],
+["48972", "PADLOCK KEYED ALIKE, S", 106.35, 46.26, 60.09, 2, 56.5],
+["27252", "BOOT PVC SZ XLARGE PT", 83.42, 24.0, 59.42, 2, 71.23],
+["11052", "MOP BUCKET & WRINGER C", 812.97, 754.53, 58.44, 2, 7.19],
+["45326", "A14R BUTCHER STEEL 14\"", 80.02, 24.84, 55.18, 1, 68.96],
+["20985", "BUMP CAP BC86 RED 4-PO", 66.66, 14.19, 52.47, 1, 78.71],
+["52876", "GLOVE NITRILE DISPOSAB", 71.97, 20.01, 51.96, 2, 72.2],
+["37195", "VIKAN UST BENCH BRUSH", 75.88, 23.98, 51.9, 1, 68.4],
+["46812", "P33-6 PRODUCE KNIFE 6\"", 59.98, 8.58, 51.4, 1, 85.7],
+["29357", "FACESHIELD WINDOW CLEA", 171.0, 119.76, 51.24, 4, 29.96],
+["45890", "S125 SLIMING KNIFE 4-1", 68.58, 19.4, 49.18, 2, 71.71],
+["23571", "DISPENSER MANUAL VERSA", 69.9, 21.38, 48.52, 1, 69.41],
+["27850", "EYEWEAR KGV01000 KC-V6", 102.61, 58.66, 43.95, 3, 42.83],
+["32681", "LID GREEN FOR 32 GAL R", 53.12, 16.52, 36.6, 1, 68.9],
+["77020", "SLEEVE BLACK CANE MESH", 55.36, 19.04, 36.32, 1, 65.61],
+["40503", "FROCK TYVEK WH XXLRG S", 126.99, 90.78, 36.21, 2, 28.51],
+["52897", "GLOVE NITRILE DISPOSAB", 47.98, 12.58, 35.4, 1, 73.78],
+["39395", "GLOVE NITRILE DISPOSAB", 45.98, 10.77, 35.21, 1, 76.58],
+["52898", "GLOVE NITRILE DISPOSAB", 47.98, 12.8, 35.18, 2, 73.32],
+["38237", "SORBENT SOCK OIL ONLY", 50.99, 16.5, 34.49, 3, 67.64],
+["90511", "WIPERS POP UP BOX WHIT", 49.98, 16.44, 33.54, 2, 67.11],
+["52948", "GLOVE NITRILE DISPOSAB", 40.0, 7.8, 32.2, 6, 80.5],
+["52879", "GLOVE NITRILE DISPOSAB", 45.98, 14.0, 31.98, 2, 69.55],
+["35652", "RAIN JACKET INDUSTRIAL", 46.42, 16.02, 30.4, 1, 65.49],
+["40192", "APRON DISPOSABLE SMOOT", 53.43, 23.77, 29.66, 2, 55.51],
+["53250", "BACK SUPPORT LRG BLACK", 41.97, 12.72, 29.25, 1, 69.69],
+["51611", "GLOVE LATEX 17 MIL BLU", 35.0, 5.88, 29.12, 1, 83.2],
+["53248", "BACK SUPPORT SM BLACK", 41.34, 12.72, 28.62, 1, 69.23],
+["11675", "GLOVE POLAR BEAR PAW G", 35.99, 8.22, 27.77, 1, 77.16],
+["36287", "GOJO TOUCH FREE TFX DI", 269.91, 243.0, 26.91, 5, 9.97],
+["46348", "GLOVE DISPOSABLE STRET", 33.98, 8.0, 25.98, 2, 76.46],
+["39763", "BOOT PVC SZ 9 ST 14\"", 38.09, 12.83, 25.26, 1, 66.32],
+["52439RD", "BUMP CAP W/PLASTIC SU", 33.86, 8.64, 25.22, 1, 74.48],
+["5860100", "BOOT VIKING 86010 XSM", 35.39, 11.26, 24.13, 1, 68.18],
+["46825", "CG076F BONER 6\" CURVED", 30.99, 7.22, 23.77, 1, 76.7],
+["31967", "GLOVE PREMIUM GRAIN GO", 31.98, 9.66, 22.32, 2, 69.79],
+["17278", "GLOVE POWERFLEX T HI V", 323.5, 302.4, 21.1, 1, 6.52],
+["37327", "GLOVE NATURAL 100% LAT", 27.3, 6.24, 21.06, 1, 77.14],
+["51618", "GLOVE LATEX 20 MIL NAT", 29.99, 9.36, 20.63, 1, 68.79],
+["98355", "SEALER - BAG, MODEL BS", 1097.04, 1077.0, 20.04, 3, 1.83],
+["40721", "DISHER, S/S #50 DSS50", 28.99, 9.54, 19.45, 1, 67.09],
+["52899", "GLOVE NITRILE DISPOSAB", 23.99, 6.52, 17.47, 1, 72.82],
+["60023", "GLOVE NITRILE DISPOSAB", 23.99, 6.84, 17.15, 1, 71.49],
+["60024", "GLOVE NITRILE DISPOSAB", 23.99, 7.0, 16.99, 1, 70.82],
+["17932", "GLOVE WHIZARD VS10 SZ-", 20.99, 4.16, 16.83, 1, 80.18],
+["68079", "NOZZLE INSULATED WATER", 23.86, 7.43, 16.43, 1, 68.86],
+["47519", "GLOVE SAFETY KING WINT", 20.13, 3.82, 16.31, 1, 81.02],
+["260054", "FIRST AID GUIDE POCKET", 18.39, 3.12, 15.27, 2, 83.03],
+["18653", "PREP PLATE VACMASTER V", 531.86, 517.5, 14.36, 9, 2.7],
+["32492", "EYEWEAR BEAR KAT INDOO", 29.72, 15.65, 14.07, 3, 47.34],
+["40439", "SLEEVE TYVEK 18\" LONG", 161.48, 147.6, 13.88, 2, 8.6],
+["54902", "VEST SAFETY HI-VIZ LIM", 20.55, 6.75, 13.8, 1, 67.15],
+["42941", "PADLOCK #4140 CASE HAR", 18.2, 4.54, 13.66, 1, 75.05],
+["20323", "TUBE & VALUE BRUSH STI", 17.18, 5.05, 12.13, 1, 70.61],
+["46346", "GLOVE DISPOSABLE STRET", 16.99, 5.0, 11.99, 1, 70.57],
+["44336", "RIBBON BLACK HEAVY DUT", 131.5, 119.99, 11.51, 1, 8.75],
+["551130", "INHALATION VALVE 6/PK", 16.99, 5.7, 11.29, 1, 66.45],
+["26570", "JACKET RAIN SQUALL O72", 16.92, 5.77, 11.15, 1, 65.9],
+["102002", "HEADGEAR BRACKET ALUMI", 12.85, 4.18, 8.67, 1, 67.47],
+["48775", "WIPES WET TASK #06411", 157.0, 150.3, 6.7, 2, 4.27],
+["35750", "EYEWEAR SIDE SHIELD PY", 8.44, 1.87, 6.57, 1, 77.84],
+["31449", "DUST MOP CUT TO LENGTH", 311.97, 307.47, 4.5, 2, 1.44],
+["16784", "CHILL-ITS 6685 DRY EVA", 88.99, 84.95, 4.04, 1, 4.54],
+["31806", "COVERALL KLEENGUARD A2", 90.99, 89.52, 1.47, 1, 1.62],
+["46556", "GLOVE MECHANIX ORIGINA", 18.95, 17.84, 1.11, 1, 5.86],
+["46846", "R29-16K PIZZA KNIFE 16", 16.99, 16.31, 0.68, 3, 4.0],
+["37566", "VEST SAFETY 8254HDZ SU", 25.8, 25.6, 0.2, 1, 0.78],
+["44587", "LABELS PRINTER .75\" X", 21.36, 21.23, 0.13, 1, 0.61],
+["22982", "BOOT EVA SZ 9 COMPOSIT", 0.0, 0.0, 0.0, 2, 0.0],
+["41693", "GLOVE WHIZARD SILVER T", 0.0, 0.0, 0.0, 2, 0.0],
+["39917", "NOZZLE, GIANT# 21250B", 0.0, 0.0, 0.0, 2, 0.0],
+["52680", "BOOT EVA SZ 10 COMPOSI", 0.0, 0.0, 0.0, 2, 0.0],
+["12319", "CONTAINER STORAGE 5720", 0.0, 0.0, 0.0, 2, 0.0],
+["18983", "TOP 269288 BLUE FOR 35", 36.85, 37.29, -0.44, 1, -1.19],
+["39048", "EYEWEAR MX200 CLEAR LE", 8.28, 8.85, -0.57, 1, -6.88],
+["22354", "BROOM 638300 BLUE CORN", 180.0, 182.16, -2.16, 1, -1.2],
+["40287S", "BOOT NEOPRENE SZ 7 PT", 68.49, 71.25, -2.76, 1, -4.03],
+["18282", "UTILITY CART, BEIGE", 171.99, 175.0, -3.01, 1, -1.75],
+["47468", "JACKET INSULATED BOMBO", 70.56, 73.6, -3.04, 2, -4.31],
+["54802", "GLOVE HEXARMOR CHROME", 24.49, 30.67, -6.18, 1, -25.23],
+["16785", "CHILL-ITS 6685 DRY EVA", 180.32, 187.3, -6.98, 2, -3.87],
+["53246", "SHOE COVER MICROMAX WH", 79.99, 89.08, -9.09, 1, -11.36],
+["44893", "GOGGLE CLEAR LENS OTG", 2.03, 11.36, -9.33, 1, -459.61],
+["48498", "PAN S/S PREP 1/3 SIZE", 5.0, 18.32, -13.32, 1, -266.4],
+["14361", "BOOT PVC OVERSHOE SZ X", 0.0, 14.62, -14.62, 1, 0.0],
+["72638", "BOOT PVC 81011 SZ12 PT", 0.0, 18.88, -18.88, 1, 0.0],
+["18649", "VACUUM CHAMBER POUCH 1", 0.0, 21.86, -21.86, 1, 0.0],
+["15267", "FLOOR PAD BUFFING/POLI", 18.87, 44.1, -25.23, 3, -133.7],
+["52494", "BOOT POLYBLEND DURAPRO", 0.0, 25.71, -25.71, 1, 0.0],
+["76842", "BOOT PVC SZ 9 ST 15\"", 0.0, 25.89, -25.89, 1, 0.0],
+["29300", "GLOVE FREEZER FLEX THE", 5.27, 35.76, -30.49, 1, -578.56],
+["81055", "GLOVE HYFLEX FOAM NYLO", 5.0, 38.04, -33.04, 1, -660.8],
+["24445", "BOOT POLYURETHANE SZ 8", 0.0, 55.81, -55.81, 1, 0.0],
+["35897", "BEARD COVER WHITE 18\"", 0.03, 57.0, -56.97, 2, -189900.0],
+["35715", "CONTAINER EZ FILL W/FA", 22.5, 80.1, -57.6, 1, -256.0],
+["21925", "BOOT EVA SZ 8 COMPOSIT", 0.0, 59.74, -59.74, 1, 0.0],
+["22981", "BOOT EVA SZ 8 COMPOSIT", 0.0, 59.74, -59.74, 1, 0.0],
+["24447", "BOOT POLYURETHANE SZ 1", 0.0, 60.27, -60.27, 1, 0.0],
+["30725", "VACUUM CHAMBER POUCH 1", 0.0, 61.93, -61.93, 1, 0.0],
+["18648", "VACUUM CHAMBER POUCH 8", 0.0, 65.58, -65.58, 2, 0.0],
+["30735", "VACUUM CHAMBER POUCH 1", 0.0, 67.88, -67.88, 1, 0.0],
+["83001", "EARPLUG ROCKETS REUSAB", 2.38, 73.37, -70.99, 1, -2982.77],
+["22357", "HANDLE 60\" RED", 64.72, 140.4, -75.68, 1, -116.93],
+["90590", "TISSUE SCOTT 1PLY JUMB", 1014.81, 1094.4, -79.59, 8, -7.84],
+["30749", "RETHERMALIZATION CHAMB", 0.0, 81.08, -81.08, 1, 0.0],
+["89982", "LAB COAT DISPOSABLE SN", 3.24, 91.0, -87.76, 1, -2708.64],
+["25396", "WIPES PURELL ALCOHOL F", 23.58, 112.12, -88.54, 2, -375.49],
+["22629", "AIR FRESHENER REFILL F", 50.6, 139.2, -88.6, 2, -175.1],
+["53189", "BOOT POLYURETHANE SZ 1", 0.0, 89.1, -89.1, 1, 0.0],
+["53188", "BOOT POLYURETHANE SZ 9", 0.0, 97.78, -97.78, 1, 0.0],
+["53187", "BOOT POLYURETHANE SZ 8", 0.0, 97.78, -97.78, 1, 0.0],
+["71268", "BOOT POLYURETHANE SZ 1", 0.0, 97.78, -97.78, 1, 0.0],
+["71267", "BOOT POLYURETHANE SZ 9", 0.0, 97.78, -97.78, 1, 0.0],
+["18641", "VACUUM CHAMBER POUCH 8", 0.0, 101.06, -101.06, 2, 0.0],
+["25882", "SANDWICH BAG FLIP TOP", 0.05, 115.36, -115.31, 4, -230620.0],
+["36221", "GLOVE HYFLEX CR+ CUT R", 71.98, 219.36, -147.38, 4, -204.75],
+["90496", "TISSUE SCOTT KC 07827", 60.0, 214.97, -154.97, 3, -258.28],
+["53190", "BOOT POLYURETHANE SZ 1", 0.0, 195.56, -195.56, 2, 0.0],
+["23302", "AIR FRESHENER REFILL F", 50.76, 278.4, -227.64, 3, -448.46],
+["70712", "GLOVE NITRILE 22 MIL 1", 386.56, 2832.54, -2445.98, 28, -632.76],
+];
+const ITEMS=RAW.map(r=>({id:r[0],desc:r[1],mdse:r[2],cost:r[3],gp:r[4],count:r[5],gpPct:r[6],isAddon:r[2]<1&&r[4]<0}));
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let topN=25,sortKey='mdse',searchQ='',scrollPx=0,hoverIdx=-1,pins={},pZ=200;
+const canvas=document.getElementById('cv');
+const ctx=canvas.getContext('2d');
+function cv2(k){return getComputedStyle(document.documentElement).getPropertyValue(k).trim()}
+
+let _itemCache=null;
+function invalidateCache(){_itemCache=null;}
+function getItems(){
+  if(_itemCache)return _itemCache;
+  let it=[...ITEMS];
+  if(searchQ){const q=searchQ.toUpperCase();it=it.filter(x=>x.id.includes(q)||x.desc.toUpperCase().includes(q))}
+  if(sortKey==='mdse') it.sort((a,b)=>b.mdse-a.mdse);
+  else if(sortKey==='gp') it.sort((a,b)=>b.gp-a.gp);
+  else it.sort((a,b)=>b.gpPct-a.gpPct);
+  _itemCache=topN<9000?it.slice(0,topN):it;
+  return _itemCache;
+}
+function zoneCol(p){
+  if(p===0)  return cv2('--z-zero');
+  if(p<0)    return cv2('--z-neg');
+  if(p<15)   return cv2('--z-low');
+  if(p<50)   return cv2('--z-mid');
+  if(p<75)   return cv2('--z-good');
+  return cv2('--z-great');
+}
+
+// Layout
+const PL=134,PR=46,PT=20,PB=4,SEP=10,TF=0.60,GP0=-100,GP1=100,DR=5;
+
+function draw(){
+  const W=_cW,H=_cH;
+  const items=getItems(),N=items.length;
+  // Cache CSS vars for performance
+  const C={
+    bg:     cv2('--chart-bg'),
+    border: cv2('--chart-border'),
+    accent: cv2('--accent'),
+    tprim:  cv2('--text-primary'),
+    tsec:   cv2('--text-secondary'),
+    tmut:   cv2('--text-muted'),
+    zn:     cv2('--z-neg'),
+    zl:     cv2('--z-low'),
+    zm:     cv2('--z-mid'),
+    zg:     cv2('--z-good'),
+    zgr:    cv2('--z-great'),
+    z0:     cv2('--z-zero'),
+    bord:   cv2('--border'),
+  };
+  function zc(p){return p===0?C.z0:p<0?C.zn:p<15?C.zl:p<50?C.zm:p<75?C.zg:C.zgr;}
+  document.getElementById('empty').style.display=N?'none':'flex';
+  document.getElementById('ctr').textContent=searchQ?`${N} match`:`${N} of ${topN<9000?Math.min(topN,ITEMS.length):ITEMS.length} shown`;
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=C.bg;
+  ctx.fillRect(0,0,W,H);
+  if(!N)return;
+
+  const TH=H*TF,BH=H*(1-TF);
+  const topConH=TH-PT,barW=W-PL-PR;
+  const RH=Math.max(13,Math.floor(topConH/N));
+  const totScroll=RH*N;
+  const maxScroll=Math.max(0,totScroll-topConH);
+  scrollPx=Math.max(0,Math.min(scrollPx,maxScroll));
+
+  const maxMdse=Math.max(...items.map(x=>x.mdse),1);
+  const sumMdse=items.reduce((s,x)=>s+x.mdse,0);
+  const sepY=TH;
+  const botStart=sepY+SEP/2;
+  const botEnd=H-PB;
+  const botH=botEnd-botStart;
+
+  // ── Separator ──────────────────────────────────────────────────────────────
+  ctx.fillStyle=C.border;
+  ctx.fillRect(0,sepY,W,1);
+
+  // ── Column headers ─────────────────────────────────────────────────────────
+  ctx.font='700 9px Inter,sans-serif';
+  ctx.fillStyle=C.tmut;
+  ctx.textAlign='left';
+  ctx.fillText('ITEM',6,PT-6);
+  ctx.fillText('MDSE VOLUME  ·  CUMULATIVE %',PL+4,PT-6);
+  ctx.textAlign='right';
+  ctx.fillText('GP% BY ITEM',W-4,PT-6);
+
+  // ── Bottom GP% axis gridlines & labels ─────────────────────────────────────
+  ctx.font='500 8.5px Inter,sans-serif';
+  for(const g of [-100,-50,0,50,100]){
+    const gy=botStart+(1-(g-GP0)/(GP1-GP0))*botH;
+    ctx.strokeStyle=g===0?C.accent+'66':C.border;
+    ctx.lineWidth=g===0?1.5:.5;
+    ctx.setLineDash(g===0?[]:[3,4]);
+    ctx.beginPath();ctx.moveTo(PL,gy);ctx.lineTo(W-PR+4,gy);ctx.stroke();
+    ctx.setLineDash([]);ctx.lineWidth=1;
+    ctx.fillStyle=g===0?C.accent:C.tmut;
+    ctx.textAlign='right';
+    ctx.fillText(g+'%',W-2,gy+3.5);
+  }
+
+  // ── Bottom panel header ────────────────────────────────────────────────────
+  ctx.font='700 9px Inter,sans-serif';
+  ctx.fillStyle=C.tmut;
+  ctx.textAlign='left';
+  ctx.fillText('GP%',PL+4,botStart+10);
+
+  // ── Clip to chart area ─────────────────────────────────────────────────────
+  ctx.save();
+  ctx.beginPath();ctx.rect(0,PT,W,H-PT);ctx.clip();
+
+  let cumMdse=0;
+  const cumPts=[];
+
+  for(let i=0;i<N;i++){
+    const it=items[i];
+    const ry=PT+i*RH-scrollPx;
+    const rm=ry+RH/2;
+    if(ry+RH<PT||ry>TH){cumMdse+=it.mdse;cumPts.push(null);continue;}
+
+    // Hover highlight across both panels
+    const isPinned=!!pins[it.id];
+    if(isPinned){
+      ctx.fillStyle=zc(it.gpPct)+'22';
+      ctx.fillRect(0,ry,W,RH);
+      const gpY=botStart+(1-(Math.max(GP0,Math.min(GP1,it.gpPct))-GP0)/(GP1-GP0))*botH;
+      ctx.fillRect(0,gpY-RH/2,W,RH);
+    } else if(i===hoverIdx){
+      ctx.fillStyle=C.accent+'18';
+      ctx.fillRect(0,ry,W,RH);
+      const gpY=botStart+(1-(Math.max(GP0,Math.min(GP1,it.gpPct))-GP0)/(GP1-GP0))*botH;
+      ctx.fillRect(0,gpY-RH/2,W,RH);
+    }
+
+    // Label
+    const fs=Math.min(11,RH*0.55);
+    ctx.font=`${(isPinned||i===hoverIdx)?'700':'500'} ${fs}px Inter,sans-serif`;
+    ctx.fillStyle=(isPinned||i===hoverIdx)?C.tprim:C.tsec;
+    ctx.textAlign='right';
+    const lbl=(it.id+' '+it.desc).substring(0,22);
+    ctx.fillText(lbl,PL-5,rm+fs*0.35);
+
+    // Bar
+    const bw=Math.max(1,(it.mdse/maxMdse)*barW);
+    const bh=Math.max(4,RH*0.52);
+    const by=rm-bh/2;
+    if(isPinned){
+      // Full zone-color fill for pinned bar
+      ctx.fillStyle=zc(it.gpPct)+'cc';
+      ctx.beginPath();ctx.roundRect(PL,by,bw,bh,2);ctx.fill();
+      // Stroke outline
+      ctx.strokeStyle=zc(it.gpPct);
+      ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.roundRect(PL,by,bw,bh,2);ctx.stroke();
+      ctx.lineWidth=1;
+    } else {
+      ctx.fillStyle=C.accent+(i===hoverIdx?'cc':'88');
+      ctx.beginPath();ctx.roundRect(PL,by,bw,bh,2);ctx.fill();
+      // Zone accent strip (right edge, 4px)
+      const sw=Math.min(bw,4);
+      ctx.fillStyle=zc(it.gpPct);
+      ctx.fillRect(PL+bw-sw,by,sw,bh);
+    }
+
+    // MDSE label
+    if(it.mdse>0&&RH>=15){
+      const vs=it.mdse>=1000?'$'+(it.mdse/1000).toFixed(1)+'K':'$'+it.mdse.toFixed(0);
+      ctx.font=`500 ${Math.min(9.5,RH*0.45)}px Inter,sans-serif`;
+      ctx.textAlign='left';
+      ctx.fillStyle=C.tmut;
+      ctx.fillText(vs,PL+bw+4,rm+3.5);
+    }
+
+    cumMdse+=it.mdse;
+    const cpct=sumMdse>0?cumMdse/sumMdse:0;
+    cumPts.push({x:PL+(cpct*barW),y:rm,pct:cpct});
+  }
+
+  // Cumulative line
+  const validPts=cumPts.filter(Boolean);
+  if(validPts.length>=2){
+    ctx.beginPath();
+    ctx.strokeStyle='#f97316bb';
+    ctx.lineWidth=1.5;ctx.setLineDash([4,3]);
+    let first=true;
+    for(const p of validPts){
+      if(first){ctx.moveTo(p.x,p.y);first=false;}
+      else ctx.lineTo(p.x,p.y);
+    }
+    ctx.stroke();ctx.setLineDash([]);ctx.lineWidth=1;
+  }
+
+  // ── GP% dots (bottom panel) ────────────────────────────────────────────────
+  for(let i=0;i<N;i++){
+    const it=items[i];
+    const ry=PT+i*RH-scrollPx;
+    if(ry+RH<PT||ry>TH)continue;
+    const rm=ry+RH/2;
+
+    // X: space dots evenly across bar zone
+    const dotX=PL+8+(i/(Math.max(N-1,1)))*(barW-16);
+    const gpC=Math.max(GP0,Math.min(GP1,it.gpPct));
+    const dotY=botStart+(1-(gpC-GP0)/(GP1-GP0))*botH;
+    const overflow=it.gpPct<GP0||it.gpPct>GP1;
+    const col=zc(it.gpPct);
+
+    const isPinned2=!!pins[it.id];
+
+    // Connector line — thicker and brighter for pinned
+    ctx.beginPath();
+    ctx.strokeStyle=col+(isPinned2?'99':'28');
+    ctx.lineWidth=isPinned2?1.5:0.6;
+    ctx.moveTo(PL+(it.mdse/maxMdse)*barW/2,TH);
+    ctx.lineTo(dotX,dotY);
+    ctx.stroke();ctx.lineWidth=1;
+
+    ctx.beginPath();
+    if(overflow){
+      const dir=it.gpPct<GP0?1:-1;
+      ctx.moveTo(dotX,dotY+dir*6);ctx.lineTo(dotX-5,dotY-dir*2);ctx.lineTo(dotX+5,dotY-dir*2);
+      ctx.closePath();
+    }else{
+      ctx.arc(dotX,dotY,isPinned2?DR+3:i===hoverIdx?DR+2:DR,0,Math.PI*2);
+    }
+    ctx.fillStyle=col+(isPinned2||i===hoverIdx?'':'cc');
+    ctx.fill();
+    if(isPinned2){
+      // Zone-color ring for pinned dot
+      ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();
+      ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.stroke();
+      ctx.lineWidth=1;
+    } else if(i===hoverIdx){
+      ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();ctx.lineWidth=1;
+    }
+
+    // GP% label on hover
+    if(i===hoverIdx&&!overflow){
+      ctx.font='600 9px Inter,sans-serif';
+      ctx.fillStyle=C.tprim;
+      ctx.textAlign=dotX>W/2?'right':'left';
+      const gs=Math.abs(it.gpPct)>999?'>999%':it.gpPct.toFixed(1)+'%';
+      ctx.fillText(gs,dotX+(dotX>W/2?-8:8),dotY+3.5);
+    }
+  }
+
+  ctx.restore();
+
+  // Scrollbar
+  if(maxScroll>0){
+    const sh=(topConH/totScroll)*topConH;
+    const sy=PT+(scrollPx/totScroll)*topConH;
+    ctx.fillStyle=C.bord+'cc';
+    ctx.beginPath();ctx.roundRect(W-5,sy,3,Math.max(20,sh),2);ctx.fill();
+  }
+}
+
+// ── Resize ────────────────────────────────────────────────────────────────────
+let _cW=0,_cH=0; // logical CSS-pixel canvas dimensions
+function resize(){
+  const a=document.getElementById('ca');
+  const dpr=window.devicePixelRatio||1;
+  _cW=a.clientWidth;_cH=a.clientHeight;
+  canvas.width=Math.round(_cW*dpr);canvas.height=Math.round(_cH*dpr);
+  canvas.style.width=_cW+'px';canvas.style.height=_cH+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  draw();
+}
+window.addEventListener('resize',resize);
+
+// ── Interaction ───────────────────────────────────────────────────────────────
+function rowIdxAt(my){
+  const TH=_cH*TF;
+  if(my<PT||my>TH)return -1;
+  const items=getItems(),N=items.length;
+  const RH=Math.max(13,Math.floor((_cH*TF-PT)/N));
+  const idx=Math.floor((my-PT+scrollPx)/RH);
+  return idx>=0&&idx<N?idx:-1;
+}
+
+canvas.addEventListener('mousemove',e=>{
+  const r=canvas.getBoundingClientRect();
+  const my=e.clientY-r.top;
+  const idx=rowIdxAt(my);
+  if(idx!==hoverIdx){hoverIdx=idx;draw();}
+  canvas.style.cursor=idx>=0?'pointer':'default';
+});
+canvas.addEventListener('mouseleave',()=>{if(hoverIdx!==-1){hoverIdx=-1;draw();}});
+canvas.addEventListener('click',e=>{
+  if(hoverIdx>=0){const r=canvas.getBoundingClientRect();pin(getItems()[hoverIdx],e.clientX,e.clientY);}
+});
+let _wraf=null;
+canvas.addEventListener('wheel',e=>{e.preventDefault();scrollPx=Math.max(0,scrollPx+e.deltaY*.6);if(!_wraf)_wraf=requestAnimationFrame(()=>{_wraf=null;draw();});},{passive:false});
+
+// ── Pin cards ─────────────────────────────────────────────────────────────────
+function fmt$(v){return(v<0?'-$':'$')+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function fmtP(v){return Math.abs(v)>999?'>999%':v.toFixed(1)+'%'}
+
+function pin(it,cx,cy){
+  if(pins[it.id]){pins[it.id].remove();delete pins[it.id];rstState();draw();return;}
+  const card=document.createElement('div');
+  card.className='ic pinned';
+  card.style.left=Math.min(cx+12,window.innerWidth-290)+'px';
+  card.style.top=Math.max(10,cy-70)+'px';
+  card.style.zIndex=++pZ;
+  const ac=zoneCol(it.gpPct);
+  const gc=it.gp>0?'pos':it.gp<0?'neg':'';
+  const gpc=it.gpPct>=50?'pos':it.gpPct>=0?'':'neg';
+  card.innerHTML=`<div class="ic-acc" style="background:${ac}"></div>
+<div class="ic-h ic-h-tl" data-c="tl"></div><div class="ic-h ic-h-tr" data-c="tr"></div>
+<div class="ic-h ic-h-bl" data-c="bl"></div><div class="ic-h ic-h-br" data-c="br"></div>
+<div class="ic-in">
+<div class="ic-hdr"><span class="ic-id">${it.id}</span><button class="ic-x">✕</button></div>
+<div class="ic-desc">${it.desc}</div>
+<div class="ic-grid">
+<div class="ic-kv"><span class="ic-k">MDSE</span><span class="ic-v">${fmt$(it.mdse)}</span></div>
+<div class="ic-kv"><span class="ic-k">GP $</span><span class="ic-v ${gc}">${fmt$(it.gp)}</span></div>
+<div class="ic-kv"><span class="ic-k">GP %</span><span class="ic-v ${gpc}">${fmtP(it.gpPct)}</span></div>
+<div class="ic-kv"><span class="ic-k">Order Lines</span><span class="ic-v">${it.count}</span></div>
+</div>
+${it.isAddon?'<div class="ic-note">⚠ ADDON artifact — cost recorded, no sale</div>':''}
+${Math.abs(it.gpPct)>999&&!it.isAddon?'<div class="ic-note">⚠ GP% extreme — near-zero MDSE, cost posted</div>':''}
+</div>`;
+  const icx = card.querySelector('.ic-x');
+  icx.addEventListener('mousedown', e=>e.stopPropagation());
+  icx.addEventListener('click',()=>{card.remove();delete pins[it.id];rstState();draw();});
+  card.addEventListener('mousedown',e=>{
+    e.preventDefault();
+    card.style.zIndex=++pZ;
+    const corn=e.target.closest('.ic-h')?e.target.dataset.c:null;
+    const sx=e.clientX,sy=e.clientY,sl=card.offsetLeft,st=card.offsetTop,sw=card.offsetWidth,sh=card.offsetHeight;
+    const curMap={tl:'nwse-resize',tr:'nesw-resize',bl:'nesw-resize',br:'nwse-resize'};
+    const ov=mkOv(corn?curMap[corn]||'nwse-resize':'move');
+    let raf=null;
+    ov.addEventListener('mousemove',ev=>{
+      if(raf)return;
+      raf=requestAnimationFrame(()=>{
+        raf=null;
+        const dx=ev.clientX-sx,dy=ev.clientY-sy;
+        if(!corn){card.style.left=(sl+dx)+'px';card.style.top=(st+dy)+'px';}
+        else{
+          let nw=sw,nh=sh,nl=sl,nt=st;
+          if(corn.includes('r'))nw=Math.max(190,sw+dx);
+          if(corn.includes('b'))nh=Math.max(80,sh+dy);
+          if(corn.includes('l')){nw=Math.max(190,sw-dx);nl=sl+(sw-nw);}
+          if(corn.includes('t')){nh=Math.max(80,sh-dy);nt=st+(sh-nh);}
+          card.style.width=nw+'px';card.style.height=nh+'px';card.style.left=nl+'px';card.style.top=nt+'px';
+          scaleCard(card);
+        }
+      });
+    });
+    ov.addEventListener('mouseup',()=>ov.remove(),{once:true});
+  });
+  document.body.appendChild(card);scaleCard(card);pins[it.id]=card;rstState();draw();
+}
+function scaleCard(card){card.style.fontSize=Math.max(9,Math.min(18,(card.offsetWidth/210)*11))+'px';}
+function mkOv(cur){const o=document.createElement('div');o.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;cursor:'+cur;document.body.appendChild(o);return o;}
+function rstState(){document.getElementById('rst').classList.toggle('has-pins',Object.keys(pins).length>0);}
+
+// ── Controls ──────────────────────────────────────────────────────────────────
+document.getElementById('topn').addEventListener('click',e=>{
+  const b=e.target.closest('[data-v]');if(!b)return;
+  document.querySelectorAll('#topn [data-v]').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');topN=parseInt(b.dataset.v);scrollPx=0;invalidateCache();draw();
+});
+document.getElementById('srt').addEventListener('click',e=>{
+  const b=e.target.closest('[data-v]');if(!b)return;
+  document.querySelectorAll('#srt [data-v]').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');sortKey=b.dataset.v;scrollPx=0;invalidateCache();draw();
+});
+document.getElementById('srch').addEventListener('input',e=>{searchQ=e.target.value.trim();scrollPx=0;invalidateCache();draw();});
+document.getElementById('rst').addEventListener('click',()=>{
+  searchQ='';scrollPx=0;hoverIdx=-1;
+  document.getElementById('srch').value='';
+  document.querySelectorAll('#topn [data-v]').forEach(x=>x.classList.remove('active'));
+  document.querySelector('#topn [data-v="25"]').classList.add('active');
+  document.querySelectorAll('#srt [data-v]').forEach(x=>x.classList.remove('active'));
+  document.querySelector('#srt [data-v="mdse"]').classList.add('active');
+  topN=25;sortKey='mdse';invalidateCache();
+  Object.values(pins).forEach(c=>c.remove());pins={};rstState();draw();
+});
+document.getElementById('dmt').addEventListener('click',()=>{
+  const h=document.documentElement;h.dataset.theme=h.dataset.theme==='dark'?'light':'dark';draw();
+});
+
+
+function updateKPIs(){
+  const totalMdse = ITEMS.reduce((s,x)=>s+x.mdse,0);
+  const totalGp   = ITEMS.reduce((s,x)=>s+x.gp,0);
+  const pos       = ITEMS.filter(x=>x.gp>0).length;
+  const neg       = ITEMS.filter(x=>x.gp<0&&!x.isAddon); // true losses: sold something, lost money
+  const addon     = ITEMS.filter(x=>x.isAddon);           // no revenue at all
+  const N = ITEMS.length;
+  const gpDrag    = neg.reduce((s,x)=>s+x.gp,0);
+  const addonDrag = addon.reduce((s,x)=>s+x.gp,0);
+  function fmtK(v){return v>=1000?'$'+(v/1000).toFixed(1)+'K':'$'+Math.round(v).toLocaleString();}
+  function fmtNeg(v){return '-$'+Math.abs(v).toLocaleString('en-US',{maximumFractionDigits:0});}
+  document.getElementById('k-mdse').textContent = fmtK(totalMdse);
+  document.getElementById('k-gp').textContent   = fmtK(totalGp);
+  document.getElementById('k-gpPct').textContent = (totalMdse?totalGp/totalMdse*100:0).toFixed(1)+'%';
+  const posEl = document.getElementById('k-pos');
+  posEl.innerHTML = pos+'<span style="font-size:11px;font-weight:500;color:var(--text-muted)"> / '+N+'</span>';
+  document.getElementById('k-pos-sub').textContent = Math.round(pos/N*100)+'% of items';
+  document.getElementById('k-neg').textContent = neg.length;
+  document.getElementById('k-neg-sub').textContent = fmtNeg(gpDrag)+' on-sale GP drag';
+  document.getElementById('k-addon').textContent = addon.length;
+  document.getElementById('k-addon-sub').textContent = fmtNeg(addonDrag)+' cost, no sale';
+  if(document.getElementById('sub-count')) document.getElementById('sub-count').textContent = N;
+}
+// ── Init ──────────────────────────────────────────────────────────────────────
+updateKPIs();
+resize();
+</script>
+</body>
+</html>
