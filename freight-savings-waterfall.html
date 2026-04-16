@@ -440,8 +440,115 @@ const DATA={"W2-23":{"totals":{"billed":5649.49,"paid":3188.48,"auditSvgs":1492.
       }
     ]
   }
+,
+  "W4-20": {
+    "totals": {
+      "billed": 2449.59,
+      "paid": 1955.58,
+      "auditSvgs": 407.75,
+      "dupSvgs": 86.26,
+      "totalSvgs": 494.01,
+      "savingsRate": 20.2,
+      "bills": 7
+    },
+    "carriers": [
+      {
+        "id": "SAIA",
+        "billed": 1091.46,
+        "paid": 994.88,
+        "auditSvgs": 96.58,
+        "dupSvgs": 0
+      },
+      {
+        "id": "FXNL",
+        "billed": 905.19,
+        "paid": 767.52,
+        "auditSvgs": 137.67,
+        "dupSvgs": 0
+      },
+      {
+        "id": "CNWY",
+        "billed": 366.68,
+        "paid": 193.18,
+        "auditSvgs": 173.5,
+        "dupSvgs": 0
+      },
+      {
+        "id": "FEC*",
+        "billed": 86.26,
+        "paid": 0,
+        "auditSvgs": 0,
+        "dupSvgs": 86.26
+      }
+    ],
+    "items": [
+      {
+        "carr": "CNWY",
+        "pro": "445842692",
+        "paid": 193.18,
+        "billed": 366.68,
+        "auditSvgs": 173.5,
+        "dupSvgs": 0,
+        "desc": "THIS IS NOT A BLIND SHIPMENT BILLING ERROR"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "916808706",
+        "paid": 0,
+        "billed": 43.04,
+        "auditSvgs": 0,
+        "dupSvgs": 43.04,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "919425891",
+        "paid": 0,
+        "billed": 43.22,
+        "auditSvgs": 0,
+        "dupSvgs": 43.22,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FXNL",
+        "pro": "7929529296",
+        "paid": 314.4,
+        "billed": 344.01,
+        "auditSvgs": 29.61,
+        "dupSvgs": 0,
+        "desc": "PER BOL BILLER USING WRONG NMFC NO INSPECTION PROVIDED"
+      },
+      {
+        "carr": "FXNL",
+        "pro": "9411505891",
+        "paid": 453.12,
+        "billed": 561.18,
+        "auditSvgs": 108.06,
+        "dupSvgs": 0,
+        "desc": "NO WT CERT PROVIDED FOR CHANGE IN WT AND FEE"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10821984570",
+        "paid": 486.62,
+        "billed": 534.93,
+        "auditSvgs": 48.31,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT FSC IS 27.5%"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10821984580",
+        "paid": 508.26,
+        "billed": 556.53,
+        "auditSvgs": 48.27,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT FSC IS 27.5%"
+      }
+    ]
+  }
 };
-const WEEKS=['W2-23','W3-2','W3-9','W3-16','W3-23','W3-30','W4-6','W4-13'];
+const WEEKS=['W2-23','W3-2','W3-9','W3-16','W3-23','W3-30','W4-6','W4-13','W4-20'];
 
 // Dynamic week button generation
 (function(){
