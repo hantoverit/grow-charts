@@ -604,8 +604,122 @@ const DATA={"W2-23":{"totals":{"billed":5649.49,"paid":3188.48,"auditSvgs":1492.
       }
     ]
   }
+,
+  "W5-4": {
+    "totals": {
+      "billed": 2603.33,
+      "paid": 1365.96,
+      "auditSvgs": 1201.94,
+      "dupSvgs": 35.43,
+      "totalSvgs": 1237.37,
+      "savingsRate": 47.5,
+      "bills": 7
+    },
+    "carriers": [
+      {
+        "id": "FXNL",
+        "billed": 1568.8,
+        "paid": 535.85,
+        "auditSvgs": 1032.95,
+        "dupSvgs": 0
+      },
+      {
+        "id": "SAIA",
+        "billed": 556.79,
+        "paid": 533.41,
+        "auditSvgs": 23.38,
+        "dupSvgs": 0
+      },
+      {
+        "id": "FXFE",
+        "billed": 240.26,
+        "paid": 129.65,
+        "auditSvgs": 110.61,
+        "dupSvgs": 0
+      },
+      {
+        "id": "RLCA",
+        "billed": 202.05,
+        "paid": 167.05,
+        "auditSvgs": 35,
+        "dupSvgs": 0
+      },
+      {
+        "id": "FEC*",
+        "billed": 35.43,
+        "paid": 0,
+        "auditSvgs": 0,
+        "dupSvgs": 35.43
+      }
+    ],
+    "items": [
+      {
+        "carr": "FEC*",
+        "pro": "921242555",
+        "paid": 0,
+        "billed": 35.43,
+        "auditSvgs": 0,
+        "dupSvgs": 35.43,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FXFE",
+        "pro": "6742220166",
+        "paid": 129.65,
+        "billed": 240.26,
+        "auditSvgs": 110.61,
+        "dupSvgs": 0,
+        "desc": "USING WRONG 3RD PARTY ACCT# CORRECT ACCT# IS 768366659"
+      },
+      {
+        "carr": "FXNL",
+        "pro": "5840432183",
+        "paid": 258.6,
+        "billed": 298.6,
+        "auditSvgs": 40,
+        "dupSvgs": 0,
+        "desc": "PER BOL ACT WT 366 PER WT CERT WT 345 UNDER 50 FEE N/A"
+      },
+      {
+        "carr": "FXNL",
+        "pro": "5840432220",
+        "paid": 131.43,
+        "billed": 191.96,
+        "auditSvgs": 60.53,
+        "dupSvgs": 0,
+        "desc": "PER GOOGLE MAPS THIS IS GOING TO A BUSINESS NOT RESD DLVY"
+      },
+      {
+        "carr": "FXNL",
+        "pro": "7251067515",
+        "paid": 145.82,
+        "billed": 1078.24,
+        "auditSvgs": 932.42,
+        "dupSvgs": 0,
+        "desc": "S/B BILLING HANTOVER C/O DATA FREIGHT"
+      },
+      {
+        "carr": "RLCA",
+        "pro": "I467533197",
+        "paid": 167.05,
+        "billed": 202.05,
+        "auditSvgs": 35,
+        "dupSvgs": 0,
+        "desc": "PER GOOGLE MAPS THIS IS NOT A RESIDENTIAL DLVY"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10838512520",
+        "paid": 533.41,
+        "billed": 556.79,
+        "auditSvgs": 23.38,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT FSC S/B RATED AT 28.5%"
+      }
+    ]
+  }
 };
-const WEEKS=['W2-23','W3-2','W3-9','W3-16','W3-23','W3-30','W4-6','W4-13','W4-20','W4-27'];
+const WEEKS=['W2-23','W3-2','W3-9','W3-16','W3-23','W3-30','W4-6','W4-13','W4-20','W4-27','W5-4'];
 
 // Dynamic week button generation
 (function(){
