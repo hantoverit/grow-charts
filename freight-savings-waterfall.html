@@ -909,8 +909,90 @@ const DATA={"W2-23":{"totals":{"billed":5649.49,"paid":3188.48,"auditSvgs":1492.
       }
     ]
   }
+,
+  "W5-25": {
+    "totals": {
+      "billed": 1331.51,
+      "paid": 1064.7,
+      "auditSvgs": 120.86,
+      "dupSvgs": 128.46,
+      "totalSvgs": 249.32,
+      "savingsRate": 18.7,
+      "bills": 5
+    },
+    "carriers": [
+      {
+        "id": "FXNL",
+        "billed": 598.63,
+        "paid": 415.74,
+        "auditSvgs": 36.94,
+        "dupSvgs": 128.46
+      },
+      {
+        "id": "SAIA",
+        "billed": 556.53,
+        "paid": 507.61,
+        "auditSvgs": 48.92,
+        "dupSvgs": 0
+      },
+      {
+        "id": "RLCA",
+        "billed": 176.35,
+        "paid": 141.35,
+        "auditSvgs": 35,
+        "dupSvgs": 0
+      }
+    ],
+    "items": [
+      {
+        "carr": "FXNL",
+        "pro": "6743161880",
+        "paid": 144.4,
+        "billed": 149.59,
+        "auditSvgs": 5.19,
+        "dupSvgs": 0,
+        "desc": "98.73 MIN FLR PER PRICING ON FILE"
+      },
+      {
+        "carr": "FXNL",
+        "pro": "7929475212",
+        "paid": 271.34,
+        "billed": 303.09,
+        "auditSvgs": 31.75,
+        "dupSvgs": 0,
+        "desc": "BILLING ERROR NO INSPECTION PROVIDED FOR CHANGE IN CLASS"
+      },
+      {
+        "carr": "FXNL",
+        "pro": "7929475245",
+        "paid": 0,
+        "billed": 145.95,
+        "auditSvgs": 0,
+        "dupSvgs": 128.46,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "RLCA",
+        "pro": "IAF5447502",
+        "paid": 141.35,
+        "billed": 176.35,
+        "auditSvgs": 35,
+        "dupSvgs": 0,
+        "desc": "PER GOOGLE MAPS THIS IS GOING TO BUSINESS THAT HAS A DOCK"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10821984930",
+        "paid": 507.61,
+        "billed": 556.53,
+        "auditSvgs": 48.92,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT FSC IS ADDED B4 HIGH COST FEE"
+      }
+    ]
+  }
 };
-const WEEKS=['W2-23','W3-2','W3-9','W3-16','W3-23','W3-30','W4-6','W4-13','W4-20','W4-27','W5-4','W5-11','W5-18'];
+const WEEKS=['W2-23','W3-2','W3-9','W3-16','W3-23','W3-30','W4-6','W4-13','W4-20','W4-27','W5-4','W5-11','W5-18','W5-25'];
 
 // Dynamic week button generation
 (function(){
