@@ -2,9 +2,10 @@
 <html data-theme="dark" lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Freight KPI</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg:#f4f6f8;--surface:#fff;--surface2:#f9fafb;--border:#e3e7ed;
@@ -23,158 +24,147 @@
     --green:#4ade80;--green-bg:#0c2b1c;--red:#fc8181;--red-bg:#2d1214;
     --toggle-bg:#2e3a4e;--toggle-knob:#e8edf5;
     --week-active-bg:#4f93f5;--week-active-text:#0d1117;--week-inactive:#94a3b8;
-    --shadow:0 1px 8px rgba(0,0,0,.5);
-    --chart-bg:#0f1520;--chart-border:#1e2a3a;
+    --shadow:0 1px 8px rgba(0,0,0,.5);--chart-bg:#0f1520;--chart-border:#1e2a3a;
   }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{width:100%;height:100%}
+  *{box-sizing:border-box;margin:0;padding:0}html,body{width:100%;height:100%}
   body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text-primary);transition:background .25s,color .25s}
   .widget{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px 16px;width:100%;height:100%;display:flex;flex-direction:column;box-shadow:var(--shadow);transition:background .25s,border-color .25s}
   .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-shrink:0}
   .header-left{display:flex;flex-direction:column;gap:2px}
   .eyebrow{font-size:10.5px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted)}
   .title{font-size:16px;font-weight:700;color:var(--text-primary);letter-spacing:-.02em}
-  .header-right{display:flex;align-items:center;gap:14px}
-  .week-toggle{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px;gap:2px}
-  .week-btn{font-size:11.5px;font-weight:600;padding:5px 13px;border-radius:6px;border:none;cursor:pointer;background:transparent;color:var(--week-inactive);transition:all .16s;font-family:"Inter",sans-serif}
-  .week-btn.active{background:var(--week-active-bg);color:var(--week-active-text);box-shadow:0 1px 5px rgba(26,115,232,.3)}
+  .header-right{display:flex;align-items:center;gap:10px}
+  .reset-btn{font-size:11px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--text-muted);transition:all .16s;font-family:"Inter",sans-serif}
+  .reset-btn:hover{color:var(--text-primary);border-color:var(--text-secondary)}
   .dm-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;opacity:.6;transition:opacity .15s;user-select:none;padding:2px 4px}
-  .dm-toggle:hover{opacity:1}
-  .dm-icon{font-size:10px;color:var(--text-secondary);display:flex;align-items:center;width:12px;justify-content:center}
+  .dm-toggle:hover{opacity:1}.dm-icon{font-size:10px;color:var(--text-secondary);display:flex;align-items:center;width:12px;justify-content:center}
   .dm-track{width:28px;height:15px;background:var(--toggle-bg);border-radius:8px;position:relative;transition:background .2s;flex-shrink:0}
   .dm-knob{width:11px;height:11px;background:var(--toggle-knob);border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
   [data-theme="dark"] .dm-knob{transform:translateX(13px)}
+  .dc-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;justify-content:space-between}
+  .dc-filter{display:flex;gap:3px;margin-left:auto;align-items:center}
+  .dc-filter-lbl{font-size:9px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-right:2px}
+  .dc-periods{display:flex;gap:3px;flex-wrap:wrap;align-items:center}
+  .dc-pill{font-size:10.5px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--week-inactive);transition:all .16s;font-family:"Inter",sans-serif}
+  .dc-pill:hover{color:var(--text-primary);border-color:var(--text-muted)}
+  .dc-pill.active{background:var(--week-active-bg);color:var(--week-active-text);border-color:var(--week-active-bg);box-shadow:0 1px 4px rgba(26,115,232,.25)}
   .divider{height:1px;background:var(--border);margin-bottom:16px;flex-shrink:0}
   .kpi-area{flex:1;min-height:0;background:var(--chart-bg);border:1px solid var(--chart-border);border-radius:8px;padding:16px;display:flex;align-items:center;transition:background .25s,border-color .25s}
   .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;width:100%}
-  .kpi-card{
-    background:var(--surface2);border:1px solid var(--border);border-radius:10px;
-    padding:14px 14px 12px;
-    display:grid;
-    grid-template-rows:16px minmax(28px,auto) 32px 56px 16px;
-    row-gap:6px;
-    position:relative;overflow:hidden;
-    transition:background .25s,border-color .25s,transform .16s,box-shadow .16s;
-  }
+  .kpi-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 14px 12px;display:grid;grid-template-rows:16px minmax(28px,auto) 32px 56px 16px;row-gap:6px;position:relative;overflow:hidden;transition:background .25s,border-color .25s,transform .16s,box-shadow .16s}
   .kpi-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.08)}
   .kpi-card::after{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent);opacity:.5;border-radius:10px 10px 0 0}
   .week-badge{display:inline-flex;align-items:center;font-size:9px;font-weight:600;letter-spacing:.07em;padding:0 6px;border-radius:4px;background:var(--accent-dim);color:var(--accent-text);text-transform:uppercase;align-self:center;justify-self:start;height:16px}
   .kpi-label{font-size:10.5px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;line-height:1.35;align-self:start}
   .kpi-value{font-size:20px;font-weight:700;color:var(--text-primary);letter-spacing:-.03em;line-height:1;align-self:center;white-space:nowrap}
   .kpi-deltas{display:flex;flex-direction:column;justify-content:flex-start;gap:5px;align-self:start}
-  .kpi-spacer{}
   .delta-pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;border-radius:4px;padding:3px 6px;width:fit-content;line-height:1}
-  .delta-pill.positive{color:var(--green);background:var(--green-bg)}
-  .delta-pill.negative{color:var(--red);background:var(--red-bg)}
-  .delta-pill.neutral{color:var(--text-muted);background:transparent}
-  .delta-arrow{font-size:11px;line-height:1}
-  .kpi-prev{font-size:10px;color:var(--text-muted);font-weight:400;line-height:1;align-self:center}
-  .kpi-prev span{font-weight:600;color:var(--text-secondary)}
+  .delta-pill.positive{color:var(--green);background:var(--green-bg)}.delta-pill.negative{color:var(--red);background:var(--red-bg)}.delta-pill.neutral{color:var(--text-muted);background:transparent}
+  .kpi-prev{font-size:10px;color:var(--text-muted);font-weight:400;line-height:1;align-self:center}.kpi-prev span{font-weight:600;color:var(--text-secondary)}
   @keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
   .animating .kpi-card{animation:fadeUp .2s ease both}
-  .animating .kpi-card:nth-child(1){animation-delay:.00s}
-  .animating .kpi-card:nth-child(2){animation-delay:.04s}
-  .animating .kpi-card:nth-child(3){animation-delay:.07s}
-  .animating .kpi-card:nth-child(4){animation-delay:.10s}
-  .animating .kpi-card:nth-child(5){animation-delay:.13s}
-</style>
-</head>
-<body>
+  .animating .kpi-card:nth-child(1){animation-delay:.00s}.animating .kpi-card:nth-child(2){animation-delay:.04s}.animating .kpi-card:nth-child(3){animation-delay:.07s}.animating .kpi-card:nth-child(4){animation-delay:.10s}.animating .kpi-card:nth-child(5){animation-delay:.13s}
+  .wk-drill{margin-top:6px;border-top:1px solid var(--border);padding-top:5px}
+  .wk-drill-hdr{font-size:8.5px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+  .wk-drill-row{display:flex;justify-content:space-between;font-size:10px;padding:1px 0}
+  .wk-drill-row .wk-lbl{color:var(--text-muted);font-weight:500}
+  .wk-drill-row .wk-val{color:var(--text-secondary);font-weight:600;text-align:right}
+  .kpi-tooltip{position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;box-shadow:var(--shadow);z-index:100;pointer-events:none;opacity:0;transition:opacity .15s;min-width:140px}
+  .kpi-tooltip.visible{opacity:1}
+  .kpi-tooltip-title{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px}
+</style></head><body>
 <div class="widget">
-  <div class="header">
-    <div class="header-left">
-      <span class="eyebrow">Hantover Inc. &middot; Freight</span>
-      <span class="title">Weekly KPI Summary</span>
-    </div>
-    <div class="header-right">
-      <div class="week-toggle">
-        <span id="week-buttons"></span>
-      </div>
-      <div class="dm-toggle" onclick="toggleDark()" title="Toggle dark mode">
-        <span class="dm-icon">&#9728;</span>
-        <div class="dm-track"><div class="dm-knob"></div></div>
-        <span class="dm-icon">&#9790;</span>
-      </div>
-    </div>
-  </div>
+  <div class="header"><div class="header-left"><span class="eyebrow">Hantover Inc. &middot; Freight</span><span class="title">KPI Summary</span></div>
+    <div class="header-right"><button class="reset-btn" onclick="resetAll()">&#8634; Reset</button><div class="dm-toggle" onclick="toggleDark()" title="Toggle dark mode"><span class="dm-icon">&#9728;</span><div class="dm-track"><div class="dm-knob"></div></div><span class="dm-icon">&#9790;</span></div></div></div>
+  <div id="date-control"></div>
   <div class="divider"></div>
-  <div class="kpi-area">
-    <div class="kpi-grid" id="kpi-grid"></div>
-  </div>
-</div>
+  <div class="kpi-area"><div class="kpi-grid" id="kpi-grid"></div></div>
+<div class="kpi-tooltip" id="kpi-tip"></div></div>
 <script>
-const WEEKS=["2-23","3-2","3-9","3-16","3-23","3-30","4-6","4-13","4-20","4-27","5-4","5-11","5-18","5-25","6-1"];
-const data={
-  "2-23":{totalShipments:468,avgPaidPerShipment:358.94,totalFreightPaid:167983.23,avgWeightPerShipment:1367,totalWeight:639576},
-  "3-2":{totalShipments:362,avgPaidPerShipment:446.89,totalFreightPaid:161775.24,avgWeightPerShipment:1393,totalWeight:504412},
-  "3-9":{totalShipments:369,avgPaidPerShipment:428.71,totalFreightPaid:158194.40,avgWeightPerShipment:1465,totalWeight:540732},
-  "3-16":{totalShipments:317,avgPaidPerShipment:427.30,totalFreightPaid:135453.12,avgWeightPerShipment:1460,totalWeight:463010}
-,
-  "3-23":{totalShipments:331,avgPaidPerShipment:26.3,totalFreightPaid:147522.76,avgWeightPerShipment:445.688097,totalWeight:560946},
-  "3-30":{totalShipments:370,avgPaidPerShipment:25.87,totalFreightPaid:158662.76,avgWeightPerShipment:428.81827,totalWeight:613382},
-  "4-6":{totalShipments:387,avgPaidPerShipment:37.74,totalFreightPaid:176845.25,avgWeightPerShipment:456.96447,totalWeight:468561},
-  "4-13":{totalShipments:352,avgPaidPerShipment:29.13,totalFreightPaid:153954.26,avgWeightPerShipment:437.370057,totalWeight:528567},
-  "4-20":{totalShipments:314,avgPaidPerShipment:28.36,totalFreightPaid:138906.93,avgWeightPerShipment:442.378758,totalWeight:489832},
-  "4-27":{totalShipments:335,avgPaidPerShipment:37.01,totalFreightPaid:141945.39,avgWeightPerShipment:423.717582,totalWeight:383571},
-  "5-4":{totalShipments:432,avgPaidPerShipment:27.47,totalFreightPaid:169787.33,avgWeightPerShipment:393.026227,totalWeight:618173},
-  "5-11":{totalShipments:270,avgPaidPerShipment:37.82,totalFreightPaid:150504.18,avgWeightPerShipment:557.422889,totalWeight:397983},
-  "5-18":{totalShipments:197,avgPaidPerShipment:26.64,totalFreightPaid:105225.41,avgWeightPerShipment:534.139137,totalWeight:394921},
-  "5-25":{totalShipments:233,avgPaidPerShipment:24.33,totalFreightPaid:60628,avgWeightPerShipment:260.206009,totalWeight:249163},
-  "6-1":{totalShipments:413,avgPaidPerShipment:25.49,totalFreightPaid:154068.88,avgWeightPerShipment:373.048136,totalWeight:604314}};
-const metrics=[
-  {key:"totalShipments",      label:"Total Shipments",      format:"integer", unit:null},
-  {key:"avgPaidPerShipment",  label:"Avg Paid / Shipment",  format:"currency",unit:null},
-  {key:"totalFreightPaid",    label:"Total Freight Paid",   format:"currency",unit:null},
-  {key:"avgWeightPerShipment",label:"Avg Weight / Shipment",format:"integer", unit:"lbs"},
-  {key:"totalWeight",         label:"Total Weight",         format:"integer", unit:"lbs"}
-];
-let currentWeek=WEEKS[WEEKS.length-1],dark=true;
+/* ═══ Date Control Module ═══ */
+var ALL_WEEKS=["2-23","3-2","3-9","3-16","3-23","3-30","4-6","4-13","4-20","4-27","5-4","5-11","5-18","5-25","6-1"];
+var MONTHS={Feb:["2-23"],Mar:["3-2","3-9","3-16","3-23","3-30"],Apr:["4-6","4-13","4-20","4-27"],May:["5-4","5-11","5-18","5-25"],Jun:["6-1"]};
+var MONTH_KEYS=["Feb","Mar","Apr","May","Jun"];
+var granularity="monthly",activeMonth="Jun",activeWeekIdx=ALL_WEEKS.length-1;
+function getActiveWeeks(){return granularity==="monthly"?MONTHS[activeMonth]:[ALL_WEEKS[activeWeekIdx]];}
+function getPrevWeeks(){if(granularity==="monthly"){var i=MONTH_KEYS.indexOf(activeMonth);return i>0?MONTHS[MONTH_KEYS[i-1]]:null;}return activeWeekIdx>0?[ALL_WEEKS[activeWeekIdx-1]]:null;}
+function getPeriodLabel(){return granularity==="monthly"?activeMonth:"W"+ALL_WEEKS[activeWeekIdx].replace("W","");}
+function buildDateControl(){var el=document.getElementById("date-control");if(!el)return;var h='<div class="dc-row"><div class="dc-periods">';MONTH_KEYS.forEach(function(m){h+='<button class="dc-pill'+(m===activeMonth?' active':'')+'" onclick="setPeriod(\''+m+'\')">'+m+'</button>';});h+='</div></div>';el.innerHTML=h;}
 
-// Dynamic week button generation
-(function(){
-  const container=document.getElementById("week-buttons");
-  WEEKS.forEach(w=>{
-    const btn=document.createElement("button");
-    btn.className="week-btn"+(w===currentWeek?" active":"");
-    btn.id="btn-"+w.replace("-","");
-    btn.onclick=()=>setWeek(w);
-    btn.textContent="W"+w;
-    container.appendChild(btn);
-  });
-})();
+function setPeriod(p){if(p===activeMonth)return;activeMonth=p;buildDateControl();onDateChange();}
 
-function prevWeek(w){const i=WEEKS.indexOf(w);return i>0?WEEKS[i-1]:null;}
-function fmt(v,t,u){let s=t==="currency"?"$"+v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):v.toLocaleString("en-US");return u?s+" "+u:s}
-function fmtD(v,t,u){const a=Math.abs(v),sg=v>=0?"+":"\u2212";let s=t==="currency"?sg+"$"+a.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):sg+a.toLocaleString("en-US");return u?s+" "+u:s}
-
-function render(){
-  const grid=document.getElementById("kpi-grid");
-  const curr=data[currentWeek],pw=prevWeek(currentWeek),prev=pw?data[pw]:null;
-  grid.innerHTML="";grid.classList.remove("animating");void grid.offsetWidth;grid.classList.add("animating");
-  metrics.forEach(m=>{
-    const v=curr[m.key],card=document.createElement("div");card.className="kpi-card";
-    let dH,pH;
-    if(prev){
-      const pv=prev[m.key],rd=v-pv,pct=(rd/pv)*100,iz=rd===0,ip=rd>0;
-      const cls=iz?"neutral":ip?"positive":"negative",arr=iz?"\u2192":ip?"\u2191":"\u2193";
-      dH=`<div class="kpi-deltas"><div class="delta-pill ${cls}"><span class="delta-arrow">${arr}</span><span>${fmtD(rd,m.format,m.unit)}</span></div><div class="delta-pill ${cls}"><span class="delta-arrow">${arr}</span><span>${(pct>=0?"+":"")+pct.toFixed(1)}%</span></div></div>`;
-      pH=`<div class="kpi-prev">prev (W${pw}): <span>${fmt(pv,m.format,m.unit)}</span></div>`;
-    }else{
-      dH=`<div class="kpi-deltas"><div class="delta-pill neutral"><span>\u2014 \u2014</span></div><div class="delta-pill neutral"><span>\u2014 \u2014</span></div></div>`;
-      pH=`<div class="kpi-prev">prev: <span>\u2014 \u2014</span></div>`;
-    }
-    card.innerHTML=`<span class="week-badge">W${currentWeek}</span><div class="kpi-label">${m.label}</div><div class="kpi-value">${fmt(v,m.format,m.unit)}</div>${dH}${pH}`;
-    grid.appendChild(card);
-  });
-  WEEKS.forEach(w=>{
-    const id="btn-"+w.replace("-","");
-    const el=document.getElementById(id);
-    if(el) el.classList.toggle("active",currentWeek===w);
-  });
+function isMonthKey(k){return MONTHS[k]!=null;}
+function wkDrillHTML(monthKey,dataFn,fmtFn){
+  if(!isMonthKey(monthKey))return'';
+  var wks=MONTHS[monthKey];if(!wks||wks.length<=1)return'';
+  var h='<div class="wk-drill"><div class="wk-drill-hdr">Weekly Detail</div>';
+  wks.forEach(function(w){var v=dataFn(w);h+='<div class="wk-drill-row"><span class="wk-lbl">W'+w.replace("W","")+'</span><span class="wk-val">'+fmtFn(v)+'</span></div>';});
+  return h+'</div>';
 }
-function setWeek(w){currentWeek=w;render();}
+
+
+var WD={
+  "2-23":{s:468,p:167983.23,w:639576},
+  "3-2":{s:362,p:161775.24,w:504412},
+  "3-9":{s:369,p:158194.4,w:540732},
+  "3-16":{s:317,p:135453.12,w:463010},
+  "3-23":{s:331,p:147522.76,w:560946},
+  "3-30":{s:370,p:158662.76,w:613382},
+  "4-6":{s:387,p:176845.25,w:468561},
+  "4-13":{s:352,p:153954.26,w:528567},
+  "4-20":{s:314,p:138906.93,w:489832},
+  "4-27":{s:335,p:141945.39,w:383571},
+  "5-4":{s:432,p:169787.33,w:618173},
+  "5-11":{s:270,p:150504.18,w:397983},
+  "5-18":{s:197,p:105225.41,w:394921},
+  "5-25":{s:233,p:60628.0,w:249163},
+  "6-1":{s:413,p:154068.88,w:604314}
+};
+var metrics=[{key:"s",label:"Total Shipments",format:"integer",unit:null},{key:"avgPaid",label:"Avg Paid / Shipment",format:"currency",unit:null},{key:"p",label:"Total Freight Paid",format:"currency",unit:null},{key:"avgWt",label:"Avg Weight / Shipment",format:"integer",unit:"lbs"},{key:"w",label:"Total Weight",format:"integer",unit:"lbs"}];
+var dark=true;
+function agg(wks){var r={s:0,p:0,w:0};wks.forEach(function(k){var d=WD[k];if(d){r.s+=d.s;r.p+=d.p;r.w+=d.w;}});r.avgPaid=r.s?r.p/r.s:0;r.avgWt=r.s?r.w/r.s:0;return r;}
+function fmt(v,t,u){var s=t==="currency"?"$"+v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):Math.round(v).toLocaleString("en-US");return u?s+" "+u:s;}
+function fmtD(v,t,u){var a=Math.abs(v),sg=v>=0?"+":"\u2212";var s=t==="currency"?sg+"$"+a.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):sg+Math.round(a).toLocaleString("en-US");return u?s+" "+u:s;}
+function render(){
+  var grid=document.getElementById("kpi-grid");var aw=getActiveWeeks(),pw=getPrevWeeks(),lbl=getPeriodLabel();
+  var cur=agg(aw),prev=pw?agg(pw):null;
+  var pLbl=prev?(granularity==="monthly"?MONTH_KEYS[MONTH_KEYS.indexOf(activeMonth)-1]:"W"+ALL_WEEKS[activeWeekIdx-1]):"";
+  grid.innerHTML="";grid.classList.remove("animating");void grid.offsetWidth;grid.classList.add("animating");
+  metrics.forEach(function(m){var v=cur[m.key],card=document.createElement("div");card.className="kpi-card";var dH,pH;
+    if(prev){var pv=prev[m.key],rd=v-pv,pct=pv?((rd/pv)*100):0,iz=Math.abs(rd)<0.005,ip=rd>0;var cls=iz?"neutral":ip?"positive":"negative",arr=iz?"\u2192":ip?"\u2191":"\u2193";
+      dH='<div class="kpi-deltas"><div class="delta-pill '+cls+'"><span>'+arr+'</span><span>'+fmtD(rd,m.format,m.unit)+'</span></div><div class="delta-pill '+cls+'"><span>'+arr+'</span><span>'+(pct>=0?"+":"")+pct.toFixed(1)+'%</span></div></div>';
+      pH='<div class="kpi-prev">prev ('+pLbl+'): <span>'+fmt(pv,m.format,m.unit)+'</span></div>';
+    }else{dH='<div class="kpi-deltas"><div class="delta-pill neutral"><span>\u2014</span></div><div class="delta-pill neutral"><span>\u2014</span></div></div>';pH='<div class="kpi-prev">prev: <span>\u2014</span></div>';}
+    card.innerHTML='<span class="week-badge">'+lbl+'</span><div class="kpi-label">'+m.label+'</div><div class="kpi-value">'+fmt(v,m.format,m.unit)+'</div>'+dH+pH;grid.appendChild(card);});
+}
+function onDateChange(){render();}
+function resetAll(){granularity="monthly";activeMonth="Jun";activeWeekIdx=ALL_WEEKS.length-1;buildDateControl();render();}
 function toggleDark(){dark=!dark;document.documentElement.setAttribute("data-theme",dark?"dark":"");}
-render();
-</script>
-</body>
-</html>
+document.addEventListener("dblclick",function(e){if(!e.target.closest(".dc-row"))resetAll();});
+buildDateControl();buildDateControl();
+onDateChange();
+
+/* KPI Weekly Tooltip */
+var tipEl=document.getElementById('kpi-tip');
+document.getElementById('kpi-grid').addEventListener('mouseover',function(e){
+  var card=e.target.closest('.kpi-card');
+  if(!card||granularity!=="monthly")return;
+  var idx=Array.from(card.parentNode.children).indexOf(card);
+  var m=metrics[idx];if(!m)return;
+  var wks=MONTHS[activeMonth];if(!wks||wks.length<=1){tipEl.classList.remove('visible');return;}
+  var h='<div class="kpi-tooltip-title">'+m.label+' — '+activeMonth+' Weekly</div>';
+  wks.forEach(function(w){
+    var d=WD[w];if(!d)return;
+    var v=m.key==="s"?d.s:m.key==="p"?d.p:m.key==="w"?d.w:m.key==="avgPaid"?(d.s?d.p/d.s:0):(d.s?d.w/d.s:0);
+    h+='<div class="wk-drill-row"><span class="wk-lbl">W'+w+'</span><span class="wk-val">'+fmt(v,m.format,m.unit)+'</span></div>';
+  });
+  tipEl.innerHTML=h;
+  var rect=card.getBoundingClientRect(),pr=card.parentNode.getBoundingClientRect();
+  tipEl.style.left=(rect.left-pr.left)+'px';tipEl.style.top=(rect.bottom-pr.top+4)+'px';
+  tipEl.classList.add('visible');
+});
+document.getElementById('kpi-grid').addEventListener('mouseout',function(e){
+  if(!e.target.closest('.kpi-card'))tipEl.classList.remove('visible');
+});
+
+</script></body></html>
