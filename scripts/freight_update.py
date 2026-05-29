@@ -5,8 +5,17 @@ freight_update.py — Automated weekly freight dashboard data update
 Extracts data from a HANT-YYYY-MM-DD-W.XLS file and injects it into all 8
 freight dashboard HTML widgets. Runs validation, reports results.
 
+Architecture (post-refactor):
+    - Widgets use ALL_WEEKS as the canonical week list (not WEEKS)
+    - MONTHS object maps month names to arrays of week keys within each month
+    - MONTH_KEYS tracks the ordered list of active months
+    - Monthly is the standard UI distribution; weekly detail via hover drill-down
+    - M5/M6 use augmentMonthly() at runtime to compute month-keyed aggregates
+
 Usage:
-    python freight_update.py HANT-2026-03-16-W.XLS
+    python freight_update.py HANT-2026-06-08-W.XLS
+    python freight_update.py HANT-2026-06-08-W.XLS --widgets-dir ./widgets
+    python freight_update.py HANT-2026-06-08-W.XLS --dry-run
 
 Requirements:
     - Python 3.8+
@@ -17,9 +26,10 @@ Requirements:
 The script:
     1. Converts XLS to XLSX via LibreOffice
     2. Extracts data from all relevant sheets
-    3. Injects new week data into each widget's data structures
-    4. Validates all widgets pass the audit checklist
-    5. Reports results
+    3. Injects new week into ALL_WEEKS, MONTHS, and MONTH_KEYS
+    4. Injects week data into each widget's data structures
+    5. Validates all widgets pass the audit checklist
+    6. Reports results
 """
 
 import argparse
@@ -337,12 +347,18 @@ def build_name_map(html):
 # ═══════════════════════════════════════════════════════════
 
 def inject_weeks_array(html, week_label, has_prefix):
-    """Add new week to WEEKS array if not already present."""
+    """Add new week to ALL_WEEKS array if not already present.
+
+    Refactored widgets use ALL_WEEKS as the canonical week list.
+    The WEEKS variable is a dynamic alias set by onDateChange().
+    """
     prefix = 'W' if has_prefix else ''
     wk_str = f'{prefix}{week_label}'
 
-    # Match both single and double quote styles
-    m = re.search(r'((?:const|var)\s+WEEKS\s*=\s*\[)(.*?)(\])', html)
+    # Target ALL_WEEKS (refactored) or WEEKS (legacy fallback)
+    m = re.search(r'(var\s+ALL_WEEKS\s*=\s*\[)(.*?)(\])', html)
+    if not m:
+        m = re.search(r'((?:const|var)\s+WEEKS\s*=\s*\[)(.*?)(\])', html)
     if not m:
         return html, False
 
@@ -358,18 +374,86 @@ def inject_weeks_array(html, week_label, has_prefix):
     return html, True
 
 
+# Month name lookup for week→month mapping
+MONTH_NAMES = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
+               7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'}
+
+
+def inject_months(html, week_label, has_prefix):
+    """Update MONTHS object and MONTH_KEYS array with the new week.
+
+    MONTHS maps month names to arrays of week keys within that month.
+    MONTH_KEYS is the ordered list of month names.
+    Both are used by the date control module for monthly aggregation.
+    """
+    prefix = 'W' if has_prefix else ''
+    wk_str = f'{prefix}{week_label}'
+    month_num = int(week_label.split('-')[0])
+    month_name = MONTH_NAMES.get(month_num)
+    if not month_name:
+        return html
+
+    # ── Update MONTHS object ──
+    months_m = re.search(r'(var\s+MONTHS\s*=\s*\{)(.*?)(\})', html)
+    if not months_m:
+        return html
+
+    months_body = months_m.group(2)
+    if wk_str in months_body:
+        return html  # Already present
+
+    quote = '"' if '"' in months_body else "'"
+
+    # Check if this month already exists in MONTHS
+    month_pat = re.search(rf'{month_name}:\[([^\]]*)\]', months_body)
+    if month_pat:
+        # Add week to existing month array
+        old_array = month_pat.group(0)
+        new_array = old_array.replace(']', f',{quote}{wk_str}{quote}]')
+        months_body = months_body.replace(old_array, new_array)
+    else:
+        # New month — append to MONTHS object
+        months_body += f',{month_name}:[{quote}{wk_str}{quote}]'
+
+    html = html[:months_m.start(1)] + months_m.group(1) + months_body + months_m.group(3) + html[months_m.end():]
+
+    # ── Update MONTH_KEYS array if new month ──
+    if not month_pat:
+        keys_m = re.search(r'(var\s+MONTH_KEYS\s*=\s*\[)(.*?)(\])', html)
+        if keys_m and month_name not in keys_m.group(2):
+            new_keys = keys_m.group(1) + keys_m.group(2) + f',"{month_name}"' + keys_m.group(3)
+            html = html[:keys_m.start()] + new_keys + html[keys_m.end():]
+
+    return html
+
+
 def inject_kpi(html, week_label, kpi_data):
-    """Inject KPI data into M1."""
-    # Find the data object and add new week
-    pattern = r'(const data=\{)(.*?)(\};)'
+    """Inject KPI data into M1.
+
+    Refactored M1 uses var WD={} with 3 independent totals (s, p, w).
+    Averages are derived at runtime — never stored in the data object.
+    """
+    # Try refactored format first (var WD=), then legacy (const data=)
+    pattern = r'(var\s+WD\s*=\s*\{)(.*?)(\};)'
+    m = re.search(pattern, html, re.DOTALL)
+    if m:
+        existing = m.group(2)
+        if f'"{week_label}"' in existing:
+            return html
+        new_entry = (f',\n  "{week_label}":{{s:{kpi_data["totalShipments"]},'
+                     f'p:{kpi_data["totalFreightPaid"]},'
+                     f'w:{kpi_data["totalWeight"]}}}')
+        html = html[:m.end(2)] + new_entry + html[m.end(2):]
+        return html
+
+    # Legacy fallback
+    pattern = r'((?:const|var)\s+data\s*=\s*\{)(.*?)(\};)'
     m = re.search(pattern, html, re.DOTALL)
     if not m:
         return html
-
     existing = m.group(2)
     if f'"{week_label}"' in existing:
         return html
-
     new_entry = (f',\n  "{week_label}":{{totalShipments:{kpi_data["totalShipments"]},'
                  f'avgPaidPerShipment:{kpi_data["avgPaidPerShipment"]},'
                  f'totalFreightPaid:{kpi_data["totalFreightPaid"]},'
@@ -382,7 +466,7 @@ def inject_kpi(html, week_label, kpi_data):
 def inject_bump(html, week_label, carriers, name_map):
     """Inject bump chart carrier data."""
     # DATA is {week: {carrier: {name, bills, paid, avg_cost}}}
-    m = re.search(r'(const DATA=\{)(.*?)(\};)', html, re.DOTALL)
+    m = re.search(r'((?:const|var)\s+DATA=\{)(.*?)(\};)', html, re.DOTALL)
     if not m or f'"{week_label}"' in m.group(2):
         return html
 
@@ -398,7 +482,7 @@ def inject_bump(html, week_label, carriers, name_map):
 
 def inject_treemap(html, week_label, costdist):
     """Inject treemap CostDist data (unquoted JS keys)."""
-    m = re.search(r'(const RAW=\{)(.*?)(\};)', html, re.DOTALL)
+    m = re.search(r'((?:const|var)\s+RAW=\{)(.*?)(\};)', html, re.DOTALL)
     if not m or f'"{week_label}"' in m.group(2):
         return html
 
@@ -411,7 +495,7 @@ def inject_treemap(html, week_label, costdist):
 def inject_heatmap(html, week_label, hm_data, hm_detail):
     """Inject heatmap accessorial data (type-first) using JSON parse/modify/serialize."""
     # ── DATA[type][week] = total ──
-    data_m = re.search(r'const DATA=(\{.*?\});\s*const DETAIL', html, re.DOTALL)
+    data_m = re.search(r'(?:const|var)\s+DATA=(\{.*?\});\s*(?:const|var)\s+DETAIL', html, re.DOTALL)
     if not data_m:
         return html
 
@@ -445,7 +529,7 @@ def inject_heatmap(html, week_label, hm_data, hm_detail):
     html = html[:data_m.start(1)] + new_data + html[data_m.end(1):]
 
     # ── DETAIL[type][week][carrier] = {s, b} ──
-    detail_m = re.search(r'const DETAIL=(\{.*?\});\s', html, re.DOTALL)
+    detail_m = re.search(r'(?:const|var)\s+DETAIL=(\{.*?\});\s', html, re.DOTALL)
     if detail_m:
         try:
             detail_obj = json.loads(detail_m.group(1))
@@ -474,7 +558,7 @@ def inject_heatmap(html, week_label, hm_data, hm_detail):
 def inject_carrier_acc(html, week_label, ca_data, ca_detail, carriers, name_map):
     """Inject carrier accessorial data (carrier-first) using JSON parse/modify/serialize."""
     # ── DATA[carrier] = {name, week: total} ──
-    data_m = re.search(r'const DATA=(\{.*?\});\s*const DETAIL', html, re.DOTALL)
+    data_m = re.search(r'(?:const|var)\s+DATA=(\{.*?\});\s*(?:const|var)\s+DETAIL', html, re.DOTALL)
     if not data_m:
         return html
 
@@ -502,7 +586,7 @@ def inject_carrier_acc(html, week_label, ca_data, ca_detail, carriers, name_map)
     html = html[:data_m.start(1)] + new_data + html[data_m.end(1):]
 
     # ── DETAIL[carrier][type][week] = {s, b} ──
-    detail_m = re.search(r'const DETAIL=(\{.*?\});\s', html, re.DOTALL)
+    detail_m = re.search(r'(?:const|var)\s+DETAIL=(\{.*?\});\s', html, re.DOTALL)
     if detail_m:
         try:
             detail_obj = json.loads(detail_m.group(1))
@@ -526,7 +610,7 @@ def inject_carrier_acc(html, week_label, ca_data, ca_detail, carriers, name_map)
 def inject_waterfall(html, week_label, wf_data):
     """Inject waterfall savings data."""
     wk_key = f'W{week_label}'
-    m = re.search(r"(const DATA=\{)(.*?)(\};)", html, re.DOTALL)
+    m = re.search(r"((?:const|var)\s+DATA=\{)(.*?)(\};)", html, re.DOTALL)
     if not m or f'"{wk_key}"' in m.group(2):
         return html
 
@@ -624,32 +708,43 @@ def inject_bubble(html, week_label, bubble_data):
 # ═══════════════════════════════════════════════════════════
 
 def validate_widget(html, filename, week_label):
-    """Run audit checks on a single widget."""
+    """Run audit checks on a single widget after injection."""
     issues = []
     has_prefix = filename in W_PREFIX
     prefix = 'W' if has_prefix else ''
     wk_str = f'{prefix}{week_label}'
 
-    # Check WEEKS array contains new week
-    if wk_str not in html:
-        issues.append(f"Week '{wk_str}' not found in file")
+    # Check ALL_WEEKS array exists and contains new week
+    if 'ALL_WEEKS' not in html:
+        issues.append("ALL_WEEKS array not found")
+    elif wk_str not in html:
+        issues.append(f"Week '{wk_str}' not found in ALL_WEEKS")
 
-    # Check no hardcoded week buttons in HTML section
-    script_start = html.find('<script')
-    html_part = html[:script_start] if script_start > -1 else html
-    hardcoded_btns = re.findall(r'onclick="setWeek\(\'[\d-]+\'\)"', html_part)
-    if hardcoded_btns:
-        issues.append(f"Hardcoded week buttons in HTML: {len(hardcoded_btns)}")
+    # Check MONTHS object exists and contains the week
+    if 'var MONTHS=' not in html:
+        issues.append("MONTHS object not found")
+    elif wk_str not in html[html.find('var MONTHS='):html.find('var MONTHS=') + 500]:
+        issues.append(f"Week '{wk_str}' not found in MONTHS")
 
-    # Check color arrays
-    for pat in ['WCOL_L', 'WCOL_D', 'CCOL_L', 'CCOL_D']:
-        m = re.search(rf'{pat}=\[(.*?)\]', html)
-        if m and m.group(1).count('#') < 4:
-            issues.append(f"{pat} has fewer than 4 colors")
+    # Check MONTH_KEYS exists
+    if 'var MONTH_KEYS=' not in html:
+        issues.append("MONTH_KEYS not found")
 
-    # Check no hardcoded "N-Week Total"
-    if re.search(r'\d-Week Total', html) and 'WEEKS.length' not in html:
-        issues.append("Hardcoded N-Week Total string")
+    # Check date control infrastructure
+    if 'buildDateControl' not in html:
+        issues.append("buildDateControl not found")
+    if 'onDateChange' not in html:
+        issues.append("onDateChange not found")
+
+    # Check braces are balanced in script section
+    script_start = html.find('<script>')
+    script_end = html.find('</script>')
+    if script_start >= 0 and script_end >= 0:
+        script = html[script_start + 8:script_end]
+        opens = script.count('{')
+        closes = script.count('}')
+        if opens != closes:
+            issues.append(f"Brace imbalance: {opens} opens vs {closes} closes")
 
     return issues
 
@@ -677,11 +772,13 @@ def main():
         sys.exit(f"ERROR: Missing widget files in {widgets_dir}: {', '.join(missing)}")
 
     week_label = parse_week_label(xls_path.name)
+    month_num = int(week_label.split('-')[0])
+    month_name = MONTH_NAMES.get(month_num, '???')
     print(f"\n{'='*60}")
-    print(f"FREIGHT DASHBOARD UPDATE — W{week_label}")
+    print(f"FREIGHT DASHBOARD UPDATE — W{week_label} ({month_name})")
     print(f"{'='*60}")
     print(f"  Source: {xls_path.name}")
-    print(f"  Week label: {week_label} (buttons: W{week_label})")
+    print(f"  Week label: {week_label} → ALL_WEEKS + MONTHS.{month_name}")
     print(f"  Widgets dir: {widgets_dir}")
 
     # Step 1: Convert XLS
@@ -724,6 +821,9 @@ def main():
 
         # Inject WEEKS array
         html, added = inject_weeks_array(html, week_label, has_prefix)
+
+        # Inject MONTHS object and MONTH_KEYS array
+        html = inject_months(html, week_label, has_prefix)
 
         # Widget-specific injection
         if fname == 'freight-kpi-widget.html':
@@ -773,11 +873,12 @@ def main():
     print(f"\n  Validation: {'ALL CLEAN ✅' if all_clean else 'ISSUES FOUND ❌'}")
 
     print(f"\n  Next steps:")
-    print(f"    1. git add -A && git commit -m 'W{week_label} data update'")
-    print(f"    2. git push origin main")
+    print(f"    1. Verify: open any widget locally, check {month_name} data appears")
+    print(f"    2. git add -A && git commit -m 'W{week_label} data update'")
+    print(f"    3. git push origin main")
     from datetime import date
     today = date.today().strftime('%Y%m%d')
-    print(f"    3. Update Grow embed URLs: append ?v={today}")
+    print(f"    4. Cache-bust Grow embeds: ?v={today}")
     print()
 
 
