@@ -2,28 +2,12 @@
 <html data-theme="dark" lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Accessorial Spend Breakdown</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
-  :root {
-    --bg:#f4f6f8;--surface:#fff;--surface2:#f9fafb;--border:#e3e7ed;
-    --text-primary:#111827;--text-secondary:#4b5563;--text-muted:#9ca3af;
-    --green:#1e8a4a;--green-bg:#dcfce7;--red:#c0392b;--red-bg:#fee2e2;
-    --toggle-bg:#d1d5db;--toggle-knob:#fff;
-    --week-active-bg:#1a73e8;--week-active-text:#fff;--week-inactive:#6b7280;
-    --shadow:0 1px 6px rgba(0,0,0,.08),0 4px 20px rgba(0,0,0,.04);
-    --chart-bg:#f8fafc;--chart-border:#dce3eb;
-  }
-  [data-theme="dark"] {
-    --bg:#0d1117;--surface:#161b27;--surface2:#1e2533;--border:#2e3a4e;
-    --text-primary:#e8edf5;--text-secondary:#b0bdd0;--text-muted:#6b7f99;
-    --green:#4ade80;--green-bg:#0c2b1c;--red:#fc8181;--red-bg:#2d1214;
-    --toggle-bg:#2e3a4e;--toggle-knob:#e8edf5;
-    --week-active-bg:#4f93f5;--week-active-text:#0d1117;--week-inactive:#94a3b8;
-    --shadow:0 1px 8px rgba(0,0,0,.5);
-    --chart-bg:#0f1520;--chart-border:#1e2a3a;
-  }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{width:100%;height:100%}
   body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text-primary);transition:background .25s,color .25s}
@@ -109,6 +93,37 @@
   .ic-handle-b{bottom:-3px;left:12px;right:12px;height:6px;cursor:ns-resize}
   .ic-handle-l{left:-3px;top:12px;bottom:12px;width:6px;cursor:ew-resize}
   .ic-handle-r{right:-3px;top:12px;bottom:12px;width:6px;cursor:ew-resize}
+  :root {
+    --bg:#f4f6f8;--surface:#fff;--surface2:#f9fafb;--border:#e3e7ed;
+    --text-primary:#111827;--text-secondary:#4b5563;--text-muted:#9ca3af;
+    --accent:#1a73e8;--accent-dim:#e8f0fd;--accent-text:#1a73e8;
+    --green:#1e8a4a;--green-bg:#dcfce7;--red:#c0392b;--red-bg:#fee2e2;
+    --toggle-bg:#d1d5db;--toggle-knob:#fff;
+    --week-active-bg:#1a73e8;--week-active-text:#fff;--week-inactive:#6b7280;
+    --shadow:0 1px 6px rgba(0,0,0,.08),0 4px 20px rgba(0,0,0,.04);
+    --chart-bg:#f8fafc;--chart-border:#dce3eb;
+  }
+  [data-theme="dark"] {
+    --bg:#0d1117;--surface:#161b27;--surface2:#1e2533;--border:#2e3a4e;
+    --text-primary:#e8edf5;--text-secondary:#b0bdd0;--text-muted:#6b7f99;
+    --accent:#4f93f5;--accent-dim:#1a2d50;--accent-text:#7db3f8;
+    --green:#4ade80;--green-bg:#0c2b1c;--red:#fc8181;--red-bg:#2d1214;
+    --toggle-bg:#2e3a4e;--toggle-knob:#e8edf5;
+    --week-active-bg:#4f93f5;--week-active-text:#0d1117;--week-inactive:#94a3b8;
+    --shadow:0 1px 8px rgba(0,0,0,.5);--chart-bg:#0f1520;--chart-border:#1e2a3a;
+  }
+  .dc-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;justify-content:space-between}
+  .dc-filter{display:flex;gap:3px;margin-left:auto;align-items:center}
+  .dc-filter-lbl{font-size:9px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-right:2px}
+  .dc-periods{display:flex;gap:3px;flex-wrap:wrap;align-items:center}
+  .dc-pill{font-size:10.5px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--week-inactive);transition:all .16s;font-family:"Inter",sans-serif}
+  .dc-pill:hover{color:var(--text-primary);border-color:var(--text-muted)}
+  .dc-pill.active{background:var(--week-active-bg);color:var(--week-active-text);border-color:var(--week-active-bg);box-shadow:0 1px 4px rgba(26,115,232,.25)}
+  .wk-drill{margin-top:6px;border-top:1px solid var(--border);padding-top:5px}
+  .wk-drill-hdr{font-size:8.5px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+  .wk-drill-row{display:flex;justify-content:space-between;font-size:10px;padding:1px 0}
+  .wk-drill-row .wk-lbl{color:var(--text-muted);font-weight:500}
+  .wk-drill-row .wk-val{color:var(--text-secondary);font-weight:600;text-align:right}
 </style>
 </head>
 <body>
@@ -119,9 +134,8 @@
       <span class="title">Accessorial Spend Breakdown</span>
     </div>
     <div class="header-right">
-      <div class="week-toggle">
-        <button class="week-btn active" id="btn-all" onclick="setWeek('all')">All</button>
-      </div>
+      <div id="date-control"></div>
+<div id="entity-filter"></div>
       <div class="dm-toggle" onclick="toggleDark()" title="Toggle dark mode">
         <span class="dm-icon">&#9728;</span>
         <div class="dm-track"><div class="dm-knob"></div></div>
@@ -153,7 +167,46 @@
   </div>
 </div>
 <script>
-const WEEKS=["2-23","3-2","3-9","3-16","3-23","3-30","4-6","4-13","4-20","4-27","5-4","5-11","5-18","5-25","6-1"];
+/* ═══ Date Control Module ═══ */
+var ALL_WEEKS=["2-23","3-2","3-9","3-16","3-23","3-30","4-6","4-13","4-20","4-27","5-4","5-11","5-18","5-25","6-1"];
+var MONTHS={Feb:["2-23"],Mar:["3-2","3-9","3-16","3-23","3-30"],Apr:["4-6","4-13","4-20","4-27"],May:["5-4","5-11","5-18","5-25"],Jun:["6-1"]};
+var MONTH_KEYS=["Feb","Mar","Apr","May","Jun"];
+var granularity="monthly",activeMonth="Jun",activeWeekIdx=ALL_WEEKS.length-1;
+function getActiveWeeks(){return granularity==="monthly"?MONTHS[activeMonth]:[ALL_WEEKS[activeWeekIdx]];}
+function getPrevWeeks(){if(granularity==="monthly"){var i=MONTH_KEYS.indexOf(activeMonth);return i>0?MONTHS[MONTH_KEYS[i-1]]:null;}return activeWeekIdx>0?[ALL_WEEKS[activeWeekIdx-1]]:null;}
+function getPeriodLabel(){return granularity==="monthly"?activeMonth:"W"+ALL_WEEKS[activeWeekIdx].replace("W","");}
+function buildDateControl(){var el=document.getElementById("date-control");if(!el)return;var h='<div class="dc-row"><div class="dc-periods">';MONTH_KEYS.forEach(function(m){h+='<button class="dc-pill'+(m===activeMonth&&!periodAll?' active':'')+'" onclick="setPeriod(\''+m+'\')">'+m+'</button>';});h+='</div></div>';el.innerHTML=h;}
+
+function setPeriod(p){if(p===activeMonth&&!periodAll)return;activeMonth=p;if(typeof periodAll!=='undefined')periodAll=false;buildDateControl();onDateChange();}
+
+/* ═══ Weekly Drill-Down Helper ═══ */
+function isMonthKey(k){return MONTHS[k]!=null;}
+function wkDrillHTML(monthKey,dataFn,fmtFn){
+  if(!isMonthKey(monthKey))return'';
+  var wks=MONTHS[monthKey];if(!wks||wks.length<=1)return'';
+  var h='<div class="wk-drill"><div class="wk-drill-hdr">Weekly Detail</div>';
+  wks.forEach(function(w){
+    var v=dataFn(w);
+    h+='<div class="wk-drill-row"><span class="wk-lbl">W'+w.replace("W","")+'</span><span class="wk-val">'+fmtFn(v)+'</span></div>';
+  });
+  return h+'</div>';
+}
+
+
+let periodAll=true;
+var _origBDC=buildDateControl;
+buildDateControl=function(){_origBDC();var el=document.getElementById("date-control");if(!el)return;var pd=el.querySelector(".dc-periods");if(!pd)return;var ab=document.createElement("button");ab.className="dc-pill"+(periodAll?" active":"");ab.textContent="All";ab.onclick=function(){if(periodAll)return;periodAll=true;buildDateControl();onDateChange();};pd.insertBefore(ab,pd.firstChild);if(periodAll){var pills=pd.querySelectorAll(".dc-pill");for(var x=1;x<pills.length;x++)pills[x].classList.remove("active");}};
+var _origSP=setPeriod;
+setPeriod=function(p){periodAll=false;_origSP(p);};
+
+/* ═══ Entity Filter Module ═══ */
+var activeFilter="all";
+var FILTER_OPTS=[{v:"all",l:"All"},{v:"10",l:"Top 10"},{v:"5",l:"Top 5"}];
+function buildFilterControl(){var dcRow=document.querySelector('#date-control .dc-row');if(!dcRow)return;var ef=document.getElementById('entity-filter');if(ef)ef.style.display='none';var old=dcRow.querySelector('.dc-filter');if(old)old.remove();var h='<div class="dc-filter"><span class="dc-filter-lbl">Show</span>';FILTER_OPTS.forEach(function(o){h+='<button class="dc-pill'+(o.v===activeFilter?' active':'')+'" onclick="setFilter(\''+o.v+'\')">'+o.l+'</button>';});h+='</div>';dcRow.insertAdjacentHTML('beforeend',h);}
+function setFilter(f){if(f===activeFilter)return;activeFilter=f;buildFilterControl();onFilterChange();}
+
+
+var WEEKS=ALL_WEEKS;
 const DATA={"LIFTGATE": {"2-23": 1443.0, "3-2": 945.97, "3-9": 746.0, "3-16": 646.0, "3-23": 706.0, "3-30": 953.0, "4-6": 1710.0, "4-13": 310.0, "4-20": 145.0, "4-27": 1037.0, "5-4": 1124.0, "5-11": 657.0, "5-18": 1206.0, "5-25": 165.0, "6-1": 1831.0}, "CA SURCHAR": {"2-23": 1430.5, "3-2": 542.5, "3-9": 963.5, "3-16": 737.5, "3-23": 944.5, "3-30": 801.5, "4-6": 1118.0, "4-13": 866.5, "4-20": 666.5, "4-27": 724.0, "5-4": 925.5, "5-11": 727.5, "5-18": 484.5, "5-25": 444.5, "6-1": 965.5}, "RES DEL": {"2-23": 1245.06, "3-2": 761.06, "3-9": 682.12, "3-16": 496.59, "3-23": 340.53, "3-30": 842.12, "4-6": 1278.18, "4-13": 426.59, "4-20": 0, "4-27": 830.59, "5-4": 824.77, "5-11": 630.06, "5-18": 775.06, "5-25": 245.0, "6-1": 1191.12}, "INSPECTION": {"2-23": 775.0, "3-2": 684.0, "3-9": 550.0, "3-16": 465.0, "3-23": 595.0, "3-30": 793.25, "4-6": 686.0, "4-13": 651.0, "4-20": 415.0, "4-27": 400.0, "5-4": 653.0, "5-11": 278.0, "5-18": 214.0, "5-25": 200.0, "6-1": 460.0}, "OVER DIMEN": {"2-23": 200.0, "3-2": 650.0, "3-9": 550.0, "3-16": 275.0, "3-23": 355.0, "3-30": 190.0, "4-6": 190.0, "4-13": 675.0, "4-20": 0, "4-27": 0, "5-4": 0, "5-11": 0, "5-18": 0, "5-25": 0, "6-1": 0}, "DETENTION": {"2-23": 232.0, "3-2": 778.76, "3-9": 45.0, "3-16": 0, "3-23": 0, "3-30": 288.04, "4-6": 536.84, "4-13": 0, "4-20": 0, "4-27": 292.25, "5-4": 610.56, "5-11": 0, "5-18": 257.22, "5-25": 0, "6-1": 275.0}, "NOTIFY": {"2-23": 457.7, "3-2": 339.03, "3-9": 231.39, "3-16": 157.62, "3-23": 183.85, "3-30": 397.85, "4-6": 676.88, "4-13": 37.54, "4-20": 121.54, "4-27": 206.62, "5-4": 505.93, "5-11": 76.54, "5-18": 408.08, "5-25": 146.31, "6-1": 314.62}, "HIGH COST": {"2-23": 757.0, "3-2": 179.5, "3-9": 50.0, "3-16": 229.5, "3-23": 60.0, "3-30": 50.0, "4-6": 426.5, "4-13": 179.5, "4-20": 718.0, "4-27": 825.0, "5-4": 179.5, "5-11": 855.0, "5-18": 800.0, "5-25": 179.5, "6-1": 0}, "HAZ MAT": {"2-23": 197.0, "3-2": 308.0, "3-9": 429.0, "3-16": 465.0, "3-23": 153.0, "3-30": 173.0, "4-6": 275.0, "4-13": 437.75, "4-20": 153.0, "4-27": 60.0, "5-4": 215.0, "5-11": 1075.0, "5-18": 90.0, "5-25": 114.0, "6-1": 124.0}, "REDELIVERY": {"2-23": 469.15, "3-2": 292.0, "3-9": 0, "3-16": 0, "3-23": 0, "3-30": 85.0, "4-6": 602.88, "4-13": 0, "4-20": 0, "4-27": 260.0, "5-4": 85.0, "5-11": 260.5, "5-18": 85.0, "5-25": 0, "6-1": 0}, "MISC": {"2-23": 302.5, "3-2": 194.5, "3-9": 212.5, "3-16": 25.0, "3-23": 140.0, "3-30": 341.0, "4-6": 929.37, "4-13": 0, "4-20": 0, "4-27": 385.5, "5-4": 72.5, "5-11": 683.0, "5-18": 394.5, "5-25": 0, "6-1": 1407.5}, "STORAGE": {"2-23": 0, "3-2": 651.25, "3-9": 0, "3-16": 0, "3-23": 0, "3-30": 0, "4-6": 69.75, "4-13": 885.0, "4-20": 0, "4-27": 0, "5-4": 349.5, "5-11": 0, "5-18": 0, "5-25": 0, "6-1": 210.0}, "LTD ACCESS": {"2-23": 125.0, "3-2": 140.0, "3-9": 354.53, "3-16": 105.0, "3-23": 140.0, "3-30": 70.0, "4-6": 805.0, "4-13": 156.06, "4-20": 70.0, "4-27": 461.59, "5-4": 644.0, "5-11": 175.0, "5-18": 319.0, "5-25": 35.0, "6-1": 779.0}, "RE-WEIGH": {"2-23": 248.0, "3-2": 165.0, "3-9": 174.0, "3-16": 195.0, "3-23": 315.0, "3-30": 445.0, "4-6": 140.0, "4-13": 414.0, "4-20": 374.0, "4-27": 224.0, "5-4": 340.0, "5-11": 308.0, "5-18": 148.0, "5-25": 70.0, "6-1": 402.0}, "REMOTE DEL": {"2-23": 162.0, "3-2": 154.5, "3-9": 95.5, "3-16": 0, "3-23": 135.5, "3-30": 65.0, "4-6": 348.0, "4-13": 95.5, "4-20": 0, "4-27": 353.5, "5-4": 158.5, "5-11": 227.0, "5-18": 40.0, "5-25": 0, "6-1": 84.0}, "APPT CHG": {"2-23": 67.5, "3-2": 112.5, "3-9": 204.0, "3-16": 67.5, "3-23": 67.5, "3-30": 30.0, "4-6": 67.5, "4-13": 202.5, "4-20": 0, "4-27": 45.0, "5-4": 0, "5-11": 135.0, "5-18": 135.0, "5-25": 0, "6-1": 82.5}, "PEAK CHG": {"2-23": 135.0, "3-2": 90.0, "3-9": 120.0, "3-16": 135.0, "3-23": 210.0, "3-30": 0, "4-6": 225.0, "4-13": 0, "4-20": 45.0, "4-27": 60.0, "5-4": 165.0, "5-11": 180.0, "5-18": 0, "5-25": 45.0, "6-1": 45.0}, "SORT/SEG": {"2-23": 0, "3-2": 208.0, "3-9": 0, "3-16": 0, "3-23": 0, "3-30": 0, "4-6": 0, "4-13": 0, "4-20": 0, "4-27": 208.0, "5-4": 0, "5-11": 0, "5-18": 0, "5-25": 0, "6-1": 0}, "EXT LENGTH": {"2-23": 0, "3-2": 0, "3-9": 200.0, "3-16": 0, "3-23": 0, "3-30": 0, "4-6": 0, "4-13": 0, "4-20": 0, "4-27": 0, "5-4": 982.0, "5-11": 0, "5-18": 0, "5-25": 0, "6-1": 0}, "BORDER CHG": {"2-23": 42.0, "3-2": 42.0, "3-9": 93.75, "3-16": 43.75, "3-23": 0, "3-30": 0, "4-6": 87.5, "4-13": 134.0, "4-20": 87.5, "4-27": 49.25, "5-4": 0, "5-11": 137.5, "5-18": 0, "5-25": 50.0, "6-1": 87.5}, "GST": {"2-23": 20.0, "3-2": 66.36, "3-9": 49.82, "3-16": 87.19, "3-23": 55.63, "3-30": 127.76, "4-6": 77.78, "4-13": 80.02, "4-20": 100.49, "4-27": 81.37, "5-4": 135.94, "5-11": 53.49, "5-18": 110.51, "5-25": 19.17, "6-1": 152.95}, "RECON CHG": {"2-23": 0, "3-2": 84.5, "3-9": 35.0, "3-16": 0, "3-23": 0, "3-30": 0, "4-6": 0, "4-13": 0, "4-20": 0, "4-27": 0, "5-4": 0, "5-11": 0, "5-18": 381.0, "5-25": 0, "6-1": 0}, "INSIDE DEL": {"2-23": 0, "3-2": 60.0, "3-9": 0, "3-16": 70.0, "3-23": 0, "3-30": 0, "4-6": 0, "4-13": 0, "4-20": 0, "4-27": 197.25, "5-4": 137.0, "5-11": 60.0, "5-18": 77.25, "5-25": 0, "6-1": 120.0}, "FREEZABLE": {"2-23": 35.0, "3-2": 0, "3-9": 0, "3-16": 0, "3-23": 0, "3-30": 0, "4-6": 0, "4-13": 0, "4-20": 0, "4-27": 0, "5-4": 0, "5-11": 0, "5-18": 0, "5-25": 0, "6-1": 0}, "CORR BOL": {"2-23": 0, "3-2": 0, "3-9": 10.0, "3-16": 0, "3-23": 0, "3-30": 97.0, "4-6": 50.0, "4-13": 0, "4-20": 0, "4-27": 0, "5-4": 100.0, "5-11": 0, "5-18": 0, "5-25": 0, "6-1": 0}, "NY DEL CHG": {"4-6": 20.0, "4-13": 0, "4-20": 0, "4-27": 10.0, "5-4": 10.0, "5-11": 20.0, "5-18": 20.0, "5-25": 0, "6-1": 10.0}};
 const DETAIL={"APPT CHG": {"2-23": {"CNWY": {"s": 67.5, "b": 1}}, "3-2": {"CNWY": {"s": 67.5, "b": 1}, "SAIA": {"s": 45.0, "b": 1}}, "3-9": {"CNWY": {"s": 135.0, "b": 2}, "DOHR": {"s": 39.0, "b": 1}, "MGUL": {"s": 30.0, "b": 2}}, "3-16": {"CNWY": {"s": 67.5, "b": 1}}, "3-23": {"CNWY": {"s": 67.5, "b": 1}}, "3-30": {"MGUL": {"s": 30, "b": 2}}, "4-6": {"CNWY": {"s": 67.5, "b": 1}}, "4-13": {"CNWY": {"s": 202.5, "b": 3}}, "4-20": {}, "4-27": {"DYLT": {"s": 30, "b": 2}, "MGUL": {"s": 15, "b": 1}}, "5-4": {}, "5-11": {"CNWY": {"s": 135.0, "b": 2}}, "5-18": {"CNWY": {"s": 135.0, "b": 2}}, "5-25": {}, "6-1": {"CNWY": {"s": 67.5, "b": 1}, "MGUL": {"s": 15, "b": 1}}}, "BORDER CHG": {"2-23": {"CD585": {"s": 42.0, "b": 1}}, "3-2": {"CD585": {"s": 42.0, "b": 1}}, "3-9": {"CD585": {"s": 43.75, "b": 1}, "FXFE": {"s": 50.0, "b": 1}}, "3-16": {"CD585": {"s": 43.75, "b": 1}}, "3-23": {}, "3-30": {}, "4-6": {"CD585": {"s": 87.5, "b": 2}}, "4-13": {"CD585": {"s": 84, "b": 2}, "FXFE": {"s": 50, "b": 1}}, "4-20": {"CD585": {"s": 87.5, "b": 2}}, "4-27": {"CNWY": {"s": 49.25, "b": 1}}, "5-4": {}, "5-11": {"CD585": {"s": 87.5, "b": 2}, "FXFE": {"s": 50, "b": 1}}, "5-18": {}, "5-25": {"FXFE": {"s": 50, "b": 1}}, "6-1": {"CD585": {"s": 87.5, "b": 2}}}, "CA SURCHAR": {"2-23": {"CNWY": {"s": 40.0, "b": 2}, "FXNL": {"s": 53.0, "b": 2}, "NUMK": {"s": 661.5, "b": 63}, "RLCA": {"s": 546.0, "b": 21}, "SAIA": {"s": 130.0, "b": 7}}, "3-2": {"CNWY": {"s": 20.0, "b": 1}, "DYLT": {"s": 20.0, "b": 1}, "FXNL": {"s": 26.5, "b": 1}, "NUMK": {"s": 84.0, "b": 8}, "RLCA": {"s": 312.0, "b": 12}, "SAIA": {"s": 80.0, "b": 4}}, "3-9": {"CNWY": {"s": 60.0, "b": 3}, "DYLT": {"s": 40.0, "b": 2}, "FXNL": {"s": 106.0, "b": 4}, "NUMK": {"s": 154.5, "b": 13}, "RLCA": {"s": 468.0, "b": 18}, "SAIA": {"s": 60.0, "b": 4}, "UPGF": {"s": 75.0, "b": 3}}, "3-16": {"CNWY": {"s": 60.0, "b": 3}, "FXNL": {"s": 79.5, "b": 3}, "NUMK": {"s": 240.0, "b": 16}, "RLCA": {"s": 338.0, "b": 13}, "SAIA": {"s": 20.0, "b": 1}}, "3-23": {"CNWY": {"s": 60, "b": 3}, "FXNL": {"s": 238.5, "b": 9}, "NUMK": {"s": 255, "b": 17}, "RLCA": {"s": 286, "b": 11}, "SAIA": {"s": 80, "b": 4}, "UPGF": {"s": 25, "b": 1}}, "3-30": {"CNWY": {"s": 100, "b": 5}, "FXFE": {"s": 53.0, "b": 2}, "FXNL": {"s": 26.5, "b": 1}, "NUMK": {"s": 195, "b": 13}, "RLCA": {"s": 312, "b": 12}, "SAIA": {"s": 90, "b": 5}, "UPGF": {"s": 25, "b": 1}}, "4-6": {"CNWY": {"s": 60, "b": 3}, "DYLT": {"s": 20, "b": 1}, "FXNL": {"s": 132.0, "b": 5}, "NUMK": {"s": 195, "b": 13}, "RLCA": {"s": 494, "b": 19}, "SAIA": {"s": 140, "b": 7}, "UPGF": {"s": 77, "b": 3}}, "4-13": {"CNWY": {"s": 100, "b": 5}, "DYLT": {"s": 20, "b": 1}, "FXNL": {"s": 79.5, "b": 3}, "NUMK": {"s": 135, "b": 9}, "RLCA": {"s": 338, "b": 13}, "SAIA": {"s": 140, "b": 7}, "UPGF": {"s": 54, "b": 2}}, "4-20": {"CNWY": {"s": 60, "b": 3}, "FXNL": {"s": 132.5, "b": 5}, "NUMK": {"s": 180, "b": 12}, "RLCA": {"s": 234, "b": 9}, "SAIA": {"s": 60, "b": 3}}, "4-27": {"DYLT": {"s": 40, "b": 2}, "FXNL": {"s": 106.0, "b": 4}, "NUMK": {"s": 165, "b": 11}, "RLCA": {"s": 286, "b": 11}, "SAIA": {"s": 100, "b": 5}, "UPGF": {"s": 27, "b": 1}}, "5-4": {"CNWY": {"s": 60, "b": 3}, "DYLT": {"s": 40, "b": 2}, "FXNL": {"s": 185.5, "b": 7}, "NUMK": {"s": 135, "b": 9}, "RLCA": {"s": 364, "b": 14}, "SAIA": {"s": 60, "b": 3}, "UPGF": {"s": 81, "b": 3}}, "5-11": {"CNWY": {"s": 60, "b": 3}, "FXNL": {"s": 79.5, "b": 3}, "NUMK": {"s": 150, "b": 10}, "RLCA": {"s": 338, "b": 13}, "SAIA": {"s": 100, "b": 5}}, "5-18": {"CNWY": {"s": 40, "b": 2}, "FXNL": {"s": 26.5, "b": 1}, "NUMK": {"s": 165, "b": 11}, "RLCA": {"s": 52, "b": 2}, "SAIA": {"s": 120, "b": 6}, "UPGF": {"s": 81, "b": 3}}, "5-25": {"FXNL": {"s": 79.5, "b": 3}, "NUMK": {"s": 60, "b": 4}, "RLCA": {"s": 285, "b": 11}, "SAIA": {"s": 20, "b": 1}}, "6-1": {"CNWY": {"s": 180, "b": 9}, "FXNL": {"s": 132.5, "b": 5}, "NUMK": {"s": 150, "b": 10}, "RLCA": {"s": 416, "b": 16}, "SAIA": {"s": 60, "b": 3}, "UPGF": {"s": 27, "b": 1}}}, "DETENTION": {"2-23": {"DOHR": {"s": 135.0, "b": 1}, "FXFE": {"s": 97.0, "b": 1}}, "3-2": {"CNWY": {"s": 216.76, "b": 1}, "DOHR": {"s": 45.0, "b": 1}, "FXFE": {"s": 194.0, "b": 2}, "FXNL": {"s": 246.0, "b": 1}, "SAIA": {"s": 77.0, "b": 1}}, "3-9": {"DOHR": {"s": 45.0, "b": 1}}, "3-16": {}, "3-23": {}, "3-30": {"FXNL": {"s": 97, "b": 1}, "SAIA": {"s": 191.04, "b": 4}}, "4-6": {"CNWY": {"s": 95.5, "b": 1}, "DOHR": {"s": 153.5, "b": 3}, "FXFE": {"s": 97, "b": 1}, "SAIA": {"s": 190.84, "b": 3}}, "4-13": {}, "4-20": {}, "4-27": {"CNWY": {"s": 95.25, "b": 1}, "FXFE": {"s": 97, "b": 1}, "MGUL": {"s": 100, "b": 2}}, "5-4": {"CNWY": {"s": 191.0, "b": 2}, "DOHR": {"s": 37.0, "b": 2}, "FXFE": {"s": 164, "b": 1}, "FXNL": {"s": 97, "b": 1}, "SAIA": {"s": 121.56, "b": 2}}, "5-11": {}, "5-18": {"DAFG": {"s": 180.22, "b": 1}, "SAIA": {"s": 77, "b": 1}}, "5-25": {}, "6-1": {"DOHR": {"s": 225.0, "b": 3}, "MGUL": {"s": 50, "b": 1}}}, "FREEZABLE": {"2-23": {"RLCA": {"s": 35.0, "b": 1}}, "3-16": {}, "3-23": {}, "3-30": {}, "4-6": {}, "4-13": {}, "4-20": {}, "4-27": {}, "5-4": {}, "5-11": {}, "5-18": {}, "5-25": {}, "6-1": {}}, "GST": {"2-23": {"TMBM": {"s": 20.0, "b": 2}}, "3-2": {"TMBM": {"s": 66.36, "b": 4}}, "3-9": {"TMBM": {"s": 49.82, "b": 3}}, "3-16": {"TMBM": {"s": 87.19, "b": 5}}, "3-23": {"TMBM": {"s": 55.63, "b": 3}}, "3-30": {"TMBM": {"s": 127.76, "b": 7}}, "4-6": {"TMBM": {"s": 77.78, "b": 4}}, "4-13": {"TMBM": {"s": 80.02, "b": 4}}, "4-20": {"TMBM": {"s": 100.49, "b": 5}}, "4-27": {"TMBM": {"s": 81.37, "b": 4}}, "5-4": {"TMBM": {"s": 135.94, "b": 7}}, "5-11": {"TMBM": {"s": 53.49, "b": 3}}, "5-18": {"TMBM": {"s": 110.51, "b": 5}}, "5-25": {"TMBM": {"s": 19.17, "b": 1}}, "6-1": {"TMBM": {"s": 152.95, "b": 8}}}, "HAZ MAT": {"2-23": {"CNWY": {"s": 15.0, "b": 1}, "DAFG": {"s": 5.0, "b": 1}, "DOHR": {"s": 10.0, "b": 2}, "FXNL": {"s": 61.0, "b": 1}, "NUMK": {"s": 20.0, "b": 2}, "RLCA": {"s": 36.0, "b": 3}, "SAIA": {"s": 50.0, "b": 1}}, "3-2": {"DOHR": {"s": 15.0, "b": 3}, "FXNL": {"s": 183.0, "b": 3}, "RLCA": {"s": 60.0, "b": 5}, "SAIA": {"s": 50.0, "b": 1}}, "3-9": {"DOHR": {"s": 5.0, "b": 1}, "FXFE": {"s": 61.0, "b": 1}, "RLCA": {"s": 24.0, "b": 2}, "TMBM": {"s": 324.0, "b": 1}, "UPGF": {"s": 15.0, "b": 1}}, "3-16": {"DAFG": {"s": 5.0, "b": 1}, "MGUL": {"s": 40.0, "b": 1}, "RLCA": {"s": 96.0, "b": 8}, "TMBM": {"s": 324.0, "b": 1}}, "3-23": {"DOHR": {"s": 10, "b": 2}, "FXNL": {"s": 61, "b": 1}, "NUMK": {"s": 10, "b": 1}, "RLCA": {"s": 72, "b": 6}}, "3-30": {"CNWY": {"s": 15, "b": 1}, "FXFE": {"s": 61, "b": 1}, "FXNL": {"s": 61, "b": 1}, "RLCA": {"s": 36, "b": 3}}, "4-6": {"FXFE": {"s": 61, "b": 1}, "MGUL": {"s": 80, "b": 2}, "RLCA": {"s": 84, "b": 7}, "SAIA": {"s": 50, "b": 1}}, "4-13": {"CNWY": {"s": 15, "b": 1}, "DOHR": {"s": 5, "b": 1}, "RLCA": {"s": 60, "b": 5}, "TMBM": {"s": 342.75, "b": 1}, "UPGF": {"s": 15, "b": 1}}, "4-20": {"CNWY": {"s": 15, "b": 1}, "DAFG": {"s": 5, "b": 1}, "FXNL": {"s": 61, "b": 1}, "RLCA": {"s": 72, "b": 6}}, "4-27": {"RLCA": {"s": 60, "b": 5}}, "5-4": {"CNWY": {"s": 15, "b": 1}, "DOHR": {"s": 5, "b": 1}, "FXFE": {"s": 61, "b": 1}, "RLCA": {"s": 84, "b": 7}, "SAIA": {"s": 50, "b": 1}}, "5-11": {"DAFG": {"s": 5, "b": 1}, "FXFE": {"s": 122, "b": 2}, "RLCA": {"s": 36, "b": 3}, "SAIA": {"s": 150, "b": 3}, "TMBM": {"s": 762, "b": 2}}, "5-18": {"DOHR": {"s": 5, "b": 1}, "FXNL": {"s": 61, "b": 1}, "RLCA": {"s": 24, "b": 2}}, "5-25": {"DOHR": {"s": 5, "b": 1}, "FXNL": {"s": 61, "b": 1}, "RLCA": {"s": 48, "b": 4}}, "6-1": {"RLCA": {"s": 24, "b": 2}, "SAIA": {"s": 100, "b": 2}}}, "HIGH COST": {"2-23": {"CNWY": {"s": 276.0, "b": 1}, "MGUL": {"s": 25.0, "b": 1}, "SAIA": {"s": 456.0, "b": 3}}, "3-2": {"SAIA": {"s": 179.5, "b": 1}}, "3-9": {"CNWY": {"s": 50.0, "b": 2}}, "3-16": {"DOHR": {"s": 50.0, "b": 1}, "SAIA": {"s": 179.5, "b": 1}}, "3-23": {"SAIA": {"s": 60, "b": 1}}, "3-30": {"DOHR": {"s": 50, "b": 1}}, "4-6": {"CD585": {"s": 50, "b": 1}, "SAIA": {"s": 376.5, "b": 3}}, "4-13": {"SAIA": {"s": 179.5, "b": 1}}, "4-20": {"SAIA": {"s": 718.0, "b": 4}}, "4-27": {"DOHR": {"s": 50, "b": 1}, "SAIA": {"s": 775.0, "b": 5}}, "5-4": {"SAIA": {"s": 179.5, "b": 1}}, "5-11": {"SAIA": {"s": 855.0, "b": 5}}, "5-18": {"CD585": {"s": 25, "b": 1}, "SAIA": {"s": 775.0, "b": 5}}, "5-25": {"SAIA": {"s": 179.5, "b": 1}}, "6-1": {}}, "INSPECTION": {"2-23": {"AVRT": {"s": 25.0, "b": 1}, "CNWY": {"s": 30.0, "b": 2}, "FXNL": {"s": 160.0, "b": 4}, "RLCA": {"s": 560.0, "b": 14}}, "3-2": {"CNWY": {"s": 15.0, "b": 1}, "DAFG": {"s": 32.0, "b": 1}, "FXFE": {"s": 80.0, "b": 2}, "FXNL": {"s": 360.0, "b": 9}, "RLCA": {"s": 80.0, "b": 2}, "SAIA": {"s": 117.0, "b": 3}}, "3-9": {"CNWY": {"s": 60.0, "b": 4}, "FXNL": {"s": 240.0, "b": 6}, "RLCA": {"s": 240.0, "b": 6}, "UPGF": {"s": 10.0, "b": 1}}, "3-16": {"AVRT": {"s": 25.0, "b": 1}, "FXNL": {"s": 120.0, "b": 3}, "RLCA": {"s": 320.0, "b": 8}}, "3-23": {"CNWY": {"s": 75, "b": 5}, "FXFE": {"s": 40, "b": 1}, "FXNL": {"s": 280, "b": 7}, "RLCA": {"s": 200, "b": 5}}, "3-30": {"CNWY": {"s": 30, "b": 2}, "FXNL": {"s": 277.25, "b": 6}, "RLCA": {"s": 320, "b": 8}, "SAIA": {"s": 156, "b": 4}, "UPGF": {"s": 10, "b": 1}}, "4-6": {"FXNL": {"s": 80, "b": 2}, "RLCA": {"s": 440, "b": 11}, "SAIA": {"s": 156, "b": 4}, "UPGF": {"s": 10, "b": 1}}, "4-13": {"CNWY": {"s": 15, "b": 1}, "FXFE": {"s": 40, "b": 1}, "FXNL": {"s": 120, "b": 3}, "RLCA": {"s": 320, "b": 8}, "SAIA": {"s": 156, "b": 4}}, "4-20": {"CNWY": {"s": 15, "b": 1}, "FXFE": {"s": 40, "b": 1}, "FXNL": {"s": 200, "b": 5}, "RLCA": {"s": 160, "b": 4}}, "4-27": {"FXNL": {"s": 80, "b": 2}, "RLCA": {"s": 320, "b": 8}}, "5-4": {"AVRT": {"s": 25, "b": 1}, "CNWY": {"s": 30, "b": 2}, "FXFE": {"s": 80, "b": 2}, "FXNL": {"s": 160, "b": 4}, "RLCA": {"s": 280, "b": 7}, "SAIA": {"s": 78, "b": 2}}, "5-11": {"FXFE": {"s": 40, "b": 1}, "FXNL": {"s": 120, "b": 3}, "RLCA": {"s": 40, "b": 1}, "SAIA": {"s": 78, "b": 2}}, "5-18": {"CNWY": {"s": 15, "b": 1}, "FXNL": {"s": 40, "b": 1}, "RLCA": {"s": 120, "b": 3}, "SAIA": {"s": 39, "b": 1}}, "5-25": {"FXNL": {"s": 120, "b": 3}, "RLCA": {"s": 80, "b": 2}}, "6-1": {"CNWY": {"s": 45, "b": 3}, "FXFE": {"s": 40, "b": 1}, "FXNL": {"s": 160, "b": 4}, "RLCA": {"s": 200, "b": 5}, "SEFL": {"s": 15, "b": 1}}}, "LIFTGATE": {"2-23": {"CD585": {"s": 134.0, "b": 2}, "CNWY": {"s": 65.0, "b": 1}, "DAFG": {"s": 40.0, "b": 2}, "EXLA": {"s": 75.0, "b": 1}, "FXNL": {"s": 184.0, "b": 2}, "MGUL": {"s": 50.0, "b": 1}, "RLCA": {"s": 300.0, "b": 12}, "SAIA": {"s": 490.0, "b": 7}, "USRD": {"s": 105.0, "b": 1}}, "3-2": {"CD585": {"s": 328.97, "b": 3}, "CNWY": {"s": 65.0, "b": 1}, "FXNL": {"s": 92.0, "b": 1}, "RLCA": {"s": 250.0, "b": 10}, "SAIA": {"s": 210.0, "b": 3}}, "3-9": {"CNWY": {"s": 65.0, "b": 1}, "FXNL": {"s": 276.0, "b": 3}, "MGUL": {"s": 50.0, "b": 1}, "RLCA": {"s": 225.0, "b": 9}, "SAIA": {"s": 130.0, "b": 2}}, "3-16": {"FXNL": {"s": 276.0, "b": 3}, "RLCA": {"s": 300.0, "b": 12}, "SAIA": {"s": 70.0, "b": 1}}, "3-23": {"DOHR": {"s": 45, "b": 1}, "FXNL": {"s": 276, "b": 3}, "RLCA": {"s": 175, "b": 7}, "SAIA": {"s": 210, "b": 3}}, "3-30": {"CD585": {"s": 70, "b": 1}, "CNWY": {"s": 65, "b": 1}, "DAFG": {"s": 20, "b": 1}, "EXLA": {"s": 75, "b": 1}, "FXNL": {"s": 368, "b": 4}, "MGUL": {"s": 50, "b": 1}, "RLCA": {"s": 125, "b": 5}, "SAIA": {"s": 180, "b": 3}}, "4-6": {"CD585": {"s": 350, "b": 5}, "CNWY": {"s": 65, "b": 1}, "DAFG": {"s": 40, "b": 2}, "EXLA": {"s": 150, "b": 2}, "RLCA": {"s": 300, "b": 12}, "SAIA": {"s": 700, "b": 10}, "USRD": {"s": 105, "b": 1}}, "4-13": {"CD585": {"s": 70, "b": 1}, "DAFG": {"s": 20, "b": 1}, "RLCA": {"s": 150, "b": 6}, "SAIA": {"s": 70, "b": 1}}, "4-20": {"RLCA": {"s": 75, "b": 3}, "SAIA": {"s": 70, "b": 1}}, "4-27": {"DAFG": {"s": 20, "b": 1}, "DOHR": {"s": 45, "b": 1}, "FXNL": {"s": 92, "b": 1}, "MGUL": {"s": 50, "b": 1}, "RLCA": {"s": 200, "b": 8}, "SAIA": {"s": 630, "b": 9}}, "5-4": {"CD585": {"s": 210, "b": 3}, "DAFG": {"s": 20, "b": 1}, "DOHR": {"s": 45, "b": 1}, "EXLA": {"s": 75, "b": 1}, "FXNL": {"s": 184, "b": 2}, "RLCA": {"s": 275, "b": 11}, "SAIA": {"s": 210, "b": 3}, "USRD": {"s": 105, "b": 1}}, "5-11": {"CNWY": {"s": 20, "b": 1}, "DAFG": {"s": 20, "b": 1}, "FXNL": {"s": 92, "b": 1}, "RLCA": {"s": 175, "b": 7}, "SAIA": {"s": 350, "b": 5}}, "5-18": {"CD585": {"s": 70, "b": 1}, "CNWY": {"s": 130, "b": 2}, "EXLA": {"s": 75, "b": 1}, "FXNL": {"s": 276, "b": 3}, "RLCA": {"s": 25, "b": 1}, "SAIA": {"s": 630, "b": 9}}, "5-25": {"DAFG": {"s": 20, "b": 1}, "RLCA": {"s": 75, "b": 3}, "SAIA": {"s": 70, "b": 1}}, "6-1": {"CD585": {"s": 140, "b": 2}, "CNWY": {"s": 260, "b": 4}, "DAFG": {"s": 80, "b": 4}, "DOHR": {"s": 45, "b": 1}, "EXLA": {"s": 75, "b": 1}, "FXNL": {"s": 92, "b": 1}, "RLCA": {"s": 525, "b": 21}, "SAIA": {"s": 420, "b": 6}, "SEFL": {"s": 89, "b": 1}, "USRD": {"s": 105, "b": 1}}}, "LTD ACCESS": {"2-23": {"SAIA": {"s": 70.0, "b": 1}, "USRD": {"s": 55.0, "b": 1}}, "3-2": {"DAFG": {"s": 35.0, "b": 1}, "RLCA": {"s": 35.0, "b": 1}, "SAIA": {"s": 70.0, "b": 1}}, "3-9": {"DAFG": {"s": 35.0, "b": 1}, "FXNL": {"s": 60.53, "b": 1}, "RLCA": {"s": 105.0, "b": 3}, "SAIA": {"s": 60.0, "b": 1}, "SEFL": {"s": 94.0, "b": 1}}, "3-16": {"DAFG": {"s": 70.0, "b": 2}, "RLCA": {"s": 35.0, "b": 1}}, "3-23": {"DAFG": {"s": 35, "b": 1}, "RLCA": {"s": 35, "b": 1}, "SAIA": {"s": 70, "b": 1}}, "3-30": {"DAFG": {"s": 35, "b": 1}, "RLCA": {"s": 35, "b": 1}}, "4-6": {"DAFG": {"s": 175, "b": 5}, "EXLA": {"s": 85, "b": 1}, "RLCA": {"s": 140, "b": 4}, "SAIA": {"s": 350, "b": 5}, "USRD": {"s": 55, "b": 1}}, "4-13": {"FXNL": {"s": 121.06, "b": 2}, "RLCA": {"s": 35, "b": 1}}, "4-20": {"SAIA": {"s": 70, "b": 1}}, "4-27": {"FXFE": {"s": 60.53, "b": 1}, "FXNL": {"s": 121.06, "b": 2}, "SAIA": {"s": 280, "b": 4}}, "5-4": {"CNWY": {"s": 180, "b": 1}, "DAFG": {"s": 140, "b": 4}, "RLCA": {"s": 35, "b": 1}, "SAIA": {"s": 140, "b": 2}, "SEFL": {"s": 94, "b": 1}, "USRD": {"s": 55, "b": 1}}, "5-11": {"RLCA": {"s": 35, "b": 1}, "SAIA": {"s": 140, "b": 2}}, "5-18": {"EXLA": {"s": 85, "b": 1}, "SAIA": {"s": 140, "b": 2}, "SEFL": {"s": 94, "b": 1}}, "5-25": {"RLCA": {"s": 35, "b": 1}}, "6-1": {"CNWY": {"s": 180, "b": 1}, "DAFG": {"s": 35, "b": 1}, "DOHR": {"s": 30, "b": 1}, "RLCA": {"s": 105, "b": 3}, "SAIA": {"s": 280, "b": 4}, "SEFL": {"s": 94, "b": 1}, "USRD": {"s": 55, "b": 1}}}, "MISC": {"2-23": {"CD585": {"s": 63.5, "b": 1}, "EXLA": {"s": 25.0, "b": 1}, "MGUL": {"s": 80.0, "b": 1}, "SAIA": {"s": 59.0, "b": 1}, "TMBM": {"s": 75.0, "b": 1}}, "3-2": {"AVRT": {"s": 6.0, "b": 1}, "CD585": {"s": 63.5, "b": 1}, "DAFG": {"s": 25.0, "b": 1}, "DTAF": {"s": 100.0, "b": 1}}, "3-9": {"SAIA": {"s": 212.5, "b": 2}}, "3-16": {"DAFG": {"s": 25.0, "b": 1}}, "3-23": {"SAIA": {"s": 140, "b": 1}}, "3-30": {"AVRT": {"s": 85, "b": 2}, "SAIA": {"s": 256, "b": 1}}, "4-6": {"CNWY": {"s": 240, "b": 2}, "DAFG": {"s": 75, "b": 1}, "RLCA": {"s": 244.87, "b": 1}, "SAIA": {"s": 369.5, "b": 3}}, "4-13": {}, "4-20": {}, "4-27": {"CD585": {"s": 66, "b": 1}, "DOHR": {"s": 100, "b": 1}, "SAIA": {"s": 219.5, "b": 3}}, "5-4": {"SAIA": {"s": 72.5, "b": 1}}, "5-11": {"RLCA": {"s": 683, "b": 1}}, "5-18": {"SAIA": {"s": 394.5, "b": 3}}, "5-25": {}, "6-1": {"CNWY": {"s": 110, "b": 1}, "DTAF": {"s": 1200, "b": 2}, "EXLA": {"s": 25, "b": 1}, "SAIA": {"s": 72.5, "b": 1}}}, "NOTIFY": {"2-23": {"FXFE": {"s": 37.54, "b": 2}, "FXNL": {"s": 150.16, "b": 8}, "SAIA": {"s": 270.0, "b": 6}}, "3-2": {"CD585": {"s": 21.1, "b": 1}, "DOHR": {"s": 39.0, "b": 1}, "FXFE": {"s": 37.54, "b": 2}, "FXNL": {"s": 131.39, "b": 7}, "SAIA": {"s": 90.0, "b": 2}, "UPGF": {"s": 20.0, "b": 2}}, "3-9": {"FXNL": {"s": 131.39, "b": 7}, "SAIA": {"s": 90.0, "b": 2}, "UPGF": {"s": 10.0, "b": 1}}, "3-16": {"FXFE": {"s": 18.77, "b": 1}, "FXNL": {"s": 93.85, "b": 5}, "SAIA": {"s": 45.0, "b": 1}}, "3-23": {"FXFE": {"s": 18.77, "b": 1}, "FXNL": {"s": 75.08, "b": 4}, "SAIA": {"s": 90, "b": 2}}, "3-30": {"DOHR": {"s": 39, "b": 1}, "FXNL": {"s": 158.85, "b": 6}, "SAIA": {"s": 180, "b": 4}, "UPGF": {"s": 20, "b": 2}}, "4-6": {"AVRT": {"s": 20.95, "b": 1}, "DOHR": {"s": 117, "b": 3}, "FXFE": {"s": 18.77, "b": 1}, "FXNL": {"s": 150.16, "b": 8}, "SAIA": {"s": 360, "b": 8}, "UPGF": {"s": 10, "b": 1}}, "4-13": {"FXNL": {"s": 37.54, "b": 2}}, "4-20": {"DOHR": {"s": 39, "b": 1}, "FXNL": {"s": 37.54, "b": 2}, "SAIA": {"s": 45, "b": 1}}, "4-27": {"DOHR": {"s": 39, "b": 1}, "FXNL": {"s": 112.62, "b": 6}, "SAIA": {"s": 45, "b": 1}, "UPGF": {"s": 10, "b": 1}}, "5-4": {"DOHR": {"s": 117, "b": 3}, "FXFE": {"s": 18.77, "b": 1}, "FXNL": {"s": 150.16, "b": 8}, "SAIA": {"s": 180, "b": 4}, "UPGF": {"s": 40, "b": 4}}, "5-11": {"DOHR": {"s": 39, "b": 1}, "FXNL": {"s": 37.54, "b": 2}}, "5-18": {"DOHR": {"s": 78, "b": 2}, "FXNL": {"s": 75.08, "b": 4}, "SAIA": {"s": 225, "b": 5}, "UPGF": {"s": 30, "b": 3}}, "5-25": {"FXNL": {"s": 56.31, "b": 3}, "SAIA": {"s": 90, "b": 2}}, "6-1": {"DOHR": {"s": 117, "b": 3}, "FXFE": {"s": 18.77, "b": 1}, "FXNL": {"s": 93.85, "b": 5}, "SAIA": {"s": 45, "b": 1}, "UPGF": {"s": 40, "b": 4}}}, "OVER DIMEN": {"2-23": {"MGUL": {"s": 200.0, "b": 1}}, "3-2": {"FXNL": {"s": 375.0, "b": 1}, "RLCA": {"s": 275.0, "b": 1}}, "3-9": {"RLCA": {"s": 550.0, "b": 2}}, "3-16": {"RLCA": {"s": 275.0, "b": 1}}, "3-23": {"DAFG": {"s": 275, "b": 1}, "RUDE": {"s": 80, "b": 1}}, "3-30": {"DOHR": {"s": 190, "b": 1}}, "4-6": {"DOHR": {"s": 190, "b": 1}}, "4-13": {"RLCA": {"s": 550, "b": 2}, "USRD": {"s": 125, "b": 1}}, "4-20": {}, "4-27": {}, "5-4": {}, "5-11": {}, "5-18": {}, "5-25": {}, "6-1": {}}, "PEAK CHG": {"2-23": {"FXNL": {"s": 135.0, "b": 3}}, "3-2": {"FXNL": {"s": 90.0, "b": 2}}, "3-9": {"FXNL": {"s": 120.0, "b": 3}}, "3-16": {"FXNL": {"s": 135.0, "b": 3}}, "3-23": {"FXNL": {"s": 210, "b": 6}}, "3-30": {}, "4-6": {"FXNL": {"s": 225, "b": 5}}, "4-13": {}, "4-20": {"FXNL": {"s": 45, "b": 1}}, "4-27": {"FXNL": {"s": 60, "b": 2}}, "5-4": {"FXNL": {"s": 165, "b": 3}}, "5-11": {"FXNL": {"s": 180, "b": 4}}, "5-18": {}, "5-25": {"FXNL": {"s": 45, "b": 1}}, "6-1": {"FXNL": {"s": 45, "b": 1}}}, "RE-WEIGH": {"2-23": {"AVRT": {"s": 25.0, "b": 1}, "CNWY": {"s": 105.0, "b": 7}, "FXNL": {"s": 40.0, "b": 1}, "SAIA": {"s": 78.0, "b": 2}}, "3-2": {"CNWY": {"s": 45.0, "b": 3}, "FXFE": {"s": 40.0, "b": 1}, "FXNL": {"s": 80.0, "b": 2}}, "3-9": {"CNWY": {"s": 75.0, "b": 5}, "FXNL": {"s": 40.0, "b": 1}, "SAIA": {"s": 39.0, "b": 1}, "UPGF": {"s": 20.0, "b": 2}}, "3-16": {"CNWY": {"s": 75.0, "b": 5}, "FXFE": {"s": 40.0, "b": 1}, "FXNL": {"s": 80.0, "b": 2}}, "3-23": {"CNWY": {"s": 75, "b": 5}, "FXNL": {"s": 240, "b": 6}}, "3-30": {"CNWY": {"s": 45, "b": 3}, "FXFE": {"s": 160, "b": 4}, "FXNL": {"s": 240, "b": 6}}, "4-6": {"CNWY": {"s": 60, "b": 4}, "FXFE": {"s": 40, "b": 1}, "FXNL": {"s": 40, "b": 1}}, "4-13": {"AVRT": {"s": 25, "b": 1}, "CNWY": {"s": 150, "b": 10}, "FXFE": {"s": 160, "b": 4}, "FXNL": {"s": 40, "b": 1}, "SAIA": {"s": 39, "b": 1}}, "4-20": {"AVRT": {"s": 25, "b": 1}, "CNWY": {"s": 30, "b": 2}, "FXFE": {"s": 80, "b": 2}, "FXNL": {"s": 200, "b": 5}, "SAIA": {"s": 39, "b": 1}}, "4-27": {"CNWY": {"s": 105, "b": 7}, "FXNL": {"s": 80, "b": 2}, "SAIA": {"s": 39, "b": 1}}, "5-4": {"CNWY": {"s": 120, "b": 8}, "FXNL": {"s": 200, "b": 5}, "UPGF": {"s": 20, "b": 2}}, "5-11": {"AVRT": {"s": 25, "b": 1}, "CNWY": {"s": 45, "b": 3}, "FXNL": {"s": 160, "b": 4}, "SAIA": {"s": 78, "b": 2}}, "5-18": {"CNWY": {"s": 30, "b": 2}, "FXNL": {"s": 40, "b": 1}, "SAIA": {"s": 78, "b": 2}}, "5-25": {"CNWY": {"s": 30, "b": 2}, "FXFE": {"s": 40, "b": 1}}, "6-1": {"CNWY": {"s": 135, "b": 9}, "FXNL": {"s": 198, "b": 5}, "SAIA": {"s": 39, "b": 1}, "SEFL": {"s": 30, "b": 2}}}, "REDELIVERY": {"2-23": {"CNWY": {"s": 175.5, "b": 1}, "FXNL": {"s": 187.0, "b": 1}, "RLCA": {"s": 106.65, "b": 1}}, "3-2": {"AVRT": {"s": 105.0, "b": 1}, "FXNL": {"s": 187.0, "b": 1}}, "3-16": {}, "3-23": {}, "3-30": {"SAIA": {"s": 85, "b": 1}}, "4-6": {"CNWY": {"s": 392.88, "b": 2}, "DAFG": {"s": 125, "b": 1}, "SAIA": {"s": 85, "b": 1}}, "4-13": {}, "4-20": {}, "4-27": {"DAFG": {"s": 125, "b": 1}, "DYLT": {"s": 50, "b": 1}, "SAIA": {"s": 85, "b": 1}}, "5-4": {"SAIA": {"s": 85, "b": 1}}, "5-11": {"CNWY": {"s": 175.5, "b": 1}, "SAIA": {"s": 85, "b": 1}}, "5-18": {"SAIA": {"s": 85, "b": 1}}, "5-25": {}, "6-1": {}}, "REMOTE DEL": {"2-23": {"SAIA": {"s": 162.0, "b": 2}}, "3-2": {"SAIA": {"s": 154.5, "b": 2}}, "3-9": {"SAIA": {"s": 95.5, "b": 1}}, "3-16": {}, "3-23": {"SAIA": {"s": 135.5, "b": 2}}, "3-30": {"CNWY": {"s": 65, "b": 1}}, "4-6": {"SAIA": {"s": 348.0, "b": 5}}, "4-13": {"SAIA": {"s": 95.5, "b": 1}}, "4-20": {}, "4-27": {"SAIA": {"s": 353.5, "b": 3}}, "5-4": {"CNWY": {"s": 65, "b": 1}, "SAIA": {"s": 93.5, "b": 1}}, "5-11": {"SAIA": {"s": 227, "b": 1}}, "5-18": {"SAIA": {"s": 40, "b": 1}}, "5-25": {}, "6-1": {"SAIA": {"s": 84, "b": 1}}}, "RES DEL": {"2-23": {"CD585": {"s": 134.0, "b": 2}, "CNWY": {"s": 75.0, "b": 1}, "DAFG": {"s": 105.0, "b": 3}, "EXLA": {"s": 75.0, "b": 1}, "FXNL": {"s": 121.06, "b": 2}, "RLCA": {"s": 385.0, "b": 11}, "SAIA": {"s": 350.0, "b": 5}}, "3-2": {"CNWY": {"s": 150.0, "b": 2}, "FXNL": {"s": 121.06, "b": 2}, "RLCA": {"s": 350.0, "b": 10}, "SAIA": {"s": 140.0, "b": 2}}, "3-9": {"FXNL": {"s": 242.12, "b": 4}, "MGUL": {"s": 65.0, "b": 1}, "RLCA": {"s": 245.0, "b": 7}, "SAIA": {"s": 130.0, "b": 2}}, "3-16": {"FXNL": {"s": 181.59, "b": 3}, "RLCA": {"s": 245.0, "b": 7}, "SAIA": {"s": 70.0, "b": 1}}, "3-23": {"DOHR": {"s": 35, "b": 1}, "FXNL": {"s": 60.53, "b": 1}, "RLCA": {"s": 105, "b": 3}, "SAIA": {"s": 140, "b": 2}}, "3-30": {"CD585": {"s": 70, "b": 1}, "DAFG": {"s": 70, "b": 2}, "FXNL": {"s": 242.12, "b": 4}, "MGUL": {"s": 130, "b": 2}, "RLCA": {"s": 210, "b": 6}, "SAIA": {"s": 120, "b": 2}}, "4-6": {"CD585": {"s": 70, "b": 1}, "CNWY": {"s": 75, "b": 1}, "DAFG": {"s": 105, "b": 3}, "FXNL": {"s": 363.18, "b": 6}, "RLCA": {"s": 315, "b": 9}, "SAIA": {"s": 350, "b": 5}}, "4-13": {"CD585": {"s": 70, "b": 1}, "FXNL": {"s": 181.59, "b": 3}, "RLCA": {"s": 105, "b": 3}, "SAIA": {"s": 70, "b": 1}}, "4-20": {}, "4-27": {"CNWY": {"s": 75, "b": 1}, "DAFG": {"s": 70, "b": 2}, "DOHR": {"s": 35, "b": 1}, "FXNL": {"s": 181.59, "b": 3}, "MGUL": {"s": 65, "b": 1}, "RLCA": {"s": 105, "b": 3}, "SAIA": {"s": 140, "b": 2}, "SPAJ1": {"s": 159, "b": 1}}, "5-4": {"CD585": {"s": 70, "b": 1}, "DAFG": {"s": 35, "b": 1}, "FXFE": {"s": 60.53, "b": 1}, "FXNL": {"s": 484.24, "b": 8}, "RLCA": {"s": 105, "b": 3}, "SAIA": {"s": 70, "b": 1}}, "5-11": {"DAFG": {"s": 35, "b": 1}, "FXNL": {"s": 121.06, "b": 2}, "RLCA": {"s": 105, "b": 3}, "SAIA": {"s": 210, "b": 3}, "SPAJ1": {"s": 159, "b": 1}}, "5-18": {"CNWY": {"s": 75, "b": 1}, "FXNL": {"s": 121.06, "b": 2}, "RLCA": {"s": 70, "b": 2}, "SAIA": {"s": 350, "b": 5}, "SPAJ1": {"s": 159, "b": 1}}, "5-25": {"DAFG": {"s": 35, "b": 1}, "RLCA": {"s": 140, "b": 4}, "SAIA": {"s": 70, "b": 1}}, "6-1": {"CNWY": {"s": 150, "b": 2}, "DAFG": {"s": 35, "b": 1}, "EXLA": {"s": 75, "b": 1}, "FXNL": {"s": 242.12, "b": 4}, "RLCA": {"s": 455, "b": 13}, "SAIA": {"s": 140, "b": 2}, "SEFL": {"s": 94, "b": 1}}}, "INSIDE DEL": {"3-2": {"RLCA": {"s": 60.0, "b": 1}}, "3-16": {"USRD": {"s": 70.0, "b": 1}}, "3-23": {}, "3-30": {}, "4-6": {}, "4-13": {}, "4-20": {}, "4-27": {"FXNL": {"s": 77.25, "b": 1}, "RLCA": {"s": 120, "b": 2}}, "5-4": {"SAIA": {"s": 67, "b": 1}, "USRD": {"s": 70, "b": 1}}, "5-11": {"RLCA": {"s": 60, "b": 1}}, "5-18": {"FXNL": {"s": 77.25, "b": 1}}, "5-25": {}, "6-1": {"RLCA": {"s": 120, "b": 2}}}, "RECON CHG": {"3-2": {"SAIA": {"s": 84.5, "b": 1}}, "3-9": {"NUMK": {"s": 35.0, "b": 1}}, "3-16": {}, "3-23": {}, "3-30": {}, "4-6": {}, "4-13": {}, "4-20": {}, "4-27": {}, "5-4": {}, "5-11": {}, "5-18": {"FXNL": {"s": 381, "b": 1}}, "5-25": {}, "6-1": {}}, "SORT/SEG": {"3-2": {"FXFE": {"s": 208.0, "b": 1}}, "3-16": {}, "3-23": {}, "3-30": {}, "4-6": {}, "4-13": {}, "4-20": {}, "4-27": {"FXNL": {"s": 208, "b": 1}}, "5-4": {}, "5-11": {}, "5-18": {}, "5-25": {}, "6-1": {}}, "STORAGE": {"3-2": {"CNWY": {"s": 441.25, "b": 1}, "FXNL": {"s": 210.0, "b": 1}}, "3-16": {}, "3-23": {}, "3-30": {}, "4-6": {"CNWY": {"s": 69.75, "b": 1}}, "4-13": {"FXNL": {"s": 885, "b": 2}}, "4-20": {}, "4-27": {}, "5-4": {"CNWY": {"s": 139.5, "b": 2}, "FXFE": {"s": 210, "b": 1}}, "5-11": {}, "5-18": {}, "5-25": {}, "6-1": {"FXNL": {"s": 210, "b": 1}}}, "CORR BOL": {"3-9": {"UPGF": {"s": 10.0, "b": 1}}, "3-16": {}, "3-23": {}, "3-30": {"FXFE": {"s": 97, "b": 2}}, "4-6": {"FXNL": {"s": 50, "b": 1}}, "4-13": {}, "4-20": {}, "4-27": {}, "5-4": {"FXNL": {"s": 100, "b": 2}}, "5-11": {}, "5-18": {}, "5-25": {}, "6-1": {}}, "EXT LENGTH": {"3-9": {"MGUL": {"s": 200.0, "b": 1}}, "3-16": {}, "3-23": {}, "3-30": {}, "4-6": {}, "4-13": {}, "4-20": {}, "4-27": {}, "5-4": {"FXFE": {"s": 982, "b": 1}}, "5-11": {}, "5-18": {}, "5-25": {}, "6-1": {}}, "NY DEL CHG": {"4-6": {"SAIA": {"s": 20, "b": 2}}, "4-13": {}, "4-20": {}, "4-27": {"SAIA": {"s": 10, "b": 1}}, "5-4": {"SAIA": {"s": 10, "b": 1}}, "5-11": {"SAIA": {"s": 20, "b": 2}}, "5-18": {"SAIA": {"s": 20, "b": 2}}, "5-25": {}, "6-1": {"SAIA": {"s": 10, "b": 1}}}};
 
@@ -166,19 +219,23 @@ const SEG_GAP=2; // Fix #7: gap between week segments
 let dark=true,viewWeek="all",sortMode="total",hovRow=null,hovSeg=null;
 
 // Dynamic week button generation
-(function(){
-  const toggle=document.querySelector('.week-toggle');
-  WEEKS.forEach(w=>{
-    const btn=document.createElement('button');
-    btn.className='week-btn';
-    btn.id='btn-'+w.replace('-','');
-    btn.onclick=()=>setWeek(w);
-    btn.textContent='W'+w;
-    toggle.appendChild(btn);
-  });
-})(); // Fix #5: default "all"
+ // Fix #5: default "all"
 let pinnedCards=[];
 
+
+function onDateChange(){
+  if(periodAll){WEEKS=granularity==="monthly"?MONTH_KEYS.slice():ALL_WEEKS;viewWeek="all";}
+  else if(granularity==="monthly"){WEEKS=MONTHS[activeMonth];viewWeek="all";}
+  else{WEEKS=ALL_WEEKS;viewWeek=ALL_WEEKS[activeWeekIdx];}
+  pinnedCards=[];hovSeg=null;hovRow=null;
+  document.querySelectorAll(".info-card").forEach(function(el){el.remove();});
+  render();
+}
+function onFilterChange(){
+  pinnedCards=[];hovSeg=null;hovRow=null;
+  document.querySelectorAll(".info-card").forEach(function(el){el.remove();});
+  render();
+}
 function prevWeek(w){const i=WEEKS.indexOf(w);return i>0?WEEKS[i-1]:null;}
 function getTotal(type){return WEEKS.reduce((s,w)=>(s+(DATA[type][w]||0)),0);}
 function getWeekVal(type){return DATA[type][viewWeek]||0;}
@@ -189,6 +246,7 @@ function getSorted(){
   if(sortMode==="total")types.sort((a,b)=>getTotal(b)-getTotal(a));
   else if(sortMode==="week"){if(viewWeek==="all")types.sort((a,b)=>getTotal(b)-getTotal(a));else types.sort((a,b)=>(DATA[b][viewWeek]||0)-(DATA[a][viewWeek]||0));}
   else if(sortMode==="wow")types.sort((a,b)=>Math.abs(getWowDelta(b))-Math.abs(getWowDelta(a)));
+  if(activeFilter!=="all")types=types.slice(0,parseInt(activeFilter));
   return types;
 }
 function fmtShort(v){if(v>=10000)return"$"+(v/1000).toFixed(1)+"k";if(v>=1000)return"$"+v.toLocaleString("en-US",{minimumFractionDigits:0,maximumFractionDigits:0});if(v>=100)return"$"+v.toFixed(0);if(v>0)return"$"+v.toFixed(2);return"$0";}
@@ -198,6 +256,30 @@ function deltaColor(d){return d>0?(dark?"#4ade80":"#1e8a4a"):d<0?(dark?"#fc8181"
 
 let globalMaxTotal=0;
 (function(){for(const t of Object.keys(DATA)){const tot=getTotal(t);if(tot>globalMaxTotal)globalMaxTotal=tot;}})();
+
+/* ═══ Monthly Data Augmentation ═══ */
+function augmentMonthly(){
+  Object.keys(DATA).forEach(function(carr){
+    MONTH_KEYS.forEach(function(mk){
+      var total=0;MONTHS[mk].forEach(function(w){total+=(DATA[carr][w]||0);});
+      DATA[carr][mk]=total;
+    });
+  });
+  if(typeof DETAIL!=='undefined'){
+    Object.keys(DETAIL).forEach(function(carr){
+      var types=DETAIL[carr];
+      Object.keys(types).forEach(function(t){
+        MONTH_KEYS.forEach(function(mk){
+          var ms=0,mb=0;
+          MONTHS[mk].forEach(function(w){if(types[t][w]){ms+=types[t][w].s||0;mb+=types[t][w].b||0;}});
+          if(ms>0)types[t][mk]={s:ms,b:mb};
+        });
+      });
+    });
+  }
+}
+augmentMonthly();
+
 
 function weekColor(wi,hov){return hov?(dark?WCOL_HOV_D[wi]:WCOL_HOV_L[wi]):(dark?WCOL_D[wi]:WCOL_L[wi]);}
 
@@ -304,11 +386,11 @@ function buildCardHTML(type,week){
   // Fix #10: share of total
   const weekTot=getWeekTotal(week);
   const sharePct=weekTot>0?((v/weekTot)*100).toFixed(1):"0";
-  const shareHTML=`<div class="info-card-share">${sharePct}% of W${week} total (${fmtShort(weekTot)})</div>`;
+  const shareHTML=`<div class="info-card-share">${sharePct}% of ${isMonthKey(week)?week:"W"+week} total (${fmtShort(weekTot)})</div>`;
 
   let deltaHtml="";
   if(pw){
-    if(pv>0&&v>0){const d=v-pv,pct=(d/pv)*100;deltaHtml=`<div class="info-card-delta" style="color:${deltaColor(d)}">${d>0?"\u25B2":"\u25BC"} ${fmtDelta(d)} (${pct>=0?"+":""}${pct.toFixed(1)}%) vs W${pw}</div>`;}
+    if(pv>0&&v>0){const d=v-pv,pct=(d/pv)*100;deltaHtml=`<div class="info-card-delta" style="color:${deltaColor(d)}">${d>0?"\u25B2":"\u25BC"} ${fmtDelta(d)} (${pct>=0?"+":""}${pct.toFixed(1)}%) vs ${isMonthKey(pw)?pw:"W"+pw}</div>`;}
     else if(v>0&&pv===0)deltaHtml=`<div class="info-card-delta" style="color:${dark?"#4ade80":"#1e8a4a"}">\u25CF New this week</div>`;
     else if(v===0&&pv>0)deltaHtml=`<div class="info-card-delta" style="color:${dark?"#fc8181":"#c0392b"}">\u25BC Gone (was ${fmtShort(pv)})</div>`;
   } else deltaHtml=`<div class="info-card-delta" style="color:var(--text-muted)">\u2014 Baseline week</div>`;
@@ -326,7 +408,7 @@ function buildCardHTML(type,week){
     if(sorted.length>8)carrHTML+=`<div style="font-size:9px;color:var(--text-muted);padding-top:2px">+${sorted.length-8} more</div>`;
   }
 
-  return`<div class="ic-handle ic-handle-tl" data-corner="tl"></div><div class="ic-handle ic-handle-tr" data-corner="tr"></div><div class="ic-handle ic-handle-bl" data-corner="bl"></div><div class="ic-handle ic-handle-br" data-corner="br"></div><div class="ic-handle ic-handle-t" data-corner="t"></div><div class="ic-handle ic-handle-b" data-corner="b"></div><div class="ic-handle ic-handle-l" data-corner="l"></div><div class="ic-handle ic-handle-r" data-corner="r"></div><div class="accent-bar" style="background:${col}${dark?";box-shadow:0 0 8px "+col:""}"></div><div class="info-card-inner"><div class="info-card-header"><span class="info-card-type">${type}</span><span class="info-card-week" style="background:${col};color:${dark?"#0d1117":"#fff"}">W${week}</span></div><div class="info-card-val">${fmtShort(v)}</div>${shareHTML}${deltaHtml}${carrHTML}${isPinned?'<div class="info-card-pin">\uD83D\uDCCC pinned</div>':''}</div>`;
+  return`<div class="ic-handle ic-handle-tl" data-corner="tl"></div><div class="ic-handle ic-handle-tr" data-corner="tr"></div><div class="ic-handle ic-handle-bl" data-corner="bl"></div><div class="ic-handle ic-handle-br" data-corner="br"></div><div class="ic-handle ic-handle-t" data-corner="t"></div><div class="ic-handle ic-handle-b" data-corner="b"></div><div class="ic-handle ic-handle-l" data-corner="l"></div><div class="ic-handle ic-handle-r" data-corner="r"></div><div class="accent-bar" style="background:${col}${dark?";box-shadow:0 0 8px "+col:""}"></div><div class="info-card-inner"><div class="info-card-header"><span class="info-card-type">${type}</span><span class="info-card-week" style="background:${col};color:${dark?"#0d1117":"#fff"}">${isMonthKey(week)?week:"W"+week}</span></div><div class="info-card-val">${fmtShort(v)}</div>${shareHTML}${deltaHtml}${carrHTML}${isPinned?'<div class="info-card-pin">\uD83D\uDCCC pinned</div>':''}${isMonthKey(week)?wkDrillHTML(week,function(w){return DATA[type][w]||0;},fmtShort):''}</div>`;
 }
 
 // Fix #2: position card relative to hovered row
@@ -428,7 +510,7 @@ function render(){
   const footer=document.getElementById("hm-footer");
 
   // Fix #8: dynamic header label
-  document.getElementById("total-header").textContent=viewWeek==="all"?"Total":"W"+viewWeek;
+  document.getElementById("total-header").textContent=viewWeek==="all"?"Total":(isMonthKey(viewWeek)?viewWeek:"W"+viewWeek);
 
   let html="";
   types.forEach((type,idx)=>{
@@ -450,21 +532,21 @@ function render(){
   let footTotal=0;
   if(viewWeek==="all")for(const t of types)footTotal+=getTotal(t);
   else for(const t of types)footTotal+=(DATA[t][viewWeek]||0);
-  const footMiddle=viewWeek==="all"?`${types.length} types \u00b7 ${WEEKS.length} weeks`:`${types.filter(t=>(DATA[t][viewWeek]||0)>0).length} active types`;
+  const footMiddle=viewWeek==="all"?`${types.length} types \u00b7 ${WEEKS.length} ${granularity==="monthly"?"months":"weeks"}`:`${types.filter(t=>(DATA[t][viewWeek]||0)>0).length} active types`;
   footer.innerHTML=`<div class="hm-fcell">Total</div><div class="hm-fcell" style="padding-left:10px;font-size:9px;font-weight:600;color:var(--text-muted)">${footMiddle}</div><div class="hm-fcell">${fmt(footTotal)}</div>`;
 
   const legEl=document.getElementById("legend");
   legEl.innerHTML=WEEKS.map((w,i)=>`<span><span class="leg-swatch" style="background:${dark?WCOL_D[i]:WCOL_L[i]}"></span>W${w}</span>`).join("");
 
-  ["all",...WEEKS].forEach(w=>{const id=w==="all"?"btn-all":"btn-"+w.replace("-","");const el=document.getElementById(id);if(el)el.classList.toggle("active",viewWeek===w);});
+  
   document.querySelectorAll(".sort-btn:not(.disabled)").forEach(b=>b.classList.add("active"));
   document.getElementById("reset-btn").classList.toggle("has-pins",pinnedCards.length>0);
   renderCards();
 }
 
 function redrawBars(){document.querySelectorAll(".hm-bar-canvas").forEach(cv=>drawBar(cv,cv.dataset.type));}
-function resetAll(){pinnedCards=[];hovSeg=null;hovRow=null;document.querySelectorAll(".info-card").forEach(el=>el.remove());render();}
-function setWeek(w){viewWeek=w;render();}
+function resetAll(){granularity="monthly";activeMonth=MONTH_KEYS[MONTH_KEYS.length-1];activeWeekIdx=ALL_WEEKS.length-1;periodAll=true;activeFilter="all";buildDateControl();buildFilterControl();WEEKS=ALL_WEEKS;viewWeek="all";sortMode="total";pinnedCards=[];hovSeg=null;hovRow=null;document.querySelectorAll(".info-card").forEach(function(el){el.remove();});render();}
+
 function setSort(m){if(m===sortMode)return;sortMode=m;render();}
 function toggleDark(){dark=!dark;document.documentElement.setAttribute("data-theme",dark?"dark":"");render();}
 
@@ -508,7 +590,9 @@ document.addEventListener("DOMContentLoaded",()=>{
 });
 
 let resizeTimer;window.addEventListener("resize",()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(render,100);});
-render();
+buildDateControl();
+buildFilterControl();
+onDateChange();
 </script>
 </body>
 </html>
