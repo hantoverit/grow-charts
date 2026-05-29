@@ -2,28 +2,12 @@
 <html data-theme="dark" lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Carrier Accessorial Spend</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
-  :root {
-    --bg:#f4f6f8;--surface:#fff;--surface2:#f9fafb;--border:#e3e7ed;
-    --text-primary:#111827;--text-secondary:#4b5563;--text-muted:#9ca3af;
-    --green:#1e8a4a;--green-bg:#dcfce7;--red:#c0392b;--red-bg:#fee2e2;
-    --toggle-bg:#d1d5db;--toggle-knob:#fff;
-    --week-active-bg:#1a73e8;--week-active-text:#fff;--week-inactive:#6b7280;
-    --shadow:0 1px 6px rgba(0,0,0,.08),0 4px 20px rgba(0,0,0,.04);
-    --chart-bg:#f8fafc;--chart-border:#dce3eb;
-  }
-  [data-theme="dark"] {
-    --bg:#0d1117;--surface:#161b27;--surface2:#1e2533;--border:#2e3a4e;
-    --text-primary:#e8edf5;--text-secondary:#b0bdd0;--text-muted:#6b7f99;
-    --green:#4ade80;--green-bg:#0c2b1c;--red:#fc8181;--red-bg:#2d1214;
-    --toggle-bg:#2e3a4e;--toggle-knob:#e8edf5;
-    --week-active-bg:#4f93f5;--week-active-text:#0d1117;--week-inactive:#94a3b8;
-    --shadow:0 1px 8px rgba(0,0,0,.5);
-    --chart-bg:#0f1520;--chart-border:#1e2a3a;
-  }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{width:100%;height:100%}
   body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text-primary);transition:background .25s,color .25s}
@@ -107,6 +91,37 @@
   .ic-handle-b{bottom:-3px;left:12px;right:12px;height:6px;cursor:ns-resize}
   .ic-handle-l{left:-3px;top:12px;bottom:12px;width:6px;cursor:ew-resize}
   .ic-handle-r{right:-3px;top:12px;bottom:12px;width:6px;cursor:ew-resize}
+  :root {
+    --bg:#f4f6f8;--surface:#fff;--surface2:#f9fafb;--border:#e3e7ed;
+    --text-primary:#111827;--text-secondary:#4b5563;--text-muted:#9ca3af;
+    --accent:#1a73e8;--accent-dim:#e8f0fd;--accent-text:#1a73e8;
+    --green:#1e8a4a;--green-bg:#dcfce7;--red:#c0392b;--red-bg:#fee2e2;
+    --toggle-bg:#d1d5db;--toggle-knob:#fff;
+    --week-active-bg:#1a73e8;--week-active-text:#fff;--week-inactive:#6b7280;
+    --shadow:0 1px 6px rgba(0,0,0,.08),0 4px 20px rgba(0,0,0,.04);
+    --chart-bg:#f8fafc;--chart-border:#dce3eb;
+  }
+  [data-theme="dark"] {
+    --bg:#0d1117;--surface:#161b27;--surface2:#1e2533;--border:#2e3a4e;
+    --text-primary:#e8edf5;--text-secondary:#b0bdd0;--text-muted:#6b7f99;
+    --accent:#4f93f5;--accent-dim:#1a2d50;--accent-text:#7db3f8;
+    --green:#4ade80;--green-bg:#0c2b1c;--red:#fc8181;--red-bg:#2d1214;
+    --toggle-bg:#2e3a4e;--toggle-knob:#e8edf5;
+    --week-active-bg:#4f93f5;--week-active-text:#0d1117;--week-inactive:#94a3b8;
+    --shadow:0 1px 8px rgba(0,0,0,.5);--chart-bg:#0f1520;--chart-border:#1e2a3a;
+  }
+  .dc-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;justify-content:space-between}
+  .dc-filter{display:flex;gap:3px;margin-left:auto;align-items:center}
+  .dc-filter-lbl{font-size:9px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-right:2px}
+  .dc-periods{display:flex;gap:3px;flex-wrap:wrap;align-items:center}
+  .dc-pill{font-size:10.5px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--week-inactive);transition:all .16s;font-family:"Inter",sans-serif}
+  .dc-pill:hover{color:var(--text-primary);border-color:var(--text-muted)}
+  .dc-pill.active{background:var(--week-active-bg);color:var(--week-active-text);border-color:var(--week-active-bg);box-shadow:0 1px 4px rgba(26,115,232,.25)}
+  .wk-drill{margin-top:6px;border-top:1px solid var(--border);padding-top:5px}
+  .wk-drill-hdr{font-size:8.5px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+  .wk-drill-row{display:flex;justify-content:space-between;font-size:10px;padding:1px 0}
+  .wk-drill-row .wk-lbl{color:var(--text-muted);font-weight:500}
+  .wk-drill-row .wk-val{color:var(--text-secondary);font-weight:600;text-align:right}
 </style>
 </head>
 <body>
@@ -117,9 +132,8 @@
       <span class="title">Carrier Accessorial Spend</span>
     </div>
     <div class="header-right">
-      <div class="week-toggle">
-        <button class="week-btn active" id="btn-all" onclick="setWeek('all')">All</button>
-      </div>
+      <div id="date-control"></div>
+<div id="entity-filter"></div>
       <div class="dm-toggle" onclick="toggleDark()" title="Toggle dark mode">
         <span class="dm-icon">&#9728;</span>
         <div class="dm-track"><div class="dm-knob"></div></div>
@@ -151,7 +165,46 @@
   </div>
 </div>
 <script>
-const WEEKS=["2-23","3-2","3-9","3-16","3-23","3-30","4-6","4-13","4-20","4-27","5-4","5-11","5-18","5-25","6-1"];
+/* ═══ Date Control Module ═══ */
+var ALL_WEEKS=["2-23","3-2","3-9","3-16","3-23","3-30","4-6","4-13","4-20","4-27","5-4","5-11","5-18","5-25","6-1"];
+var MONTHS={Feb:["2-23"],Mar:["3-2","3-9","3-16","3-23","3-30"],Apr:["4-6","4-13","4-20","4-27"],May:["5-4","5-11","5-18","5-25"],Jun:["6-1"]};
+var MONTH_KEYS=["Feb","Mar","Apr","May","Jun"];
+var granularity="monthly",activeMonth="Jun",activeWeekIdx=ALL_WEEKS.length-1;
+function getActiveWeeks(){return granularity==="monthly"?MONTHS[activeMonth]:[ALL_WEEKS[activeWeekIdx]];}
+function getPrevWeeks(){if(granularity==="monthly"){var i=MONTH_KEYS.indexOf(activeMonth);return i>0?MONTHS[MONTH_KEYS[i-1]]:null;}return activeWeekIdx>0?[ALL_WEEKS[activeWeekIdx-1]]:null;}
+function getPeriodLabel(){return granularity==="monthly"?activeMonth:"W"+ALL_WEEKS[activeWeekIdx].replace("W","");}
+function buildDateControl(){var el=document.getElementById("date-control");if(!el)return;var h='<div class="dc-row"><div class="dc-periods">';MONTH_KEYS.forEach(function(m){h+='<button class="dc-pill'+(m===activeMonth&&!periodAll?' active':'')+'" onclick="setPeriod(\''+m+'\')">'+m+'</button>';});h+='</div></div>';el.innerHTML=h;}
+
+function setPeriod(p){if(p===activeMonth&&!periodAll)return;activeMonth=p;if(typeof periodAll!=='undefined')periodAll=false;buildDateControl();onDateChange();}
+
+/* ═══ Weekly Drill-Down Helper ═══ */
+function isMonthKey(k){return MONTHS[k]!=null;}
+function wkDrillHTML(monthKey,dataFn,fmtFn){
+  if(!isMonthKey(monthKey))return'';
+  var wks=MONTHS[monthKey];if(!wks||wks.length<=1)return'';
+  var h='<div class="wk-drill"><div class="wk-drill-hdr">Weekly Detail</div>';
+  wks.forEach(function(w){
+    var v=dataFn(w);
+    h+='<div class="wk-drill-row"><span class="wk-lbl">W'+w.replace("W","")+'</span><span class="wk-val">'+fmtFn(v)+'</span></div>';
+  });
+  return h+'</div>';
+}
+
+
+let periodAll=true;
+var _origBDC=buildDateControl;
+buildDateControl=function(){_origBDC();var el=document.getElementById("date-control");if(!el)return;var pd=el.querySelector(".dc-periods");if(!pd)return;var ab=document.createElement("button");ab.className="dc-pill"+(periodAll?" active":"");ab.textContent="All";ab.onclick=function(){if(periodAll)return;periodAll=true;buildDateControl();onDateChange();};pd.insertBefore(ab,pd.firstChild);if(periodAll){var pills=pd.querySelectorAll(".dc-pill");for(var x=1;x<pills.length;x++)pills[x].classList.remove("active");}};
+var _origSP=setPeriod;
+setPeriod=function(p){periodAll=false;_origSP(p);};
+
+/* ═══ Entity Filter Module ═══ */
+var activeFilter="all";
+var FILTER_OPTS=[{v:"all",l:"All"},{v:"10",l:"Top 10"},{v:"5",l:"Top 5"}];
+function buildFilterControl(){var dcRow=document.querySelector('#date-control .dc-row');if(!dcRow)return;var ef=document.getElementById('entity-filter');if(ef)ef.style.display='none';var old=dcRow.querySelector('.dc-filter');if(old)old.remove();var h='<div class="dc-filter"><span class="dc-filter-lbl">Show</span>';FILTER_OPTS.forEach(function(o){h+='<button class="dc-pill'+(o.v===activeFilter?' active':'')+'" onclick="setFilter(\''+o.v+'\')">'+o.l+'</button>';});h+='</div>';dcRow.insertAdjacentHTML('beforeend',h);}
+function setFilter(f){if(f===activeFilter)return;activeFilter=f;buildFilterControl();onFilterChange();}
+
+
+var WEEKS=ALL_WEEKS;
 const DATA={"RLCA": {"name": "R&L Carriers", "2-23": 1968.65, "3-2": 1422.0, "3-9": 1857.0, "3-16": 1609.0, "3-23": 873.0, "3-30": 1038.0, "4-6": 2017.87, "4-13": 1558.0, "4-20": 541.0, "4-27": 1091.0, "5-4": 1143.0, "5-11": 1472.0, "5-18": 291.0, "5-25": 663.0, "6-1": 1845.0}, "FXNL": {"name": "FedEx Freight Economy", "2-23": 1091.22, "3-2": 2101.95, "3-9": 1216.04, "3-16": 965.94, "3-23": 1441.11, "3-30": 1470.72, "4-6": 1040.34, "4-13": 1464.69, "4-20": 676.04, "4-27": 1118.52, "5-4": 1725.9, "5-11": 790.1, "5-18": 1097.89, "5-25": 361.81, "6-1": 1173.47}, "SAIA": {"name": "Saia Motor Freight", "2-23": 2115.0, "3-2": 1297.5, "3-9": 817.0, "3-16": 384.5, "3-23": 925.5, "3-30": 1258.04, "4-6": 3495.84, "4-13": 750.0, "4-20": 1002.0, "4-27": 2677.0, "5-4": 1417.06, "5-11": 2293.0, "5-18": 2973.5, "5-25": 429.5, "6-1": 1250.5}, "CNWY": {"name": "Con-Way Freight", "2-23": 849.0, "3-2": 1020.51, "3-9": 445.0, "3-16": 202.5, "3-23": 277.5, "3-30": 320.0, "4-6": 1125.63, "4-13": 482.5, "4-20": 120.0, "4-27": 324.5, "5-4": 800.5, "5-11": 435.5, "5-18": 425.0, "5-25": 30.0, "6-1": 1127.5}, "NUMK": {"name": "Numark Transport", "2-23": 681.5, "3-2": 84.0, "3-9": 189.5, "3-16": 240.0, "3-23": 265.0, "3-30": 195.0, "4-6": 195.0, "4-13": 135.0, "4-20": 180.0, "4-27": 165.0, "5-4": 135.0, "5-11": 150.0, "5-18": 165.0, "5-25": 60.0, "6-1": 150.0}, "TMBM": {"name": "T.E.A.M.S.", "2-23": 95.0, "3-2": 66.36, "3-9": 373.82, "3-16": 411.19, "3-23": 55.63, "3-30": 127.76, "4-6": 77.78, "4-13": 422.77, "4-20": 100.49, "4-27": 81.37, "5-4": 135.94, "5-11": 815.49, "5-18": 110.51, "5-25": 19.17, "6-1": 152.95}, "CD585": {"name": "Cross Country Frt", "2-23": 373.5, "3-2": 455.57, "3-9": 43.75, "3-16": 43.75, "3-23": 0, "3-30": 140.0, "4-6": 557.5, "4-13": 224.0, "4-20": 87.5, "4-27": 66.0, "5-4": 280.0, "5-11": 87.5, "5-18": 95.0, "5-25": 0, "6-1": 227.5}, "FXFE": {"name": "FedEx Freight Priority", "2-23": 134.54, "3-2": 559.54, "3-9": 111.0, "3-16": 58.77, "3-23": 58.77, "3-30": 371.0, "4-6": 216.77, "4-13": 250.0, "4-20": 120.0, "4-27": 157.53, "5-4": 1576.3, "5-11": 212.0, "5-18": 0, "5-25": 90.0, "6-1": 58.77}, "MGUL": {"name": "Magnum LTL", "2-23": 355.0, "3-2": 0, "3-9": 345.0, "3-16": 40.0, "3-23": 0, "3-30": 210.0, "4-6": 80.0, "4-13": 0, "4-20": 0, "4-27": 230.0, "5-4": 0, "5-11": 0, "5-18": 0, "5-25": 0, "6-1": 65.0}, "DOHR": {"name": "Dohrn Transfer", "2-23": 145.0, "3-2": 99.0, "3-9": 89.0, "3-16": 50.0, "3-23": 90.0, "3-30": 279.0, "4-6": 460.5, "4-13": 5.0, "4-20": 39.0, "4-27": 269.0, "5-4": 204.0, "5-11": 39.0, "5-18": 83.0, "5-25": 5.0, "6-1": 417.0}, "DAFG": {"name": "Dayton Freight", "2-23": 150.0, "3-2": 92.0, "3-9": 35.0, "3-16": 100.0, "3-23": 310.0, "3-30": 125.0, "4-6": 520.0, "4-13": 20.0, "4-20": 5.0, "4-27": 215.0, "5-4": 195.0, "5-11": 60.0, "5-18": 180.22, "5-25": 55.0, "6-1": 150.0}, "USRD": {"name": "US Road Freight", "2-23": 160.0, "3-2": 0, "3-9": 0, "3-16": 70.0, "3-23": 0, "3-30": 0, "4-6": 160.0, "4-13": 125.0, "4-20": 0, "4-27": 0, "5-4": 230.0, "5-11": 0, "5-18": 0, "5-25": 0, "6-1": 160.0}, "AVRT": {"name": "Averitt Express", "2-23": 50.0, "3-2": 111.0, "3-9": 0, "3-16": 25.0, "3-23": 0, "3-30": 85.0, "4-6": 20.95, "4-13": 25.0, "4-20": 25.0, "4-27": 0, "5-4": 25.0, "5-11": 25.0, "5-18": 0, "5-25": 0, "6-1": 0}, "EXLA": {"name": "Estes Express", "2-23": 175.0, "3-2": 0, "3-9": 0, "3-16": 0, "3-23": 0, "3-30": 75.0, "4-6": 235.0, "4-13": 0, "4-20": 0, "4-27": 0, "5-4": 75.0, "5-11": 0, "5-18": 160.0, "5-25": 0, "6-1": 175.0}, "UPGF": {"name": "TForce Freight", "2-23": 0, "3-2": 20.0, "3-9": 140.0, "3-16": 0, "3-23": 25.0, "3-30": 55.0, "4-6": 97.0, "4-13": 69.0, "4-20": 0, "4-27": 37.0, "5-4": 141.0, "5-11": 0, "5-18": 111.0, "5-25": 0, "6-1": 67.0}, "DTAF": {"name": "Data Freight", "2-23": 0, "3-2": 100.0, "3-9": 0, "3-16": 0, "3-23": 0, "3-30": 0, "4-6": 0, "4-13": 0, "4-20": 0, "4-27": 0, "5-4": 0, "5-11": 0, "5-18": 0, "5-25": 0, "6-1": 1200.0}, "SEFL": {"name": "Southeastern Frt", "2-23": 0, "3-2": 0, "3-9": 94.0, "3-16": 0, "3-23": 0, "3-30": 0, "4-6": 0, "4-13": 0, "4-20": 0, "4-27": 0, "5-4": 94.0, "5-11": 0, "5-18": 94.0, "5-25": 0, "6-1": 322.0}, "DYLT": {"name": "Daylight Transport", "2-23": 0, "3-2": 20.0, "3-9": 40.0, "3-16": 0, "3-23": 0, "3-30": 0, "4-6": 20.0, "4-13": 20.0, "4-20": 0, "4-27": 120.0, "5-4": 40.0, "5-11": 0, "5-18": 0, "5-25": 0, "6-1": 0}, "RUDE": {"name": "Rude Transportation", "3-23": 80.0, "3-30": 0, "4-6": 0, "4-13": 0, "4-20": 0, "4-27": 0, "5-4": 0, "5-11": 0, "5-18": 0, "5-25": 0, "6-1": 0}, "SPAJ1": {"name": "Span Alaska", "4-27": 159.0, "5-4": 0, "5-11": 159.0, "5-18": 159.0, "5-25": 0, "6-1": 0}};
 const DETAIL={"RLCA": {"CA SURCHAR": {"2-23": {"s": 546, "b": 21}, "3-2": {"s": 312, "b": 12}, "3-9": {"s": 468, "b": 18}, "3-16": {"s": 338, "b": 13}, "3-23": {"s": 286, "b": 11}, "3-30": {"s": 312, "b": 12}, "4-6": {"s": 494, "b": 19}, "4-13": {"s": 338, "b": 13}, "4-20": {"s": 234, "b": 9}, "4-27": {"s": 286, "b": 11}, "5-4": {"s": 364, "b": 14}, "5-11": {"s": 338, "b": 13}, "5-18": {"s": 52, "b": 2}, "5-25": {"s": 285, "b": 11}, "6-1": {"s": 416, "b": 16}}, "INSPECTION": {"2-23": {"s": 560, "b": 14}, "3-2": {"s": 80, "b": 2}, "3-9": {"s": 240, "b": 6}, "3-16": {"s": 320, "b": 8}, "3-23": {"s": 200, "b": 5}, "3-30": {"s": 320, "b": 8}, "4-6": {"s": 440, "b": 11}, "4-13": {"s": 320, "b": 8}, "4-20": {"s": 160, "b": 4}, "4-27": {"s": 320, "b": 8}, "5-4": {"s": 280, "b": 7}, "5-11": {"s": 40, "b": 1}, "5-18": {"s": 120, "b": 3}, "5-25": {"s": 80, "b": 2}, "6-1": {"s": 200, "b": 5}}, "FREEZABLE": {"2-23": {"s": 35, "b": 1}}, "HAZ MAT": {"2-23": {"s": 36, "b": 3}, "3-2": {"s": 60, "b": 5}, "3-9": {"s": 24, "b": 2}, "3-16": {"s": 96, "b": 8}, "3-23": {"s": 72, "b": 6}, "3-30": {"s": 36, "b": 3}, "4-6": {"s": 84, "b": 7}, "4-13": {"s": 60, "b": 5}, "4-20": {"s": 72, "b": 6}, "4-27": {"s": 60, "b": 5}, "5-4": {"s": 84, "b": 7}, "5-11": {"s": 36, "b": 3}, "5-18": {"s": 24, "b": 2}, "5-25": {"s": 48, "b": 4}, "6-1": {"s": 24, "b": 2}}, "REDELIVERY": {"2-23": {"s": 106.65, "b": 1}}, "RES DEL": {"2-23": {"s": 385, "b": 11}, "3-2": {"s": 350, "b": 10}, "3-9": {"s": 245, "b": 7}, "3-16": {"s": 245, "b": 7}, "3-23": {"s": 105, "b": 3}, "3-30": {"s": 210, "b": 6}, "4-6": {"s": 315, "b": 9}, "4-13": {"s": 105, "b": 3}, "4-27": {"s": 105, "b": 3}, "5-4": {"s": 105, "b": 3}, "5-11": {"s": 105, "b": 3}, "5-18": {"s": 70, "b": 2}, "5-25": {"s": 140, "b": 4}, "6-1": {"s": 455, "b": 13}}, "LIFTGATE": {"2-23": {"s": 300, "b": 12}, "3-2": {"s": 250, "b": 10}, "3-9": {"s": 225, "b": 9}, "3-16": {"s": 300, "b": 12}, "3-23": {"s": 175, "b": 7}, "3-30": {"s": 125, "b": 5}, "4-6": {"s": 300, "b": 12}, "4-13": {"s": 150, "b": 6}, "4-20": {"s": 75, "b": 3}, "4-27": {"s": 200, "b": 8}, "5-4": {"s": 275, "b": 11}, "5-11": {"s": 175, "b": 7}, "5-18": {"s": 25, "b": 1}, "5-25": {"s": 75, "b": 3}, "6-1": {"s": 525, "b": 21}}, "INSIDE DEL": {"3-2": {"s": 60, "b": 1}, "4-27": {"s": 120, "b": 2}, "5-11": {"s": 60, "b": 1}, "6-1": {"s": 120, "b": 2}}, "OVER DIMEN": {"3-2": {"s": 275, "b": 1}, "3-9": {"s": 550, "b": 2}, "3-16": {"s": 275, "b": 1}, "4-13": {"s": 550, "b": 2}}, "LTD ACCESS": {"3-2": {"s": 35, "b": 1}, "3-9": {"s": 105, "b": 3}, "3-16": {"s": 35, "b": 1}, "3-23": {"s": 35, "b": 1}, "3-30": {"s": 35, "b": 1}, "4-6": {"s": 140, "b": 4}, "4-13": {"s": 35, "b": 1}, "5-4": {"s": 35, "b": 1}, "5-11": {"s": 35, "b": 1}, "5-25": {"s": 35, "b": 1}, "6-1": {"s": 105, "b": 3}}, "MISC": {"4-6": {"s": 244.87, "b": 1}, "5-11": {"s": 683, "b": 1}}}, "FXNL": {"NOTIFY": {"2-23": {"s": 150.16, "b": 8}, "3-2": {"s": 131.39, "b": 7}, "3-9": {"s": 131.39, "b": 7}, "3-16": {"s": 93.85, "b": 5}, "3-23": {"s": 75.08, "b": 4}, "3-30": {"s": 158.85, "b": 6}, "4-6": {"s": 150.16, "b": 8}, "4-13": {"s": 37.54, "b": 2}, "4-20": {"s": 37.54, "b": 2}, "4-27": {"s": 112.62, "b": 6}, "5-4": {"s": 150.16, "b": 8}, "5-11": {"s": 37.54, "b": 2}, "5-18": {"s": 75.08, "b": 4}, "5-25": {"s": 56.31, "b": 3}, "6-1": {"s": 93.85, "b": 5}}, "INSPECTION": {"2-23": {"s": 160, "b": 4}, "3-2": {"s": 360, "b": 9}, "3-9": {"s": 240, "b": 6}, "3-16": {"s": 120, "b": 3}, "3-23": {"s": 280, "b": 7}, "3-30": {"s": 277.25, "b": 6}, "4-6": {"s": 80, "b": 2}, "4-13": {"s": 120, "b": 3}, "4-20": {"s": 200, "b": 5}, "4-27": {"s": 80, "b": 2}, "5-4": {"s": 160, "b": 4}, "5-11": {"s": 120, "b": 3}, "5-18": {"s": 40, "b": 1}, "5-25": {"s": 120, "b": 3}, "6-1": {"s": 160, "b": 4}}, "LIFTGATE": {"2-23": {"s": 184, "b": 2}, "3-2": {"s": 92, "b": 1}, "3-9": {"s": 276, "b": 3}, "3-16": {"s": 276, "b": 3}, "3-23": {"s": 276, "b": 3}, "3-30": {"s": 368, "b": 4}, "4-27": {"s": 92, "b": 1}, "5-4": {"s": 184, "b": 2}, "5-11": {"s": 92, "b": 1}, "5-18": {"s": 276, "b": 3}, "6-1": {"s": 92, "b": 1}}, "PEAK CHG": {"2-23": {"s": 135, "b": 3}, "3-2": {"s": 90, "b": 2}, "3-9": {"s": 120, "b": 3}, "3-16": {"s": 135, "b": 3}, "3-23": {"s": 210, "b": 6}, "4-6": {"s": 225, "b": 5}, "4-20": {"s": 45, "b": 1}, "4-27": {"s": 60, "b": 2}, "5-4": {"s": 165, "b": 3}, "5-11": {"s": 180, "b": 4}, "5-25": {"s": 45, "b": 1}, "6-1": {"s": 45, "b": 1}}, "RES DEL": {"2-23": {"s": 121.06, "b": 2}, "3-2": {"s": 121.06, "b": 2}, "3-9": {"s": 242.12, "b": 4}, "3-16": {"s": 181.59, "b": 3}, "3-23": {"s": 60.53, "b": 1}, "3-30": {"s": 242.12, "b": 4}, "4-6": {"s": 363.18, "b": 6}, "4-13": {"s": 181.59, "b": 3}, "4-27": {"s": 181.59, "b": 3}, "5-4": {"s": 484.24, "b": 8}, "5-11": {"s": 121.06, "b": 2}, "5-18": {"s": 121.06, "b": 2}, "6-1": {"s": 242.12, "b": 4}}, "RE-WEIGH": {"2-23": {"s": 40, "b": 1}, "3-2": {"s": 80, "b": 2}, "3-9": {"s": 40, "b": 1}, "3-16": {"s": 80, "b": 2}, "3-23": {"s": 240, "b": 6}, "3-30": {"s": 240, "b": 6}, "4-6": {"s": 40, "b": 1}, "4-13": {"s": 40, "b": 1}, "4-20": {"s": 200, "b": 5}, "4-27": {"s": 80, "b": 2}, "5-4": {"s": 200, "b": 5}, "5-11": {"s": 160, "b": 4}, "5-18": {"s": 40, "b": 1}, "6-1": {"s": 198, "b": 5}}, "CA SURCHAR": {"2-23": {"s": 53, "b": 2}, "3-2": {"s": 26.5, "b": 1}, "3-9": {"s": 106, "b": 4}, "3-16": {"s": 79.5, "b": 3}, "3-23": {"s": 238.5, "b": 9}, "3-30": {"s": 26.5, "b": 1}, "4-6": {"s": 132.0, "b": 5}, "4-13": {"s": 79.5, "b": 3}, "4-20": {"s": 132.5, "b": 5}, "4-27": {"s": 106.0, "b": 4}, "5-4": {"s": 185.5, "b": 7}, "5-11": {"s": 79.5, "b": 3}, "5-18": {"s": 26.5, "b": 1}, "5-25": {"s": 79.5, "b": 3}, "6-1": {"s": 132.5, "b": 5}}, "HAZ MAT": {"2-23": {"s": 61, "b": 1}, "3-2": {"s": 183, "b": 3}, "3-23": {"s": 61, "b": 1}, "3-30": {"s": 61, "b": 1}, "4-20": {"s": 61, "b": 1}, "5-18": {"s": 61, "b": 1}, "5-25": {"s": 61, "b": 1}}, "REDELIVERY": {"2-23": {"s": 187, "b": 1}, "3-2": {"s": 187, "b": 1}}, "DETENTION": {"3-2": {"s": 246, "b": 1}, "3-30": {"s": 97, "b": 1}, "5-4": {"s": 97, "b": 1}}, "STORAGE": {"3-2": {"s": 210, "b": 1}, "4-13": {"s": 885, "b": 2}, "6-1": {"s": 210, "b": 1}}, "OVER DIMEN": {"3-2": {"s": 375, "b": 1}}, "LTD ACCESS": {"3-9": {"s": 60.53, "b": 1}, "4-13": {"s": 121.06, "b": 2}, "4-27": {"s": 121.06, "b": 2}}, "CORR BOL": {"4-6": {"s": 50, "b": 1}, "5-4": {"s": 100, "b": 2}}, "SORT/SEG": {"4-27": {"s": 208, "b": 1}}, "INSIDE DEL": {"4-27": {"s": 77.25, "b": 1}, "5-18": {"s": 77.25, "b": 1}}, "RECON CHG": {"5-18": {"s": 381, "b": 1}}}, "SAIA": {"CA SURCHAR": {"2-23": {"s": 130, "b": 7}, "3-2": {"s": 80, "b": 4}, "3-9": {"s": 60, "b": 4}, "3-16": {"s": 20, "b": 1}, "3-23": {"s": 80, "b": 4}, "3-30": {"s": 90, "b": 5}, "4-6": {"s": 140, "b": 7}, "4-13": {"s": 140, "b": 7}, "4-20": {"s": 60, "b": 3}, "4-27": {"s": 100, "b": 5}, "5-4": {"s": 60, "b": 3}, "5-11": {"s": 100, "b": 5}, "5-18": {"s": 120, "b": 6}, "5-25": {"s": 20, "b": 1}, "6-1": {"s": 60, "b": 3}}, "HIGH COST": {"2-23": {"s": 456, "b": 3}, "3-2": {"s": 179.5, "b": 1}, "3-16": {"s": 179.5, "b": 1}, "3-23": {"s": 60, "b": 1}, "4-6": {"s": 376.5, "b": 3}, "4-13": {"s": 179.5, "b": 1}, "4-20": {"s": 718.0, "b": 4}, "4-27": {"s": 775.0, "b": 5}, "5-4": {"s": 179.5, "b": 1}, "5-11": {"s": 855.0, "b": 5}, "5-18": {"s": 775.0, "b": 5}, "5-25": {"s": 179.5, "b": 1}}, "NOTIFY": {"2-23": {"s": 270, "b": 6}, "3-2": {"s": 90, "b": 2}, "3-9": {"s": 90, "b": 2}, "3-16": {"s": 45, "b": 1}, "3-23": {"s": 90, "b": 2}, "3-30": {"s": 180, "b": 4}, "4-6": {"s": 360, "b": 8}, "4-20": {"s": 45, "b": 1}, "4-27": {"s": 45, "b": 1}, "5-4": {"s": 180, "b": 4}, "5-18": {"s": 225, "b": 5}, "5-25": {"s": 90, "b": 2}, "6-1": {"s": 45, "b": 1}}, "LIFTGATE": {"2-23": {"s": 490, "b": 7}, "3-2": {"s": 210, "b": 3}, "3-9": {"s": 130, "b": 2}, "3-16": {"s": 70, "b": 1}, "3-23": {"s": 210, "b": 3}, "3-30": {"s": 180, "b": 3}, "4-6": {"s": 700, "b": 10}, "4-13": {"s": 70, "b": 1}, "4-20": {"s": 70, "b": 1}, "4-27": {"s": 630, "b": 9}, "5-4": {"s": 210, "b": 3}, "5-11": {"s": 350, "b": 5}, "5-18": {"s": 630, "b": 9}, "5-25": {"s": 70, "b": 1}, "6-1": {"s": 420, "b": 6}}, "LTD ACCESS": {"2-23": {"s": 70, "b": 1}, "3-2": {"s": 70, "b": 1}, "3-9": {"s": 60, "b": 1}, "3-23": {"s": 70, "b": 1}, "4-6": {"s": 350, "b": 5}, "4-20": {"s": 70, "b": 1}, "4-27": {"s": 280, "b": 4}, "5-4": {"s": 140, "b": 2}, "5-11": {"s": 140, "b": 2}, "5-18": {"s": 140, "b": 2}, "6-1": {"s": 280, "b": 4}}, "RES DEL": {"2-23": {"s": 350, "b": 5}, "3-2": {"s": 140, "b": 2}, "3-9": {"s": 130, "b": 2}, "3-16": {"s": 70, "b": 1}, "3-23": {"s": 140, "b": 2}, "3-30": {"s": 120, "b": 2}, "4-6": {"s": 350, "b": 5}, "4-13": {"s": 70, "b": 1}, "4-27": {"s": 140, "b": 2}, "5-4": {"s": 70, "b": 1}, "5-11": {"s": 210, "b": 3}, "5-18": {"s": 350, "b": 5}, "5-25": {"s": 70, "b": 1}, "6-1": {"s": 140, "b": 2}}, "REMOTE DEL": {"2-23": {"s": 162, "b": 2}, "3-2": {"s": 154.5, "b": 2}, "3-9": {"s": 95.5, "b": 1}, "3-23": {"s": 135.5, "b": 2}, "4-6": {"s": 348.0, "b": 5}, "4-13": {"s": 95.5, "b": 1}, "4-27": {"s": 353.5, "b": 3}, "5-4": {"s": 93.5, "b": 1}, "5-11": {"s": 227, "b": 1}, "5-18": {"s": 40, "b": 1}, "6-1": {"s": 84, "b": 1}}, "HAZ MAT": {"2-23": {"s": 50, "b": 1}, "3-2": {"s": 50, "b": 1}, "4-6": {"s": 50, "b": 1}, "5-4": {"s": 50, "b": 1}, "5-11": {"s": 150, "b": 3}, "6-1": {"s": 100, "b": 2}}, "MISC": {"2-23": {"s": 59, "b": 1}, "3-9": {"s": 212.5, "b": 2}, "3-23": {"s": 140, "b": 1}, "3-30": {"s": 256, "b": 1}, "4-6": {"s": 369.5, "b": 3}, "4-27": {"s": 219.5, "b": 3}, "5-4": {"s": 72.5, "b": 1}, "5-18": {"s": 394.5, "b": 3}, "6-1": {"s": 72.5, "b": 1}}, "RE-WEIGH": {"2-23": {"s": 78, "b": 2}, "3-9": {"s": 39, "b": 1}, "4-13": {"s": 39, "b": 1}, "4-20": {"s": 39, "b": 1}, "4-27": {"s": 39, "b": 1}, "5-11": {"s": 78, "b": 2}, "5-18": {"s": 78, "b": 2}, "6-1": {"s": 39, "b": 1}}, "DETENTION": {"3-2": {"s": 77, "b": 1}, "3-30": {"s": 191.04, "b": 4}, "4-6": {"s": 190.84, "b": 3}, "5-4": {"s": 121.56, "b": 2}, "5-18": {"s": 77, "b": 1}}, "INSPECTION": {"3-2": {"s": 117, "b": 3}, "3-30": {"s": 156, "b": 4}, "4-6": {"s": 156, "b": 4}, "4-13": {"s": 156, "b": 4}, "5-4": {"s": 78, "b": 2}, "5-11": {"s": 78, "b": 2}, "5-18": {"s": 39, "b": 1}}, "RECON CHG": {"3-2": {"s": 84.5, "b": 1}}, "APPT CHG": {"3-2": {"s": 45, "b": 1}}, "REDELIVERY": {"3-30": {"s": 85, "b": 1}, "4-6": {"s": 85, "b": 1}, "4-27": {"s": 85, "b": 1}, "5-4": {"s": 85, "b": 1}, "5-11": {"s": 85, "b": 1}, "5-18": {"s": 85, "b": 1}}, "NY DEL CHG": {"4-6": {"s": 20, "b": 2}, "4-27": {"s": 10, "b": 1}, "5-4": {"s": 10, "b": 1}, "5-11": {"s": 20, "b": 2}, "5-18": {"s": 20, "b": 2}, "6-1": {"s": 10, "b": 1}}, "INSIDE DEL": {"5-4": {"s": 67, "b": 1}}}, "CNWY": {"CA SURCHAR": {"2-23": {"s": 40, "b": 2}, "3-2": {"s": 20, "b": 1}, "3-9": {"s": 60, "b": 3}, "3-16": {"s": 60, "b": 3}, "3-23": {"s": 60, "b": 3}, "3-30": {"s": 100, "b": 5}, "4-6": {"s": 60, "b": 3}, "4-13": {"s": 100, "b": 5}, "4-20": {"s": 60, "b": 3}, "5-4": {"s": 60, "b": 3}, "5-11": {"s": 60, "b": 3}, "5-18": {"s": 40, "b": 2}, "6-1": {"s": 180, "b": 9}}, "RE-WEIGH": {"2-23": {"s": 105, "b": 7}, "3-2": {"s": 45, "b": 3}, "3-9": {"s": 75, "b": 5}, "3-16": {"s": 75, "b": 5}, "3-23": {"s": 75, "b": 5}, "3-30": {"s": 45, "b": 3}, "4-6": {"s": 60, "b": 4}, "4-13": {"s": 150, "b": 10}, "4-20": {"s": 30, "b": 2}, "4-27": {"s": 105, "b": 7}, "5-4": {"s": 120, "b": 8}, "5-11": {"s": 45, "b": 3}, "5-18": {"s": 30, "b": 2}, "5-25": {"s": 30, "b": 2}, "6-1": {"s": 135, "b": 9}}, "HAZ MAT": {"2-23": {"s": 15, "b": 1}, "3-30": {"s": 15, "b": 1}, "4-13": {"s": 15, "b": 1}, "4-20": {"s": 15, "b": 1}, "5-4": {"s": 15, "b": 1}}, "LIFTGATE": {"2-23": {"s": 65, "b": 1}, "3-2": {"s": 65, "b": 1}, "3-9": {"s": 65, "b": 1}, "3-30": {"s": 65, "b": 1}, "4-6": {"s": 65, "b": 1}, "5-11": {"s": 20, "b": 1}, "5-18": {"s": 130, "b": 2}, "6-1": {"s": 260, "b": 4}}, "RES DEL": {"2-23": {"s": 75, "b": 1}, "3-2": {"s": 150, "b": 2}, "4-6": {"s": 75, "b": 1}, "4-27": {"s": 75, "b": 1}, "5-18": {"s": 75, "b": 1}, "6-1": {"s": 150, "b": 2}}, "INSPECTION": {"2-23": {"s": 30, "b": 2}, "3-2": {"s": 15, "b": 1}, "3-9": {"s": 60, "b": 4}, "3-23": {"s": 75, "b": 5}, "3-30": {"s": 30, "b": 2}, "4-13": {"s": 15, "b": 1}, "4-20": {"s": 15, "b": 1}, "5-4": {"s": 30, "b": 2}, "5-18": {"s": 15, "b": 1}, "6-1": {"s": 45, "b": 3}}, "REDELIVERY": {"2-23": {"s": 175.5, "b": 1}, "4-6": {"s": 392.88, "b": 2}, "5-11": {"s": 175.5, "b": 1}}, "HIGH COST": {"2-23": {"s": 276, "b": 1}, "3-9": {"s": 50, "b": 2}}, "APPT CHG": {"2-23": {"s": 67.5, "b": 1}, "3-2": {"s": 67.5, "b": 1}, "3-9": {"s": 135, "b": 2}, "3-16": {"s": 67.5, "b": 1}, "3-23": {"s": 67.5, "b": 1}, "4-6": {"s": 67.5, "b": 1}, "4-13": {"s": 202.5, "b": 3}, "5-11": {"s": 135.0, "b": 2}, "5-18": {"s": 135.0, "b": 2}, "6-1": {"s": 67.5, "b": 1}}, "STORAGE": {"3-2": {"s": 441.25, "b": 1}, "4-6": {"s": 69.75, "b": 1}, "5-4": {"s": 139.5, "b": 2}}, "DETENTION": {"3-2": {"s": 216.76, "b": 1}, "4-6": {"s": 95.5, "b": 1}, "4-27": {"s": 95.25, "b": 1}, "5-4": {"s": 191.0, "b": 2}}, "REMOTE DEL": {"3-30": {"s": 65, "b": 1}, "5-4": {"s": 65, "b": 1}}, "MISC": {"4-6": {"s": 240, "b": 2}, "6-1": {"s": 110, "b": 1}}, "BORDER CHG": {"4-27": {"s": 49.25, "b": 1}}, "LTD ACCESS": {"5-4": {"s": 180, "b": 1}, "6-1": {"s": 180, "b": 1}}}, "NUMK": {"CA SURCHAR": {"2-23": {"s": 661.5, "b": 63}, "3-2": {"s": 84, "b": 8}, "3-9": {"s": 154.5, "b": 13}, "3-16": {"s": 240, "b": 16}, "3-23": {"s": 255, "b": 17}, "3-30": {"s": 195, "b": 13}, "4-6": {"s": 195, "b": 13}, "4-13": {"s": 135, "b": 9}, "4-20": {"s": 180, "b": 12}, "4-27": {"s": 165, "b": 11}, "5-4": {"s": 135, "b": 9}, "5-11": {"s": 150, "b": 10}, "5-18": {"s": 165, "b": 11}, "5-25": {"s": 60, "b": 4}, "6-1": {"s": 150, "b": 10}}, "HAZ MAT": {"2-23": {"s": 20, "b": 2}, "3-23": {"s": 10, "b": 1}}, "RECON CHG": {"3-9": {"s": 35, "b": 1}}}, "TMBM": {"GST": {"2-23": {"s": 20, "b": 2}, "3-2": {"s": 66.36, "b": 4}, "3-9": {"s": 49.82, "b": 3}, "3-16": {"s": 87.19, "b": 5}, "3-23": {"s": 55.63, "b": 3}, "3-30": {"s": 127.76, "b": 7}, "4-6": {"s": 77.78, "b": 4}, "4-13": {"s": 80.02, "b": 4}, "4-20": {"s": 100.49, "b": 5}, "4-27": {"s": 81.37, "b": 4}, "5-4": {"s": 135.94, "b": 7}, "5-11": {"s": 53.49, "b": 3}, "5-18": {"s": 110.51, "b": 5}, "5-25": {"s": 19.17, "b": 1}, "6-1": {"s": 152.95, "b": 8}}, "MISC": {"2-23": {"s": 75, "b": 1}}, "HAZ MAT": {"3-9": {"s": 324, "b": 1}, "3-16": {"s": 324, "b": 1}, "4-13": {"s": 342.75, "b": 1}, "5-11": {"s": 762, "b": 2}}}, "CD585": {"MISC": {"2-23": {"s": 63.5, "b": 1}, "3-2": {"s": 63.5, "b": 1}, "4-27": {"s": 66, "b": 1}}, "LIFTGATE": {"2-23": {"s": 134, "b": 2}, "3-2": {"s": 328.97, "b": 3}, "3-30": {"s": 70, "b": 1}, "4-6": {"s": 350, "b": 5}, "4-13": {"s": 70, "b": 1}, "5-4": {"s": 210, "b": 3}, "5-18": {"s": 70, "b": 1}, "6-1": {"s": 140, "b": 2}}, "RES DEL": {"2-23": {"s": 134, "b": 2}, "3-30": {"s": 70, "b": 1}, "4-6": {"s": 70, "b": 1}, "4-13": {"s": 70, "b": 1}, "5-4": {"s": 70, "b": 1}}, "BORDER CHG": {"2-23": {"s": 42, "b": 1}, "3-2": {"s": 42, "b": 1}, "3-9": {"s": 43.75, "b": 1}, "3-16": {"s": 43.75, "b": 1}, "4-6": {"s": 87.5, "b": 2}, "4-13": {"s": 84, "b": 2}, "4-20": {"s": 87.5, "b": 2}, "5-11": {"s": 87.5, "b": 2}, "6-1": {"s": 87.5, "b": 2}}, "NOTIFY": {"3-2": {"s": 21.1, "b": 1}}, "HIGH COST": {"4-6": {"s": 50, "b": 1}, "5-18": {"s": 25, "b": 1}}}, "FXFE": {"DETENTION": {"2-23": {"s": 97, "b": 1}, "3-2": {"s": 194, "b": 2}, "4-6": {"s": 97, "b": 1}, "4-27": {"s": 97, "b": 1}, "5-4": {"s": 164, "b": 1}}, "NOTIFY": {"2-23": {"s": 37.54, "b": 2}, "3-2": {"s": 37.54, "b": 2}, "3-16": {"s": 18.77, "b": 1}, "3-23": {"s": 18.77, "b": 1}, "4-6": {"s": 18.77, "b": 1}, "5-4": {"s": 18.77, "b": 1}, "6-1": {"s": 18.77, "b": 1}}, "SORT/SEG": {"3-2": {"s": 208, "b": 1}}, "INSPECTION": {"3-2": {"s": 80, "b": 2}, "3-23": {"s": 40, "b": 1}, "4-13": {"s": 40, "b": 1}, "4-20": {"s": 40, "b": 1}, "5-4": {"s": 80, "b": 2}, "5-11": {"s": 40, "b": 1}, "6-1": {"s": 40, "b": 1}}, "RE-WEIGH": {"3-2": {"s": 40, "b": 1}, "3-16": {"s": 40, "b": 1}, "3-30": {"s": 160, "b": 4}, "4-6": {"s": 40, "b": 1}, "4-13": {"s": 160, "b": 4}, "4-20": {"s": 80, "b": 2}, "5-25": {"s": 40, "b": 1}}, "HAZ MAT": {"3-9": {"s": 61, "b": 1}, "3-30": {"s": 61, "b": 1}, "4-6": {"s": 61, "b": 1}, "5-4": {"s": 61, "b": 1}, "5-11": {"s": 122, "b": 2}}, "BORDER CHG": {"3-9": {"s": 50, "b": 1}, "4-13": {"s": 50, "b": 1}, "5-11": {"s": 50, "b": 1}, "5-25": {"s": 50, "b": 1}}, "CORR BOL": {"3-30": {"s": 97, "b": 2}}, "CA SURCHAR": {"3-30": {"s": 53.0, "b": 2}}, "LTD ACCESS": {"4-27": {"s": 60.53, "b": 1}}, "STORAGE": {"5-4": {"s": 210, "b": 1}}, "EXT LENGTH": {"5-4": {"s": 982, "b": 1}}, "RES DEL": {"5-4": {"s": 60.53, "b": 1}}}, "MGUL": {"HIGH COST": {"2-23": {"s": 25, "b": 1}}, "LIFTGATE": {"2-23": {"s": 50, "b": 1}, "3-9": {"s": 50, "b": 1}, "3-30": {"s": 50, "b": 1}, "4-27": {"s": 50, "b": 1}}, "MISC": {"2-23": {"s": 80, "b": 1}}, "OVER DIMEN": {"2-23": {"s": 200, "b": 1}}, "EXT LENGTH": {"3-9": {"s": 200, "b": 1}}, "APPT CHG": {"3-9": {"s": 30, "b": 2}, "3-30": {"s": 30, "b": 2}, "4-27": {"s": 15, "b": 1}, "6-1": {"s": 15, "b": 1}}, "RES DEL": {"3-9": {"s": 65, "b": 1}, "3-30": {"s": 130, "b": 2}, "4-27": {"s": 65, "b": 1}}, "HAZ MAT": {"3-16": {"s": 40, "b": 1}, "4-6": {"s": 80, "b": 2}}, "DETENTION": {"4-27": {"s": 100, "b": 2}, "6-1": {"s": 50, "b": 1}}}, "DOHR": {"HAZ MAT": {"2-23": {"s": 10, "b": 2}, "3-2": {"s": 15, "b": 3}, "3-9": {"s": 5, "b": 1}, "3-23": {"s": 10, "b": 2}, "4-13": {"s": 5, "b": 1}, "5-4": {"s": 5, "b": 1}, "5-18": {"s": 5, "b": 1}, "5-25": {"s": 5, "b": 1}}, "DETENTION": {"2-23": {"s": 135, "b": 1}, "3-2": {"s": 45, "b": 1}, "3-9": {"s": 45, "b": 1}, "4-6": {"s": 153.5, "b": 3}, "5-4": {"s": 37.0, "b": 2}, "6-1": {"s": 225.0, "b": 3}}, "NOTIFY": {"3-2": {"s": 39, "b": 1}, "3-30": {"s": 39, "b": 1}, "4-6": {"s": 117, "b": 3}, "4-20": {"s": 39, "b": 1}, "4-27": {"s": 39, "b": 1}, "5-4": {"s": 117, "b": 3}, "5-11": {"s": 39, "b": 1}, "5-18": {"s": 78, "b": 2}, "6-1": {"s": 117, "b": 3}}, "APPT CHG": {"3-9": {"s": 39, "b": 1}}, "HIGH COST": {"3-16": {"s": 50, "b": 1}, "3-30": {"s": 50, "b": 1}, "4-27": {"s": 50, "b": 1}}, "LIFTGATE": {"3-23": {"s": 45, "b": 1}, "4-27": {"s": 45, "b": 1}, "5-4": {"s": 45, "b": 1}, "6-1": {"s": 45, "b": 1}}, "RES DEL": {"3-23": {"s": 35, "b": 1}, "4-27": {"s": 35, "b": 1}}, "OVER DIMEN": {"3-30": {"s": 190, "b": 1}, "4-6": {"s": 190, "b": 1}}, "MISC": {"4-27": {"s": 100, "b": 1}}, "LTD ACCESS": {"6-1": {"s": 30, "b": 1}}}, "DAFG": {"LIFTGATE": {"2-23": {"s": 40, "b": 2}, "3-30": {"s": 20, "b": 1}, "4-6": {"s": 40, "b": 2}, "4-13": {"s": 20, "b": 1}, "4-27": {"s": 20, "b": 1}, "5-4": {"s": 20, "b": 1}, "5-11": {"s": 20, "b": 1}, "5-25": {"s": 20, "b": 1}, "6-1": {"s": 80, "b": 4}}, "RES DEL": {"2-23": {"s": 105, "b": 3}, "3-30": {"s": 70, "b": 2}, "4-6": {"s": 105, "b": 3}, "4-27": {"s": 70, "b": 2}, "5-4": {"s": 35, "b": 1}, "5-11": {"s": 35, "b": 1}, "5-25": {"s": 35, "b": 1}, "6-1": {"s": 35, "b": 1}}, "HAZ MAT": {"2-23": {"s": 5, "b": 1}, "3-16": {"s": 5, "b": 1}, "4-20": {"s": 5, "b": 1}, "5-11": {"s": 5, "b": 1}}, "INSPECTION": {"3-2": {"s": 32, "b": 1}}, "MISC": {"3-2": {"s": 25, "b": 1}, "3-16": {"s": 25, "b": 1}, "4-6": {"s": 75, "b": 1}}, "LTD ACCESS": {"3-2": {"s": 35, "b": 1}, "3-9": {"s": 35, "b": 1}, "3-16": {"s": 70, "b": 2}, "3-23": {"s": 35, "b": 1}, "3-30": {"s": 35, "b": 1}, "4-6": {"s": 175, "b": 5}, "5-4": {"s": 140, "b": 4}, "6-1": {"s": 35, "b": 1}}, "OVER DIMEN": {"3-23": {"s": 275, "b": 1}}, "REDELIVERY": {"4-6": {"s": 125, "b": 1}, "4-27": {"s": 125, "b": 1}}, "DETENTION": {"5-18": {"s": 180.22, "b": 1}}}, "USRD": {"LTD ACCESS": {"2-23": {"s": 55, "b": 1}, "4-6": {"s": 55, "b": 1}, "5-4": {"s": 55, "b": 1}, "6-1": {"s": 55, "b": 1}}, "LIFTGATE": {"2-23": {"s": 105, "b": 1}, "4-6": {"s": 105, "b": 1}, "5-4": {"s": 105, "b": 1}, "6-1": {"s": 105, "b": 1}}, "INSIDE DEL": {"3-16": {"s": 70, "b": 1}, "5-4": {"s": 70, "b": 1}}, "OVER DIMEN": {"4-13": {"s": 125, "b": 1}}}, "AVRT": {"INSPECTION": {"2-23": {"s": 25, "b": 1}, "3-16": {"s": 25, "b": 1}, "5-4": {"s": 25, "b": 1}}, "RE-WEIGH": {"2-23": {"s": 25, "b": 1}, "4-13": {"s": 25, "b": 1}, "4-20": {"s": 25, "b": 1}, "5-11": {"s": 25, "b": 1}}, "MISC": {"3-2": {"s": 6, "b": 1}, "3-30": {"s": 85, "b": 2}}, "REDELIVERY": {"3-2": {"s": 105, "b": 1}}, "NOTIFY": {"4-6": {"s": 20.95, "b": 1}}}, "EXLA": {"LIFTGATE": {"2-23": {"s": 75, "b": 1}, "3-30": {"s": 75, "b": 1}, "4-6": {"s": 150, "b": 2}, "5-4": {"s": 75, "b": 1}, "5-18": {"s": 75, "b": 1}, "6-1": {"s": 75, "b": 1}}, "MISC": {"2-23": {"s": 25, "b": 1}, "6-1": {"s": 25, "b": 1}}, "RES DEL": {"2-23": {"s": 75, "b": 1}, "6-1": {"s": 75, "b": 1}}, "LTD ACCESS": {"4-6": {"s": 85, "b": 1}, "5-18": {"s": 85, "b": 1}}}, "UPGF": {"NOTIFY": {"3-2": {"s": 20, "b": 2}, "3-9": {"s": 10, "b": 1}, "3-30": {"s": 20, "b": 2}, "4-6": {"s": 10, "b": 1}, "4-27": {"s": 10, "b": 1}, "5-4": {"s": 40, "b": 4}, "5-18": {"s": 30, "b": 3}, "6-1": {"s": 40, "b": 4}}, "CORR BOL": {"3-9": {"s": 10, "b": 1}}, "INSPECTION": {"3-9": {"s": 10, "b": 1}, "3-30": {"s": 10, "b": 1}, "4-6": {"s": 10, "b": 1}}, "RE-WEIGH": {"3-9": {"s": 20, "b": 2}, "5-4": {"s": 20, "b": 2}}, "CA SURCHAR": {"3-9": {"s": 75, "b": 3}, "3-23": {"s": 25, "b": 1}, "3-30": {"s": 25, "b": 1}, "4-6": {"s": 77, "b": 3}, "4-13": {"s": 54, "b": 2}, "4-27": {"s": 27, "b": 1}, "5-4": {"s": 81, "b": 3}, "5-18": {"s": 81, "b": 3}, "6-1": {"s": 27, "b": 1}}, "HAZ MAT": {"3-9": {"s": 15, "b": 1}, "4-13": {"s": 15, "b": 1}}}, "DTAF": {"MISC": {"3-2": {"s": 100, "b": 1}, "6-1": {"s": 1200, "b": 2}}}, "SEFL": {"LTD ACCESS": {"3-9": {"s": 94, "b": 1}, "5-4": {"s": 94, "b": 1}, "5-18": {"s": 94, "b": 1}, "6-1": {"s": 94, "b": 1}}, "INSPECTION": {"6-1": {"s": 15, "b": 1}}, "LIFTGATE": {"6-1": {"s": 89, "b": 1}}, "RES DEL": {"6-1": {"s": 94, "b": 1}}, "RE-WEIGH": {"6-1": {"s": 30, "b": 2}}}, "DYLT": {"CA SURCHAR": {"3-2": {"s": 20, "b": 1}, "3-9": {"s": 40, "b": 2}, "4-6": {"s": 20, "b": 1}, "4-13": {"s": 20, "b": 1}, "4-27": {"s": 40, "b": 2}, "5-4": {"s": 40, "b": 2}}, "APPT CHG": {"4-27": {"s": 30, "b": 2}}, "REDELIVERY": {"4-27": {"s": 50, "b": 1}}}, "RUDE": {"OVER DIMEN": {"3-23": {"s": 80, "b": 1}}}, "SPAJ1": {"RES DEL": {"4-27": {"s": 159, "b": 1}, "5-11": {"s": 159, "b": 1}, "5-18": {"s": 159, "b": 1}}}};
 
@@ -165,18 +218,22 @@ let dark=true,viewWeek="all",sortMode="total",hovRow=null,hovSeg=null;
 let pinnedCards=[];
 
 // Dynamic week button generation
-(function(){
-  const toggle=document.querySelector('.week-toggle');
-  WEEKS.forEach(w=>{
-    const btn=document.createElement('button');
-    btn.className='week-btn';
-    btn.id='btn-'+w.replace('-','');
-    btn.onclick=()=>setWeek(w);
-    btn.textContent='W'+w;
-    toggle.appendChild(btn);
-  });
-})();
 
+
+
+function onDateChange(){
+  if(periodAll){WEEKS=granularity==="monthly"?MONTH_KEYS.slice():ALL_WEEKS;viewWeek="all";}
+  else if(granularity==="monthly"){WEEKS=MONTHS[activeMonth];viewWeek="all";}
+  else{WEEKS=ALL_WEEKS;viewWeek=ALL_WEEKS[activeWeekIdx];}
+  pinnedCards=[];hovSeg=null;hovRow=null;
+  document.querySelectorAll(".info-card").forEach(function(el){el.remove();});
+  render();
+}
+function onFilterChange(){
+  pinnedCards=[];hovSeg=null;hovRow=null;
+  document.querySelectorAll(".info-card").forEach(function(el){el.remove();});
+  render();
+}
 function prevWeek(w){const i=WEEKS.indexOf(w);return i>0?WEEKS[i-1]:null;}
 function getTotal(carr){return WEEKS.reduce((s,w)=>(s+(DATA[carr][w]||0)),0);}
 function getTypeCount(carr){return DETAIL[carr]?Object.keys(DETAIL[carr]).length:0;}
@@ -188,6 +245,7 @@ function getSorted(){
   if(sortMode==="total")carriers.sort((a,b)=>getTotal(b)-getTotal(a));
   else if(sortMode==="types")carriers.sort((a,b)=>getTypeCount(b)-getTypeCount(a)||(getTotal(b)-getTotal(a)));
   else if(sortMode==="wow")carriers.sort((a,b)=>Math.abs(getWowDelta(b))-Math.abs(getWowDelta(a)));
+  if(activeFilter!=="all")carriers=carriers.slice(0,parseInt(activeFilter));
   return carriers;
 }
 function fmtShort(v){if(v>=10000)return"$"+(v/1000).toFixed(1)+"k";if(v>=1000)return"$"+v.toLocaleString("en-US",{minimumFractionDigits:0,maximumFractionDigits:0});if(v>=100)return"$"+v.toFixed(0);if(v>0)return"$"+v.toFixed(2);return"$0";}
@@ -197,6 +255,30 @@ function deltaColor(d){return d>0?(dark?"#4ade80":"#1e8a4a"):d<0?(dark?"#fc8181"
 
 let globalMaxTotal=0;
 (function(){for(const c of Object.keys(DATA)){const tot=getTotal(c);if(tot>globalMaxTotal)globalMaxTotal=tot;}})();
+
+/* ═══ Monthly Data Augmentation ═══ */
+function augmentMonthly(){
+  Object.keys(DATA).forEach(function(carr){
+    MONTH_KEYS.forEach(function(mk){
+      var total=0;MONTHS[mk].forEach(function(w){total+=(DATA[carr][w]||0);});
+      DATA[carr][mk]=total;
+    });
+  });
+  if(typeof DETAIL!=='undefined'){
+    Object.keys(DETAIL).forEach(function(carr){
+      var types=DETAIL[carr];
+      Object.keys(types).forEach(function(t){
+        MONTH_KEYS.forEach(function(mk){
+          var ms=0,mb=0;
+          MONTHS[mk].forEach(function(w){if(types[t][w]){ms+=types[t][w].s||0;mb+=types[t][w].b||0;}});
+          if(ms>0)types[t][mk]={s:ms,b:mb};
+        });
+      });
+    });
+  }
+}
+augmentMonthly();
+
 
 function weekColor(wi,hov){return hov?(dark?WCOL_HOV_D[wi]:WCOL_HOV_L[wi]):(dark?WCOL_D[wi]:WCOL_L[wi]);}
 
@@ -295,11 +377,11 @@ function buildCardHTML(carr,week){
   const isPinned=pinnedCards.some(p=>p.carr===carr&&p.week===week);
   const weekTot=getWeekTotal(week);
   const sharePct=weekTot>0?((v/weekTot)*100).toFixed(1):"0";
-  const shareHTML=`<div class="info-card-share">${sharePct}% of W${week} total (${fmtShort(weekTot)})</div>`;
+  const shareHTML=`<div class="info-card-share">${sharePct}% of ${isMonthKey(week)?week:"W"+week} total (${fmtShort(weekTot)})</div>`;
 
   let deltaHtml="";
   if(pw){
-    if(pv>0&&v>0){const d=v-pv,pct=(d/pv)*100;deltaHtml=`<div class="info-card-delta" style="color:${deltaColor(d)}">${d>0?"\u25B2":"\u25BC"} ${fmtDelta(d)} (${pct>=0?"+":""}${pct.toFixed(1)}%) vs W${pw}</div>`;}
+    if(pv>0&&v>0){const d=v-pv,pct=(d/pv)*100;deltaHtml=`<div class="info-card-delta" style="color:${deltaColor(d)}">${d>0?"\u25B2":"\u25BC"} ${fmtDelta(d)} (${pct>=0?"+":""}${pct.toFixed(1)}%) vs ${isMonthKey(pw)?pw:"W"+pw}</div>`;}
     else if(v>0&&pv===0)deltaHtml=`<div class="info-card-delta" style="color:${dark?"#4ade80":"#1e8a4a"}">\u25CF New this week</div>`;
     else if(v===0&&pv>0)deltaHtml=`<div class="info-card-delta" style="color:${dark?"#fc8181":"#c0392b"}">\u25BC Gone (was ${fmtShort(pv)})</div>`;
   } else deltaHtml=`<div class="info-card-delta" style="color:var(--text-muted)">\u2014 Baseline week</div>`;
@@ -319,7 +401,7 @@ function buildCardHTML(carr,week){
     if(typeWeek.length>8)typeHTML+=`<div style="font-size:9px;color:var(--text-muted);padding-top:2px">+${typeWeek.length-8} more</div>`;
   }
 
-  return`<div class="ic-handle ic-handle-tl" data-corner="tl"></div><div class="ic-handle ic-handle-tr" data-corner="tr"></div><div class="ic-handle ic-handle-bl" data-corner="bl"></div><div class="ic-handle ic-handle-br" data-corner="br"></div><div class="ic-handle ic-handle-t" data-corner="t"></div><div class="ic-handle ic-handle-b" data-corner="b"></div><div class="ic-handle ic-handle-l" data-corner="l"></div><div class="ic-handle ic-handle-r" data-corner="r"></div><div class="accent-bar" style="background:${col}${dark?";box-shadow:0 0 8px "+col:""}"></div><div class="info-card-inner"><div class="info-card-header"><span class="info-card-type">${carr} <span style="font-size:10px;font-weight:500;color:var(--text-muted)">${DATA[carr].name}</span></span><span class="info-card-week" style="background:${col};color:${dark?"#0d1117":"#fff"}">W${week}</span></div><div class="info-card-val">${fmtShort(v)}</div>${shareHTML}${deltaHtml}${typeHTML}${isPinned?'<div class="info-card-pin">\uD83D\uDCCC pinned</div>':''}</div>`;
+  return`<div class="ic-handle ic-handle-tl" data-corner="tl"></div><div class="ic-handle ic-handle-tr" data-corner="tr"></div><div class="ic-handle ic-handle-bl" data-corner="bl"></div><div class="ic-handle ic-handle-br" data-corner="br"></div><div class="ic-handle ic-handle-t" data-corner="t"></div><div class="ic-handle ic-handle-b" data-corner="b"></div><div class="ic-handle ic-handle-l" data-corner="l"></div><div class="ic-handle ic-handle-r" data-corner="r"></div><div class="accent-bar" style="background:${col}${dark?";box-shadow:0 0 8px "+col:""}"></div><div class="info-card-inner"><div class="info-card-header"><span class="info-card-type">${carr} <span style="font-size:10px;font-weight:500;color:var(--text-muted)">${DATA[carr].name}</span></span><span class="info-card-week" style="background:${col};color:${dark?"#0d1117":"#fff"}">${isMonthKey(week)?week:"W"+week}</span></div><div class="info-card-val">${fmtShort(v)}</div>${shareHTML}${deltaHtml}${typeHTML}${isPinned?'<div class="info-card-pin">\uD83D\uDCCC pinned</div>':''}${isMonthKey(week)?wkDrillHTML(week,function(w){return DATA[carr][w]||0;},fmtShort):''}</div>`;
 }
 
 function getCardPosition(carr){
@@ -416,7 +498,7 @@ function render(){
   const scroll=document.getElementById("hm-scroll");
   const footer=document.getElementById("hm-footer");
 
-  document.getElementById("total-header").textContent=viewWeek==="all"?"Total":"W"+viewWeek;
+  document.getElementById("total-header").textContent=viewWeek==="all"?"Total":(isMonthKey(viewWeek)?viewWeek:"W"+viewWeek);
 
   let html="";
   carriers.forEach((carr,idx)=>{
@@ -438,13 +520,13 @@ function render(){
   let footTotal=0;
   if(viewWeek==="all")for(const c of carriers)footTotal+=getTotal(c);
   else for(const c of carriers)footTotal+=(DATA[c][viewWeek]||0);
-  const footMiddle=viewWeek==="all"?`${carriers.length} carriers \u00b7 ${WEEKS.length} weeks`:`${carriers.filter(c=>(DATA[c][viewWeek]||0)>0).length} active carriers`;
+  const footMiddle=viewWeek==="all"?`${carriers.length} carriers \u00b7 ${WEEKS.length} ${granularity==="monthly"?"months":"weeks"}`:`${carriers.filter(c=>(DATA[c][viewWeek]||0)>0).length} active carriers`;
   footer.innerHTML=`<div class="hm-fcell">Total</div><div class="hm-fcell" style="padding-left:10px;font-size:9px;font-weight:600;color:var(--text-muted)">${footMiddle}</div><div class="hm-fcell">${fmt(footTotal)}</div>`;
 
   const legEl=document.getElementById("legend");
   legEl.innerHTML=WEEKS.map((w,i)=>`<span><span class="leg-swatch" style="background:${dark?WCOL_D[i]:WCOL_L[i]}"></span>W${w}</span>`).join("");
 
-  ["all",...WEEKS].forEach(w=>{const id=w==="all"?"btn-all":"btn-"+w.replace("-","");const el=document.getElementById(id);if(el)el.classList.toggle("active",viewWeek===w);});
+  
   document.querySelectorAll(".sort-btn").forEach(b=>{
     b.classList.toggle("active",b.dataset.sort===sortMode);
   });
@@ -453,8 +535,8 @@ function render(){
 }
 
 function redrawBars(){document.querySelectorAll(".hm-bar-canvas").forEach(cv=>drawBar(cv,cv.dataset.carr));}
-function resetAll(){pinnedCards=[];hovSeg=null;hovRow=null;viewWeek="all";sortMode="total";document.querySelectorAll(".info-card").forEach(el=>el.remove());render();}
-function setWeek(w){viewWeek=w;render();}
+function resetAll(){granularity="monthly";activeMonth=MONTH_KEYS[MONTH_KEYS.length-1];activeWeekIdx=ALL_WEEKS.length-1;periodAll=true;activeFilter="all";buildDateControl();buildFilterControl();WEEKS=ALL_WEEKS;viewWeek="all";sortMode="total";pinnedCards=[];hovSeg=null;hovRow=null;document.querySelectorAll(".info-card").forEach(function(el){el.remove();});render();}
+
 function setSort(m){if(m===sortMode)return;sortMode=m;render();}
 function toggleDark(){dark=!dark;document.documentElement.setAttribute("data-theme",dark?"dark":"");render();}
 
@@ -498,7 +580,9 @@ document.addEventListener("DOMContentLoaded",()=>{
 });
 
 let resizeTimer;window.addEventListener("resize",()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(render,100);});
-render();
+buildDateControl();
+buildFilterControl();
+onDateChange();
 </script>
 </body>
 </html>
