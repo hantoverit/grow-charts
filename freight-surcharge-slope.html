@@ -2,30 +2,13 @@
 <html data-theme="dark" lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FedEx / UPS Surcharge Breakdown — Slope</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
 
-:root{
-  --bg:#f4f6f8;--surface:#fff;--surface2:#f9fafb;
-  --border:#e3e7ed;--text-primary:#111827;--text-secondary:#4b5563;--text-muted:#9ca3af;
-  --green:#1e8a4a;--green-bg:#dcfce7;--red:#c0392b;--red-bg:#fee2e2;
-  --toggle-bg:#d1d5db;--toggle-knob:#fff;
-  --week-active-bg:#1a73e8;--week-active-text:#fff;--week-inactive:#6b7280;
-  --shadow:0 1px 6px rgba(0,0,0,.08),0 4px 20px rgba(0,0,0,.04);
-  --chart-bg:#f8fafc;--chart-border:#dce3eb;
-}
-[data-theme="dark"]{
-  --bg:#0d1117;--surface:#161b27;--surface2:#1e2533;
-  --border:#2e3a4e;--text-primary:#e8edf5;--text-secondary:#b0bdd0;--text-muted:#6b7f99;
-  --green:#4ade80;--green-bg:#0c2b1c;--red:#fc8181;--red-bg:#2d1214;
-  --toggle-bg:#2e3a4e;--toggle-knob:#e8edf5;
-  --week-active-bg:#4f93f5;--week-active-text:#0d1117;--week-inactive:#94a3b8;
-  --shadow:0 1px 8px rgba(0,0,0,.5);
-  --chart-bg:#0f1520;--chart-border:#1e2a3a;
-}
+
+<style>
 [data-theme="dark"] .dm-knob{transform:translateX(13px)}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text-primary)}
@@ -181,6 +164,39 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--
 .ic-total-val{font-size:1.1em;font-weight:800;text-align:right;padding:.45em .4em .2em 1em;white-space:nowrap}
 .ic-total-spacer{}
 
+  :root {
+    --bg:#f4f6f8;--surface:#fff;--surface2:#f9fafb;--border:#e3e7ed;
+    --text-primary:#111827;--text-secondary:#4b5563;--text-muted:#9ca3af;
+    --accent:#1a73e8;--accent-dim:#e8f0fd;--accent-text:#1a73e8;
+    --green:#1e8a4a;--green-bg:#dcfce7;--red:#c0392b;--red-bg:#fee2e2;
+    --toggle-bg:#d1d5db;--toggle-knob:#fff;
+    --week-active-bg:#1a73e8;--week-active-text:#fff;--week-inactive:#6b7280;
+    --shadow:0 1px 6px rgba(0,0,0,.08),0 4px 20px rgba(0,0,0,.04);
+    --chart-bg:#f8fafc;--chart-border:#dce3eb;
+
+  }
+  [data-theme="dark"] {
+    --bg:#0d1117;--surface:#161b27;--surface2:#1e2533;--border:#2e3a4e;
+    --text-primary:#e8edf5;--text-secondary:#b0bdd0;--text-muted:#6b7f99;
+    --accent:#4f93f5;--accent-dim:#1a2d50;--accent-text:#7db3f8;
+    --green:#4ade80;--green-bg:#0c2b1c;--red:#fc8181;--red-bg:#2d1214;
+    --toggle-bg:#2e3a4e;--toggle-knob:#e8edf5;
+    --week-active-bg:#4f93f5;--week-active-text:#0d1117;--week-inactive:#94a3b8;
+    --shadow:0 1px 8px rgba(0,0,0,.5);--chart-bg:#0f1520;--chart-border:#1e2a3a;
+
+  }
+  .dc-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;justify-content:space-between}
+  .dc-filter{display:flex;gap:3px;margin-left:auto;align-items:center}
+  .dc-filter-lbl{font-size:9px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-right:2px}
+  .dc-periods{display:flex;gap:3px;flex-wrap:wrap;align-items:center}
+  .dc-pill{font-size:10.5px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--week-inactive);transition:all .16s;font-family:"Inter",sans-serif}
+  .dc-pill:hover{color:var(--text-primary);border-color:var(--text-muted)}
+  .dc-pill.active{background:var(--week-active-bg);color:var(--week-active-text);border-color:var(--week-active-bg);box-shadow:0 1px 4px rgba(26,115,232,.25)}
+  .wk-drill{margin-top:6px;border-top:1px solid var(--border);padding-top:5px}
+  .wk-drill-hdr{font-size:8.5px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+  .wk-drill-row{display:flex;justify-content:space-between;font-size:10px;padding:1px 0}
+  .wk-drill-row .wk-lbl{color:var(--text-muted);font-weight:500}
+  .wk-drill-row .wk-val{color:var(--text-secondary);font-weight:600;text-align:right}
 </style>
 </head>
 <body>
@@ -203,7 +219,8 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--
       </div>
     </div>
   </div>
-  <div class="controls">
+  <div id="date-control" style="padding:0 20px"></div>
+<div class="controls">
     <div class="ctrl-left">
       <button class="carrier-btn active" data-carrier="both">Both</button>
       <button class="carrier-btn" data-carrier="fedex">FedEx</button>
@@ -239,6 +256,29 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--
   </div>
 </div>
 <script>
+/* ═══ Date Control Module ═══ */
+var ALL_WEEKS=["W2-23","W3-2","W3-9","W3-16","W3-23","W3-30","W4-6","W4-13","W4-20","W4-27","W5-4","W5-11","W5-18","W5-25","W6-1"];
+var MONTHS={Feb:["W2-23"],Mar:["W3-2","W3-9","W3-16","W3-23","W3-30"],Apr:["W4-6","W4-13","W4-20","W4-27"],May:["W5-4","W5-11","W5-18","W5-25"],Jun:["W6-1"]};
+var MONTH_KEYS=["Feb","Mar","Apr","May","Jun"];
+var granularity="monthly",activeMonth="Jun",activeWeekIdx=ALL_WEEKS.length-1;
+function getActiveWeeks(){return granularity==="monthly"?MONTHS[activeMonth]:[ALL_WEEKS[activeWeekIdx]];}
+function getPrevWeeks(){if(granularity==="monthly"){var i=MONTH_KEYS.indexOf(activeMonth);return i>0?MONTHS[MONTH_KEYS[i-1]]:null;}return activeWeekIdx>0?[ALL_WEEKS[activeWeekIdx-1]]:null;}
+function getPeriodLabel(){return granularity==="monthly"?activeMonth:"W"+ALL_WEEKS[activeWeekIdx].replace("W","");}
+function buildDateControl(){var el=document.getElementById("date-control");if(!el)return;var h='<div class="dc-row"><div class="dc-periods">';MONTH_KEYS.forEach(function(m){h+='<button class="dc-pill'+(m===activeMonth?' active':'')+'" onclick="setPeriod(\''+m+'\')">'+m+'</button>';});h+='</div></div>';el.innerHTML=h;}
+
+function setPeriod(p){if(p===activeMonth)return;activeMonth=p;buildDateControl();onDateChange();}
+
+function isMonthKey(k){return MONTHS[k]!=null;}
+function wkDrillHTML(monthKey,dataFn,fmtFn){
+  if(!isMonthKey(monthKey))return'';
+  var wks=MONTHS[monthKey];if(!wks||wks.length<=1)return'';
+  var h='<div class="wk-drill"><div class="wk-drill-hdr">Weekly Detail</div>';
+  wks.forEach(function(w){var v=dataFn(w);h+='<div class="wk-drill-row"><span class="wk-lbl">W'+w.replace("W","")+'</span><span class="wk-val">'+fmtFn(v)+'</span></div>';});
+  return h+'</div>';
+}
+
+
+
 
 var CATS=[
 {id:"del_area",label:"Delivery Area",fedex:{"W2-23":5249.93,"W3-2":5958.31,"W3-9":5263.09,"W3-16":5542.51,"W3-23":5051.54,"W3-30":4861.64,"W4-6":6641.71,"W4-13":4855.85,"W4-20":5039.42,"W4-27":4285.42,"W5-4":4813.02,"W5-11":4698.16,"W5-18":3849.4,"W5-25":514.64,"W6-1":3295.8},ups:{"W2-23":75.75,"W3-2":61.60,"W3-9":150.05,"W3-16":86.65}},
@@ -256,13 +296,19 @@ var CATS=[
 {id:"declared",label:"Declared Value",fedex:{"W2-23":4.95,"W3-2":237.60,"W3-9":37.95,"W3-16":56.10,"W3-23":128.4,"W3-30":212.6,"W4-6":116.2,"W4-13":119.85,"W4-20":149.25,"W4-27":134.7,"W5-4":295.4,"W5-11":93.8,"W5-18":88.15,"W5-25":64.7,"W6-1":0},ups:{"W2-23":112.20,"W3-2":0,"W3-9":15.30,"W3-16":18.70}},
 {id:"haz_mat",label:"Hazardous Material",fedex:{"W2-23":57.25,"W3-2":114.50,"W3-9":114.50,"W3-16":114.50,"W3-23":0,"W3-30":0,"W4-6":286.25,"W4-13":171.75,"W4-20":343.5,"W4-27":114.5,"W5-4":114.5,"W5-11":400.75,"W5-18":114.5,"W5-25":0,"W6-1":171.75},ups:{"W2-23":0,"W3-2":0,"W3-9":0,"W3-16":0}}
 ];
-var WEEKS=['W2-23','W3-2','W3-9','W3-16','W3-23','W3-30','W4-6','W4-13','W4-20','W4-27','W5-4','W5-11','W5-18','W5-25','W6-1'];
-var PAL_L=['#0891b2','#4f46e5','#c026d3','#d97706','#059669','#dc2626','#7c3aed','#0369a1','#be185d','#65a30d','#b91c1c','#115e59','#0e7490','#9333ea'];
-var PAL_D=['#22d3ee','#818cf8','#e879f9','#fbbf24','#34d399','#fc8181','#a78bfa','#38bdf8','#f472b6','#a3e635','#fda4af','#5eead4','#67e8f9','#c084fc'];
+var WEEKS=ALL_WEEKS;
+var PAL_L=['#dc2626','#0284c7','#ea580c','#2563eb','#d97706','#4f46e5','#ca8a04','#1818c3','#a7a711','#7c3aed','#65a30d','#9333ea','#579518','#c026d3'];
+var PAL_D=['#f87171','#38bdf8','#fb923c','#60a5fa','#fbbf24','#818cf8','#facc15','#6a6af0','#e2e236','#a78bfa','#a3e635','#c084fc','#85da2f','#e879f9'];
 var $s=function(s){return document.querySelector(s)};
 var fmt=function(v){return '$'+v.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})};
 var fmt2=function(v){return '$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})};
 var fmtK=function(v){return v>=1000?'$'+(v/1000).toFixed(1)+'k':fmt(Math.round(v))};
+
+function onDateChange(){
+  /* Slope chart always renders all time periods for line continuity */
+  WEEKS=ALL_WEEKS;
+  if(activeView==='classic')classicRefresh();else tableRefresh();
+}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 var dark=true,activeCarrier='both',activeFilter='all',activeView='classic';
 var cardEl=null;
@@ -392,7 +438,23 @@ function classicShowCard(li,pinned){
   WEEKS.forEach(function(w,wi){var v=getVal(cat,w),fv=cat.fedex[w]||0,uv=cat.ups[w]||0;var rk='<span style="font-size:.7em;font-weight:700;color:var(--text-muted);margin-left:.3em">#'+ranks[w]+'/'+nVis+'</span>';var dh='<span class="ic-delta"></span>';if(wi>0){var prev=getVal(cat,WEEKS[wi-1]);if(prev>0){var d=v-prev,pct=Math.round(d/prev*100),up=d>0,col=up?'var(--red)':'var(--green)',ar=up?'\u25B2':'\u25BC',lb=Math.abs(pct)>999?ar+' '+fmt(Math.abs(Math.round(d))):ar+' '+Math.abs(pct)+'%';dh='<span class="ic-delta" style="color:'+col+'">'+lb+'</span>';}}html+='<div class="ic-week-block"><span class="ic-wk">'+esc(w)+rk+'</span><span class="ic-val">'+fmt2(v)+'</span>'+dh;if(activeCarrier==='both'){if(fv>0)html+='<span class="ic-carrier-label">FedEx</span><span class="ic-carrier-val">'+fmt2(fv)+'</span><span class="ic-carrier-spacer"></span>';if(uv>0)html+='<span class="ic-carrier-label">UPS</span><span class="ic-carrier-val">'+fmt2(uv)+'</span><span class="ic-carrier-spacer"></span>';}html+='</div>';});
   html+='<div class="ic-total-sep"></div><span class="ic-total-label">'+WEEKS.length+'-Week Total</span><span class="ic-total-val">'+fmt(Math.round(getCatTotal(cat)))+'</span><span class="ic-total-spacer"></span></div>';
   cardEl.querySelector('.info-card-title').textContent=esc(cat.label);cardEl.querySelector('.info-card-pin').textContent=pinned?'\uD83D\uDCCC pinned':'hover';
-  cardEl.querySelector('.info-card-body').innerHTML=html;cardEl.classList.add('visible');cardEl.classList.toggle('pinned',!!pinned);
+  cardEl.querySelector('.info-card-body').innerHTML=html;cardEl.classList.add('visible');
+var _drCat=line.cat;
+
+/* Weekly drill-down inject */
+if(granularity==="monthly"&&isMonthKey(activeMonth)){
+  var _drEl=document.createElement('div');
+  _drEl.innerHTML=wkDrillHTML(activeMonth,function(w){
+    var cat=typeof _drCat!=='undefined'?_drCat:null;
+    if(!cat)return 0;
+    var total=0;
+    if(activeCarrier==='both'||activeCarrier==='fedex')total+=(cat.fedex[w]||0);
+    if(activeCarrier==='both'||activeCarrier==='ups')total+=(cat.ups[w]||0);
+    return total;
+  },function(v){return '$'+Math.round(v).toLocaleString();});
+  if(_drEl.firstChild)cardEl.querySelector('.ic-body').appendChild(_drEl.firstChild);
+}
+cardEl.classList.toggle('pinned',!!pinned);
   if(!pinned||!cardEl.style.left||cardEl.style.right!=='auto'){var cr=$s('.chart-area').getBoundingClientRect(),wr=$s('.widget').getBoundingClientRect();cardEl.style.right='28px';cardEl.style.left='auto';cardEl.style.top=(cr.top-wr.top+8)+'px';cardEl.style.width='280px';cardEl.style.height='auto';cardEl.style.fontSize='11px';}
 }
 function classicHideCard(){if(classicPinned!==null)return;if(cardEl)cardEl.classList.remove('visible','pinned');}
@@ -435,7 +497,23 @@ function tableShowCard(cat,pinned){
   WEEKS.forEach(function(w,wi){var v=getVal(cat,w),fv=cat.fedex[w]||0,uv=cat.ups[w]||0;var rk='<span style="font-size:.7em;font-weight:700;color:var(--text-muted);margin-left:.3em">#'+ranks[w]+'/'+nVis+'</span>';var dh='<span class="ic-delta"></span>';if(wi>0){var prev=getVal(cat,WEEKS[wi-1]);if(prev>0){var d=v-prev,pct=Math.round(d/prev*100),up=d>0,col=up?'var(--red)':'var(--green)',ar=up?'\u25B2':'\u25BC',lb=Math.abs(pct)>999?ar+' '+fmt(Math.abs(Math.round(d))):ar+' '+Math.abs(pct)+'%';dh='<span class="ic-delta" style="color:'+col+'">'+lb+'</span>';}}html+='<div class="ic-week-block"><span class="ic-wk">'+esc(w)+rk+'</span><span class="ic-val">'+fmt2(v)+'</span>'+dh;if(activeCarrier==='both'){if(fv>0)html+='<span class="ic-carrier-label">FedEx</span><span class="ic-carrier-val">'+fmt2(fv)+'</span><span class="ic-carrier-spacer"></span>';if(uv>0)html+='<span class="ic-carrier-label">UPS</span><span class="ic-carrier-val">'+fmt2(uv)+'</span><span class="ic-carrier-spacer"></span>';}html+='</div>';});
   html+='<div class="ic-total-sep"></div><span class="ic-total-label">'+WEEKS.length+'-Week Total</span><span class="ic-total-val">'+fmt(Math.round(getCatTotal(cat)))+'</span><span class="ic-total-spacer"></span></div>';
   cardEl.querySelector('.info-card-title').textContent=esc(cat.label);cardEl.querySelector('.info-card-pin').textContent=pinned?'\uD83D\uDCCC pinned':'hover';
-  cardEl.querySelector('.info-card-body').innerHTML=html;cardEl.classList.add('visible');cardEl.classList.toggle('pinned',!!pinned);
+  cardEl.querySelector('.info-card-body').innerHTML=html;cardEl.classList.add('visible');
+var _drCat=cat;
+
+/* Weekly drill-down inject */
+if(granularity==="monthly"&&isMonthKey(activeMonth)){
+  var _drEl=document.createElement('div');
+  _drEl.innerHTML=wkDrillHTML(activeMonth,function(w){
+    var cat=typeof _drCat!=='undefined'?_drCat:null;
+    if(!cat)return 0;
+    var total=0;
+    if(activeCarrier==='both'||activeCarrier==='fedex')total+=(cat.fedex[w]||0);
+    if(activeCarrier==='both'||activeCarrier==='ups')total+=(cat.ups[w]||0);
+    return total;
+  },function(v){return '$'+Math.round(v).toLocaleString();});
+  if(_drEl.firstChild)cardEl.querySelector('.ic-body').appendChild(_drEl.firstChild);
+}
+cardEl.classList.toggle('pinned',!!pinned);
   if(!pinned||!cardEl.style.left||cardEl.style.right!=='auto'){var cr=$s('.chart-area').getBoundingClientRect(),wr=$s('.widget').getBoundingClientRect();cardEl.style.right='28px';cardEl.style.left='auto';cardEl.style.top=(cr.top-wr.top+8)+'px';cardEl.style.width='280px';cardEl.style.height='auto';cardEl.style.fontSize='11px';}
 }
 function tableHideCard(){if(tablePinned!==null)return;if(cardEl)cardEl.classList.remove('visible','pinned');}
@@ -518,11 +596,7 @@ function setView(v){
   if(v==='classic'){resize();buildLines();animate();}
   else{tableRefresh();flashElement($s('#tblScroll'));}
 }
-function resetAll(){
-  if(cardEl)cardEl.classList.remove('visible','pinned');
-  classicPinned=null;classicHovered=-1;tablePinned=null;tableSortCol='rank';tableSortDir='asc';
-  if(activeView==='classic'){animate();}else{buildHeader();buildRows();}
-}
+function resetAll(){granularity="monthly";activeMonth=MONTH_KEYS[MONTH_KEYS.length-1];activeWeekIdx=ALL_WEEKS.length-1;buildDateControl();WEEKS=ALL_WEEKS;if(cardEl)cardEl.classList.remove('visible','pinned');classicPinned=null;classicHovered=-1;tablePinned=null;tableSortCol='rank';tableSortDir='asc';activeFilter='all';activeCarrier='both';document.querySelectorAll('.carrier-btn').forEach(function(b){b.classList.toggle('active',b.dataset.carrier==='both'||b.dataset.filter==='all');});if(activeView==='classic'){animate();}else{tableRefresh();}}
 function setCarrier(c){
   activeCarrier=c;document.querySelectorAll('.carrier-btn:not(.filter-btn)').forEach(function(b){b.classList.toggle('active',b.dataset.carrier===c)});
   if(cardEl)cardEl.classList.remove('visible','pinned');classicPinned=null;classicHovered=-1;tablePinned=null;
@@ -539,7 +613,8 @@ document.querySelectorAll('.filter-btn').forEach(function(b){b.addEventListener(
 document.querySelectorAll('.view-btn').forEach(function(b){b.addEventListener('click',function(){setView(b.dataset.view)})});
 
 // INIT — classic is default
-updateSummary();classicInit();
+updateSummary();buildDateControl();
+onDateChange();
 </script>
 </body>
 </html>
