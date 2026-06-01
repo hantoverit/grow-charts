@@ -24,8 +24,17 @@
   .dm-track{width:28px;height:15px;background:var(--toggle-bg);border-radius:8px;position:relative;transition:background .2s;flex-shrink:0}
   .dm-knob{width:11px;height:11px;background:var(--toggle-knob);border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
   [data-theme="dark"] .dm-knob{transform:translateX(13px)}
-  :root{--rank-active-bg:var(--week-active-bg);--rank-active-text:var(--week-active-text);--rank-inactive:var(--week-inactive)}
-  [data-theme="dark"]{--rank-active-bg:var(--week-active-bg);--rank-active-text:var(--week-active-text);--rank-inactive:var(--week-inactive)
+  :root{
+    --bg:#f4f6f8;--surface:#fff;--surface2:#f9fafb;--border:#e3e7ed;
+    --text-primary:#111827;--text-secondary:#4b5563;--text-muted:#9ca3af;
+    --accent:#1a73e8;--accent-dim:#e8f0fd;--accent-text:#1a73e8;
+    --green:#1e8a4a;--green-bg:#dcfce7;--red:#c0392b;--red-bg:#fee2e2;
+    --toggle-bg:#d1d5db;--toggle-knob:#fff;
+    --week-active-bg:#1a73e8;--week-active-text:#fff;--week-inactive:#6b7280;
+    --shadow:0 1px 6px rgba(0,0,0,.08),0 4px 20px rgba(0,0,0,.04);
+    --chart-bg:#f8fafc;--chart-border:#dce3eb;
+    --rank-active-bg:var(--week-active-bg);--rank-active-text:var(--week-active-text);--rank-inactive:var(--week-inactive)}
+  [data-theme="dark"]{--rank-active-bg:var(--week-active-bg);--rank-active-text:var(--week-active-text);--rank-inactive:var(--week-inactive);
     --bg:#0d1117;--surface:#161b27;--surface2:#1e2533;--border:#2e3a4e;
     --text-primary:#e8edf5;--text-secondary:#b0bdd0;--text-muted:#6b7f99;
     --accent:#4f93f5;--accent-dim:#1a2d50;--accent-text:#7db3f8;
@@ -302,7 +311,7 @@ function drawCanvas(){
       if(side==="right"&&highlighted){
         c.globalAlpha=isPri?1:0.5;
         c.fillStyle=lb.color;
-        let d={};for(let _i=WEEKS.length-1;_i>=0;_i--){if(DATA[WEEKS[_i]][lb.cid]){d=DATA[WEEKS[_i]][lb.cid];break;}}
+        var _lsrc=(granularity==="monthly")?getMonthlyData():DATA;let d={};for(let _i=WEEKS.length-1;_i>=0;_i--){if(_lsrc[WEEKS[_i]]&&_lsrc[WEEKS[_i]][lb.cid]){d=_lsrc[WEEKS[_i]][lb.cid];break;}}
         if(method==="avg_cost"){
           c.font="700 11px Inter,sans-serif";
           c.fillText("$"+(d.avg_cost||0).toFixed(2),xPos,lb.y-6);
@@ -472,15 +481,15 @@ function updateDOMCard(){
   if(isPinned)html+='<span class="bc-pin">\uD83D\uDCCC pinned</span>';
   html+='</div><div class="bc-name">'+getName(cid)+'</div><div class="bc-divider"></div>';
   const ranks=getRanks(method);
-  for(let wi=0;wi<WEEKS.length;wi++){const wk=WEEKS[wi],rank=ranks[wk][cid],d=DATA[wk][cid],val=d?d[method]:null;
-    html+='<div class="bc-week-row"><span class="bc-wk-label">W'+wk+'</span>';
+  const cardSrc=(granularity==="monthly")?getMonthlyData():DATA;
+  for(let wi=0;wi<WEEKS.length;wi++){const wk=WEEKS[wi],rank=ranks[wk][cid],d=cardSrc[wk]?cardSrc[wk][cid]:null,val=d?d[method]:null;
+    html+='<div class="bc-week-row"><span class="bc-wk-label">'+(granularity==="monthly"?wk:'W'+wk)+'</span>';
     if(rank!=null&&rank<=MAX_RANK){const badgeBg=dark?'rgba(96,165,250,0.15)':'rgba(26,115,232,0.1)';html+='<span class="bc-rank-badge" style="background:'+badgeBg+';color:'+color+'">#'+rank+'</span>';}
     else{html+='<span class="bc-rank-badge" style="color:var(--text-muted)">\u2014</span>';}
     if(val!=null){const vs=method==='paid'?'$'+val.toLocaleString('en-US',{maximumFractionDigits:0}):method==='bills'?val+' bills':'$'+val.toFixed(2);html+='<span class="bc-val">'+vs+'</span>';}
     else{html+='<span class="bc-val"></span>';}
     if(wi>0){const pR=ranks[WEEKS[wi-1]][cid];if(rank!=null&&pR!=null){const df=pR-rank;if(df!==0){const dc=df>0?(dark?'#4ade80':'#188038'):(dark?'#fc8181':'#c62828');html+='<span class="bc-delta" style="color:'+dc+'">'+(df>0?'\u25B2':'\u25BC')+Math.abs(df)+'</span>';}}}
     html+='</div>';}
-  if(granularity==="monthly"&&isMonthKey(WEEKS[wi])){html+=wkDrillHTML(WEEKS[wi],function(w){var d=DATA[w]?DATA[w][cid]:null;return d?d[method]:0;},function(v){return method==='avg_cost'?'$'+v.toFixed(2):method==='paid'?'$'+Math.round(v).toLocaleString():v.toLocaleString();});}
   bumpCard.querySelector('.bump-card-inner').innerHTML=html;
   bumpCard.querySelector('.bc-accent').style.background=color;
   bumpCard.querySelector('.bc-accent').style.boxShadow=dark?'0 0 8px '+color:'';
