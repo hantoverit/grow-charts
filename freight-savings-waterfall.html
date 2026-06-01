@@ -138,9 +138,32 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--
 <script>
 /* ═══ Date Control Module ═══ */
 var ALL_WEEKS=["W2-23","W3-2","W3-9","W3-16","W3-23","W3-30","W4-6","W4-13","W4-20","W4-27","W5-4","W5-11","W5-18","W5-25","W6-1"];
-var MONTHS={Feb:["W2-23"],Mar:["W3-2","W3-9","W3-16","W3-23","W3-30"],Apr:["W4-6","W4-13","W4-20","W4-27"],May:["W5-4","W5-11","W5-18","W5-25"],Jun:["W6-1"]};
-var MONTH_KEYS=["Feb","Mar","Apr","May","Jun"];
-var granularity="monthly",activeMonth="Jun",activeWeekIdx=ALL_WEEKS.length-1;
+/* -- Derived calendar: auto-builds month/quarter/year buckets from ALL_WEEKS. Supports unlimited months & years. Parses legacy "M-D"/"WM-D" (year inferred by month-rollover from YEAR_ANCHOR) and year-aware "YY-M-D"/"WYY-M-D" (year read from key). On single-year data the month keys are bare abbreviations ("Feb"), identical to the prior hardcoded structures. -- */
+var YEAR_ANCHOR=2026;
+var MONTH_ABBR=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function buildCalendar(allWeeks,yearAnchor){
+  var meta={},order=[],prevM=null,yr=yearAnchor;
+  allWeeks.forEach(function(rawKey){
+    var k=rawKey.charAt(0)==='W'?rawKey.slice(1):rawKey,parts=k.split('-').map(Number),y,m,d;
+    if(parts.length===3){y=2000+parts[0];m=parts[1];d=parts[2];}
+    else{m=parts[0];d=parts[1];if(prevM!==null&&m<prevM)yr++;y=yr;}
+    prevM=m;meta[rawKey]={y:y,m:m,d:d};order.push(rawKey);
+  });
+  var yset={};order.forEach(function(k){yset[meta[k].y]=1;});
+  var years=Object.keys(yset).map(Number).sort(function(a,b){return a-b;}),multiYear=years.length>1;
+  function _mk(k){var a=MONTH_ABBR[meta[k].m-1];return multiYear?a+" '"+String(meta[k].y).slice(-2):a;}
+  function _qk(k){var q=Math.floor((meta[k].m-1)/3)+1;return multiYear?"Q"+q+" '"+String(meta[k].y).slice(-2):"Q"+q;}
+  var MONTHS={},MONTH_KEYS=[],QUARTERS={},QUARTER_KEYS=[],YEARS={},YEAR_KEYS=[];
+  order.forEach(function(k){
+    var a=_mk(k);if(!MONTHS[a]){MONTHS[a]=[];MONTH_KEYS.push(a);}MONTHS[a].push(k);
+    var b=_qk(k);if(!QUARTERS[b]){QUARTERS[b]=[];QUARTER_KEYS.push(b);}QUARTERS[b].push(k);
+    var c=String(meta[k].y);if(!YEARS[c]){YEARS[c]=[];YEAR_KEYS.push(c);}YEARS[c].push(k);
+  });
+  return {meta:meta,years:years,multiYear:multiYear,MONTHS:MONTHS,MONTH_KEYS:MONTH_KEYS,QUARTERS:QUARTERS,QUARTER_KEYS:QUARTER_KEYS,YEARS:YEARS,YEAR_KEYS:YEAR_KEYS};
+}
+var __CAL=buildCalendar(ALL_WEEKS,YEAR_ANCHOR);
+var MONTHS=__CAL.MONTHS,MONTH_KEYS=__CAL.MONTH_KEYS;
+var granularity="monthly",activeMonth=MONTH_KEYS[MONTH_KEYS.length-1],activeWeekIdx=ALL_WEEKS.length-1;
 function getActiveWeeks(){return granularity==="monthly"?MONTHS[activeMonth]:[ALL_WEEKS[activeWeekIdx]];}
 function getPrevWeeks(){if(granularity==="monthly"){var i=MONTH_KEYS.indexOf(activeMonth);return i>0?MONTHS[MONTH_KEYS[i-1]]:null;}return activeWeekIdx>0?[ALL_WEEKS[activeWeekIdx-1]]:null;}
 function getPeriodLabel(){return granularity==="monthly"?activeMonth:"W"+ALL_WEEKS[activeWeekIdx].replace("W","");}
@@ -1167,13 +1190,14 @@ function toggleDark(){dark=!dark;document.documentElement.setAttribute('data-the
 
 
 function onDateChange(){
-  if(periodAll){WEEKS=ALL_WEEKS;activeWeek=ALL_WEEKS[ALL_WEEKS.length-1];}
-  else if(granularity==="monthly"){WEEKS=MONTHS[activeMonth];activeWeek=WEEKS[WEEKS.length-1];}
+  if(periodAll){WEEKS=ALL_WEEKS;activeWeek='all';}
+  else if(granularity==="monthly"){WEEKS=MONTHS[activeMonth];activeWeek='all';}
   else{WEEKS=ALL_WEEKS;activeWeek=ALL_WEEKS[activeWeekIdx];}
   updateSummary();buildLegend();buildBars();animate();
 }
 function onFilterChange(){updateSummary();buildLegend();buildBars();animate();}
 function getAllTotals(){let b=0,p=0,a=0,d=0,n=0;WEEKS.forEach(w=>{const t=DATA[w].totals;b+=t.billed;p+=t.paid;a+=t.auditSvgs;d+=t.dupSvgs;n+=t.bills;});const ts=a+d;return{billed:b,paid:p,auditSvgs:a,dupSvgs:d,totalSvgs:ts,savingsRate:b>0?Math.round(ts/b*1000)/10:0,bills:n};}
+function getPrevPeriodTotals(){if(periodAll)return null;var pw=getPrevWeeks();if(!pw)return null;let b=0,p=0,a=0,d=0,n=0;pw.forEach(function(w){const t=DATA[w].totals;b+=t.billed;p+=t.paid;a+=t.auditSvgs;d+=t.dupSvgs;n+=t.bills;});const ts=a+d;return{billed:b,paid:p,auditSvgs:a,dupSvgs:d,totalSvgs:ts,savingsRate:b>0?Math.round(ts/b*1000)/10:0,bills:n};}
 function getActiveTotals(){return activeWeek==='all'?getAllTotals():DATA[activeWeek].totals;}
 function getActiveCarriers(){if(activeWeek==='all'){const m={};WEEKS.forEach(w=>{DATA[w].carriers.forEach(c=>{if(!m[c.id])m[c.id]={id:c.id,billed:0,paid:0,auditSvgs:0,dupSvgs:0};m[c.id].billed+=c.billed;m[c.id].paid+=c.paid;m[c.id].auditSvgs+=c.auditSvgs;m[c.id].dupSvgs+=c.dupSvgs;});});var arr=Object.values(m);arr.sort(function(a,b){return b.billed-a.billed;});if(activeFilter!=="all")arr=arr.slice(0,parseInt(activeFilter));return arr.sort((a,b)=>b.billed-a.billed);}return DATA[activeWeek].carriers;}
 function getActiveItems(){if(activeWeek==='all'){let a=[];WEEKS.forEach(w=>{DATA[w].items.forEach(it=>{a.push({...it,week:w});});});return a;}return DATA[activeWeek].items;}
@@ -1188,9 +1212,9 @@ function deltaHTML(cur,prev,invert){
   return `<span style="color:${col};font-size:9px;font-weight:700"> ${arrow} ${Math.abs(pct)}%</span>`;
 }
 function updateSummary(){const d=getActiveTotals();$('#s-billed').textContent=fmt(d.billed);$('#s-bills').textContent=d.bills+' audited bill'+(d.bills!==1?'s':'');$('#s-savings').textContent=fmt(d.totalSvgs);$('#s-rate').textContent=d.savingsRate+'% recovery rate';$('#s-paid').textContent=fmt(d.paid);const pp=d.billed>0?Math.round(d.paid/d.billed*100):0;$('#s-pct').textContent=pp+'% of billed amount';
-// WoW deltas
-const pw=getPrevWeek();
-if(pw&&activeWeek!=='all'){const p=DATA[pw].totals;$('#s-billed').innerHTML=fmt(d.billed)+deltaHTML(d.billed,p.billed,false);$('#s-savings').innerHTML=fmt(d.totalSvgs)+deltaHTML(d.totalSvgs,p.totalSvgs,false);$('#s-paid').innerHTML=fmt(d.paid)+deltaHTML(d.paid,p.paid,true);}
+// Month-over-month deltas
+const p=getPrevPeriodTotals();
+if(p){$('#s-billed').innerHTML=fmt(d.billed)+deltaHTML(d.billed,p.billed,false);$('#s-savings').innerHTML=fmt(d.totalSvgs)+deltaHTML(d.totalSvgs,p.totalSvgs,false);$('#s-paid').innerHTML=fmt(d.paid)+deltaHTML(d.paid,p.paid,true);}
 }
 
 function buildLegend(){
@@ -1358,9 +1382,9 @@ function buildCardHTML(idx){
   else if(b.type==='dup'){title='Duplicate Recovery';carriers.filter(c=>c.dupSvgs>0).forEach(c=>{const ci=items.filter(it=>it.carr===c.id&&it.dupSvgs>0);html+=`<div class="ic-item"><div class="ic-carr"><span class="ic-carr-id">${esc(c.id)}</span><span class="ic-carr-val" style="color:${col}">${fmt2(c.dupSvgs)}</span></div>${ci.map(it=>`<div class="ic-desc">${esc(it.pro)} — ${esc(it.desc)}</div>`).join('')}</div>`;});html+=`<div class="ic-total"><span class="ic-total-label">Total</span><span class="ic-total-val" style="color:${col}">${fmt(b.value)}</span></div>`;}
   else if(b.type==='paid'){title='Net Paid by Carrier';carriers.filter(c=>c.paid>0).forEach(c=>{html+=`<div class="ic-item"><div class="ic-carr"><span class="ic-carr-id">${c.id}</span><span class="ic-carr-val" style="color:${col}">${fmt2(c.paid)}</span></div></div>`;});html+=`<div class="ic-total"><span class="ic-total-label">Total</span><span class="ic-total-val" style="color:${col}">${fmt(b.value)}</span></div>`;}
   /* Weekly drill-down */
-  if(granularity==="monthly"&&isMonthKey(activeMonth)){
-    var _bType=b.type;
-    html+=wkDrillHTML(activeMonth,function(w){var wd=DATA[w];return wd?wd.totals[_bType]||0:0;},function(v){return fmt(v);});
+  if(!periodAll&&granularity==="monthly"&&isMonthKey(activeMonth)){
+    var _bType=b.type;var _tk={billed:'billed',audit:'auditSvgs',dup:'dupSvgs',paid:'paid'}[_bType]||_bType;
+    html+=wkDrillHTML(activeMonth,function(w){var wd=DATA[w];return wd?(wd.totals[_tk]||0):0;},function(v){return fmt(v);});
   }
   return{title,html};
 }
@@ -1399,7 +1423,7 @@ canvas.addEventListener('dblclick',function(e){e.preventDefault();resetAll();});
 canvas.addEventListener('mouseleave',()=>{const wasOver=hoveredBar>=0;hoveredBar=-1;draw();if(wasOver)hideCard();});
 canvas.addEventListener('click',e=>{const r=canvas.getBoundingClientRect();const idx=hitTest(e.clientX-r.left,e.clientY-r.top);if(idx>=0){const clickedType=bars[idx].type;if(pinnedType===clickedType){/* no-op: clicking own pinned bar */}else{/* pin new bar (or switch) */pinnedType=clickedType;showCard(idx,true);draw();}}else{/* clicked whitespace — unpin */if(pinnedType){pinnedType=null;hideCard();draw();}}});
 
-function resetAll(){granularity="monthly";activeMonth=MONTH_KEYS[MONTH_KEYS.length-1];activeWeekIdx=ALL_WEEKS.length-1;periodAll=true;activeFilter="all";buildDateControl();buildFilterControl();WEEKS=ALL_WEEKS;activeWeek=ALL_WEEKS[ALL_WEEKS.length-1];pinnedType=null;hoveredBar=-1;if(cardEl)cardEl.classList.remove('visible','pinned');draw();}
+function resetAll(){granularity="monthly";activeMonth=MONTH_KEYS[MONTH_KEYS.length-1];activeWeekIdx=ALL_WEEKS.length-1;periodAll=true;activeFilter="all";buildDateControl();buildFilterControl();pinnedType=null;hoveredBar=-1;if(cardEl)cardEl.classList.remove('visible','pinned');onDateChange();}
 
 
 
