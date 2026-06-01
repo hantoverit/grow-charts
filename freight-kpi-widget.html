@@ -28,7 +28,7 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}html,body{width:100%;height:100%}
   body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text-primary);transition:background .25s,color .25s}
-  .widget{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px 16px;width:100%;height:100%;display:flex;flex-direction:column;box-shadow:var(--shadow);transition:background .25s,border-color .25s}
+  .widget{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px 16px;width:100%;height:100%;display:flex;flex-direction:column;box-shadow:var(--shadow);transition:background .25s,border-color .25s}
   .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-shrink:0}
   .header-left{display:flex;flex-direction:column;gap:2px}
   .eyebrow{font-size:10.5px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted)}
@@ -50,13 +50,13 @@
   .dc-pill.active{background:var(--week-active-bg);color:var(--week-active-text);border-color:var(--week-active-bg);box-shadow:0 1px 4px rgba(26,115,232,.25)}
   .divider{height:1px;background:var(--border);margin-bottom:16px;flex-shrink:0}
   .kpi-area{flex:1;min-height:0;background:var(--chart-bg);border:1px solid var(--chart-border);border-radius:8px;padding:16px;display:flex;align-items:center;transition:background .25s,border-color .25s}
-  .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;width:100%}
-  .kpi-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 14px 12px;display:grid;grid-template-rows:16px minmax(28px,auto) 32px 56px 16px;row-gap:6px;position:relative;overflow:hidden;transition:background .25s,border-color .25s,transform .16s,box-shadow .16s}
+  .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;width:100%;overflow:hidden}
+  .kpi-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 14px 12px;display:grid;grid-template-rows:16px minmax(28px,auto) 32px 56px 16px;row-gap:6px;position:relative;overflow:hidden;transition:background .25s,border-color .25s,transform .16s,box-shadow .16s;min-width:0}
   .kpi-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.08)}
   .kpi-card::after{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent);opacity:.5;border-radius:10px 10px 0 0}
   .week-badge{display:inline-flex;align-items:center;font-size:9px;font-weight:600;letter-spacing:.07em;padding:0 6px;border-radius:4px;background:var(--accent-dim);color:var(--accent-text);text-transform:uppercase;align-self:center;justify-self:start;height:16px}
   .kpi-label{font-size:10.5px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;line-height:1.35;align-self:start}
-  .kpi-value{font-size:20px;font-weight:700;color:var(--text-primary);letter-spacing:-.03em;line-height:1;align-self:center;white-space:nowrap}
+  .kpi-value{font-size:20px;font-weight:700;color:var(--text-primary);letter-spacing:-.03em;line-height:1;align-self:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .kpi-deltas{display:flex;flex-direction:column;justify-content:flex-start;gap:5px;align-self:start}
   .delta-pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;border-radius:4px;padding:3px 6px;width:fit-content;line-height:1}
   .delta-pill.positive{color:var(--green);background:var(--green-bg)}.delta-pill.negative{color:var(--red);background:var(--red-bg)}.delta-pill.neutral{color:var(--text-muted);background:transparent}
@@ -83,9 +83,32 @@
 <script>
 /* ═══ Date Control Module ═══ */
 var ALL_WEEKS=["2-23","3-2","3-9","3-16","3-23","3-30","4-6","4-13","4-20","4-27","5-4","5-11","5-18","5-25","6-1"];
-var MONTHS={Feb:["2-23"],Mar:["3-2","3-9","3-16","3-23","3-30"],Apr:["4-6","4-13","4-20","4-27"],May:["5-4","5-11","5-18","5-25"],Jun:["6-1"]};
-var MONTH_KEYS=["Feb","Mar","Apr","May","Jun"];
-var granularity="monthly",activeMonth="Jun",activeWeekIdx=ALL_WEEKS.length-1;
+/* -- Derived calendar: auto-builds month/quarter/year buckets from ALL_WEEKS. Supports unlimited months & years. Parses legacy "M-D"/"WM-D" (year inferred by month-rollover from YEAR_ANCHOR) and year-aware "YY-M-D"/"WYY-M-D" (year read from key). On single-year data the month keys are bare abbreviations ("Feb"), identical to the prior hardcoded structures. -- */
+var YEAR_ANCHOR=2026;
+var MONTH_ABBR=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function buildCalendar(allWeeks,yearAnchor){
+  var meta={},order=[],prevM=null,yr=yearAnchor;
+  allWeeks.forEach(function(rawKey){
+    var k=rawKey.charAt(0)==='W'?rawKey.slice(1):rawKey,parts=k.split('-').map(Number),y,m,d;
+    if(parts.length===3){y=2000+parts[0];m=parts[1];d=parts[2];}
+    else{m=parts[0];d=parts[1];if(prevM!==null&&m<prevM)yr++;y=yr;}
+    prevM=m;meta[rawKey]={y:y,m:m,d:d};order.push(rawKey);
+  });
+  var yset={};order.forEach(function(k){yset[meta[k].y]=1;});
+  var years=Object.keys(yset).map(Number).sort(function(a,b){return a-b;}),multiYear=years.length>1;
+  function _mk(k){var a=MONTH_ABBR[meta[k].m-1];return multiYear?a+" '"+String(meta[k].y).slice(-2):a;}
+  function _qk(k){var q=Math.floor((meta[k].m-1)/3)+1;return multiYear?"Q"+q+" '"+String(meta[k].y).slice(-2):"Q"+q;}
+  var MONTHS={},MONTH_KEYS=[],QUARTERS={},QUARTER_KEYS=[],YEARS={},YEAR_KEYS=[];
+  order.forEach(function(k){
+    var a=_mk(k);if(!MONTHS[a]){MONTHS[a]=[];MONTH_KEYS.push(a);}MONTHS[a].push(k);
+    var b=_qk(k);if(!QUARTERS[b]){QUARTERS[b]=[];QUARTER_KEYS.push(b);}QUARTERS[b].push(k);
+    var c=String(meta[k].y);if(!YEARS[c]){YEARS[c]=[];YEAR_KEYS.push(c);}YEARS[c].push(k);
+  });
+  return {meta:meta,years:years,multiYear:multiYear,MONTHS:MONTHS,MONTH_KEYS:MONTH_KEYS,QUARTERS:QUARTERS,QUARTER_KEYS:QUARTER_KEYS,YEARS:YEARS,YEAR_KEYS:YEAR_KEYS};
+}
+var __CAL=buildCalendar(ALL_WEEKS,YEAR_ANCHOR);
+var MONTHS=__CAL.MONTHS,MONTH_KEYS=__CAL.MONTH_KEYS;
+var granularity="monthly",activeMonth=MONTH_KEYS[MONTH_KEYS.length-1],activeWeekIdx=ALL_WEEKS.length-1;
 function getActiveWeeks(){return granularity==="monthly"?MONTHS[activeMonth]:[ALL_WEEKS[activeWeekIdx]];}
 function getPrevWeeks(){if(granularity==="monthly"){var i=MONTH_KEYS.indexOf(activeMonth);return i>0?MONTHS[MONTH_KEYS[i-1]]:null;}return activeWeekIdx>0?[ALL_WEEKS[activeWeekIdx-1]]:null;}
 function getPeriodLabel(){return granularity==="monthly"?activeMonth:"W"+ALL_WEEKS[activeWeekIdx].replace("W","");}
@@ -141,7 +164,7 @@ function onDateChange(){render();}
 function resetAll(){granularity="monthly";activeMonth="Jun";activeWeekIdx=ALL_WEEKS.length-1;buildDateControl();render();}
 function toggleDark(){dark=!dark;document.documentElement.setAttribute("data-theme",dark?"dark":"");}
 document.addEventListener("dblclick",function(e){if(!e.target.closest(".dc-row"))resetAll();});
-buildDateControl();buildDateControl();
+buildDateControl();
 onDateChange();
 
 /* KPI Weekly Tooltip */
@@ -159,8 +182,10 @@ document.getElementById('kpi-grid').addEventListener('mouseover',function(e){
     h+='<div class="wk-drill-row"><span class="wk-lbl">W'+w+'</span><span class="wk-val">'+fmt(v,m.format,m.unit)+'</span></div>';
   });
   tipEl.innerHTML=h;
-  var rect=card.getBoundingClientRect(),pr=card.parentNode.getBoundingClientRect();
-  tipEl.style.left=(rect.left-pr.left)+'px';tipEl.style.top=(rect.bottom-pr.top+4)+'px';
+  var wr=document.querySelector('.widget').getBoundingClientRect();var rect=card.getBoundingClientRect();
+  var tw=tipEl.offsetWidth||160,th=tipEl.offsetHeight||0;
+  var L=Math.max(0,Math.min(rect.left-wr.left,wr.width-tw-2)),T=Math.max(0,Math.min(rect.bottom-wr.top+4,wr.height-th-2));
+  tipEl.style.left=L+'px';tipEl.style.top=T+'px';
   tipEl.classList.add('visible');
 });
 document.getElementById('kpi-grid').addEventListener('mouseout',function(e){
