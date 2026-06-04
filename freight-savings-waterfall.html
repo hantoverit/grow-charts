@@ -137,7 +137,7 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--
 </div>
 <script>
 /* ═══ Date Control Module ═══ */
-var ALL_WEEKS=["W2-23","W3-2","W3-9","W3-16","W3-23","W3-30","W4-6","W4-13","W4-20","W4-27","W5-4","W5-11","W5-18","W5-25","W6-1"];
+var ALL_WEEKS=["W2-23","W3-2","W3-9","W3-16","W3-23","W3-30","W4-6","W4-13","W4-20","W4-27","W5-4","W5-11","W5-18","W5-25","W6-1","W6-8"];
 /* -- Derived calendar: auto-builds month/quarter/year buckets from ALL_WEEKS. Supports unlimited months & years. Parses legacy "M-D"/"WM-D" (year inferred by month-rollover from YEAR_ANCHOR) and year-aware "YY-M-D"/"WYY-M-D" (year read from key). On single-year data the month keys are bare abbreviations ("Feb"), identical to the prior hardcoded structures. -- */
 var YEAR_ANCHOR=2026;
 var MONTH_ABBR=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -153,7 +153,7 @@ function buildCalendar(allWeeks,yearAnchor){
   var years=Object.keys(yset).map(Number).sort(function(a,b){return a-b;}),multiYear=years.length>1;
   function _mk(k){var a=MONTH_ABBR[meta[k].m-1];return multiYear?a+" '"+String(meta[k].y).slice(-2):a;}
   function _qk(k){var q=Math.floor((meta[k].m-1)/3)+1;return multiYear?"Q"+q+" '"+String(meta[k].y).slice(-2):"Q"+q;}
-  var MONTHS={},MONTH_KEYS=[],QUARTERS={},QUARTER_KEYS=[],YEARS={},YEAR_KEYS=[];
+  var MONTHS={,Jun:['W6-8']},MONTH_KEYS=[],QUARTERS={},QUARTER_KEYS=[],YEARS={},YEAR_KEYS=[];
   order.forEach(function(k){
     var a=_mk(k);if(!MONTHS[a]){MONTHS[a]=[];MONTH_KEYS.push(a);}MONTHS[a].push(k);
     var b=_qk(k);if(!QUARTERS[b]){QUARTERS[b]=[];QUARTER_KEYS.push(b);}QUARTERS[b].push(k);
@@ -1151,6 +1151,104 @@ const DATA={"W2-23":{"totals":{"billed":5649.49,"paid":3188.48,"auditSvgs":1492.
         "auditSvgs": 35,
         "dupSvgs": 0,
         "desc": "PER GOOGLE MAPS & BOL GOING TO A BUSINESS NOT RESD DELVY"
+      }
+    ]
+  }
+,
+  "W6-8": {
+    "totals": {
+      "billed": 4670.5,
+      "paid": 2535.39,
+      "auditSvgs": 1923.15,
+      "dupSvgs": 211.96,
+      "totalSvgs": 2135.11,
+      "savingsRate": 45.7,
+      "bills": 6
+    },
+    "carriers": [
+      {
+        "id": "CD585",
+        "billed": 3007.26,
+        "paid": 1221.35,
+        "auditSvgs": 1785.91,
+        "dupSvgs": 0
+      },
+      {
+        "id": "SAIA",
+        "billed": 1451.28,
+        "paid": 1314.04,
+        "auditSvgs": 137.24,
+        "dupSvgs": 0
+      },
+      {
+        "id": "RLCA",
+        "billed": 167.05,
+        "paid": 0,
+        "auditSvgs": 0,
+        "dupSvgs": 167.05
+      },
+      {
+        "id": "FEC*",
+        "billed": 44.91,
+        "paid": 0,
+        "auditSvgs": 0,
+        "dupSvgs": 44.91
+      }
+    ],
+    "items": [
+      {
+        "carr": "CD585",
+        "pro": "A10291904",
+        "paid": 1221.35,
+        "billed": 3007.26,
+        "auditSvgs": 1785.91,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT S/B RATING AT 250.00 PER SKID FOR GUELPH"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "926078056",
+        "paid": 0,
+        "billed": 44.91,
+        "auditSvgs": 0,
+        "dupSvgs": 44.91,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "RLCA",
+        "pro": "I467533143",
+        "paid": 0,
+        "billed": 167.05,
+        "auditSvgs": 0,
+        "dupSvgs": 167.05,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10838512910",
+        "paid": 460.8,
+        "billed": 511.96,
+        "auditSvgs": 51.16,
+        "dupSvgs": 0,
+        "desc": "HIGH COST FEE IS RATED AFTER FSC"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10892685050",
+        "paid": 442.44,
+        "billed": 477.36,
+        "auditSvgs": 34.92,
+        "dupSvgs": 0,
+        "desc": "PER KRISTA T W/HANT OK TO PAY ADJUST THE FUEL"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10892685070",
+        "paid": 410.8,
+        "billed": 461.96,
+        "auditSvgs": 51.16,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT HIGH COST IS RATED AFTER FSC"
       }
     ]
   }
