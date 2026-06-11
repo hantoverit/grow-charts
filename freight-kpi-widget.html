@@ -82,7 +82,7 @@
 <div class="kpi-tooltip" id="kpi-tip"></div></div>
 <script>
 /* ═══ Date Control Module ═══ */
-var ALL_WEEKS=["2-23","3-2","3-9","3-16","3-23","3-30","4-6","4-13","4-20","4-27","5-4","5-11","5-18","5-25","6-1","6-8"];
+var ALL_WEEKS=["2-23","3-2","3-9","3-16","3-23","3-30","4-6","4-13","4-20","4-27","5-4","5-11","5-18","5-25","6-1","6-8","6-15"];
 /* -- Derived calendar: auto-builds month/quarter/year buckets from ALL_WEEKS. Supports unlimited months & years. Parses legacy "M-D"/"WM-D" (year inferred by month-rollover from YEAR_ANCHOR) and year-aware "YY-M-D"/"WYY-M-D" (year read from key). On single-year data the month keys are bare abbreviations ("Feb"), identical to the prior hardcoded structures. -- */
 var YEAR_ANCHOR=2026;
 var MONTH_ABBR=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -98,7 +98,7 @@ function buildCalendar(allWeeks,yearAnchor){
   var years=Object.keys(yset).map(Number).sort(function(a,b){return a-b;}),multiYear=years.length>1;
   function _mk(k){var a=MONTH_ABBR[meta[k].m-1];return multiYear?a+" '"+String(meta[k].y).slice(-2):a;}
   function _qk(k){var q=Math.floor((meta[k].m-1)/3)+1;return multiYear?"Q"+q+" '"+String(meta[k].y).slice(-2):"Q"+q;}
-  var MONTHS={,Jun:['6-8']},MONTH_KEYS=[],QUARTERS={},QUARTER_KEYS=[],YEARS={},YEAR_KEYS=[];
+  var MONTHS={,Jun:['6-8','6-15']},MONTH_KEYS=[],QUARTERS={},QUARTER_KEYS=[],YEARS={},YEAR_KEYS=[];
   order.forEach(function(k){
     var a=_mk(k);if(!MONTHS[a]){MONTHS[a]=[];MONTH_KEYS.push(a);}MONTHS[a].push(k);
     var b=_qk(k);if(!QUARTERS[b]){QUARTERS[b]=[];QUARTER_KEYS.push(b);}QUARTERS[b].push(k);
@@ -143,7 +143,8 @@ var WD={
   "5-25":{s:233,p:60628.0,w:249163},
   "6-1":{s:413,p:154068.88,w:604314}
 ,
-  "6-8":{s:277,p:120061.02,w:443553}};
+  "6-8":{s:277,p:120061.02,w:443553},
+  "6-15":{s:442,p:194053.56,w:684626}};
 var metrics=[{key:"s",label:"Total Shipments",format:"integer",unit:null},{key:"avgPaid",label:"Avg Paid / Shipment",format:"currency",unit:null},{key:"p",label:"Total Freight Paid",format:"currency",unit:null},{key:"avgWt",label:"Avg Weight / Shipment",format:"integer",unit:"lbs"},{key:"w",label:"Total Weight",format:"integer",unit:"lbs"}];
 var dark=true;
 function agg(wks){var r={s:0,p:0,w:0};wks.forEach(function(k){var d=WD[k];if(d){r.s+=d.s;r.p+=d.p;r.w+=d.w;}});r.avgPaid=r.s?r.p/r.s:0;r.avgWt=r.s?r.w/r.s:0;return r;}
