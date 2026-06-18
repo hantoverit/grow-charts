@@ -109,7 +109,7 @@
 <div class="tm-tip" id="tm-tip"></div></div>
 <script>
 /* ═══ Date Control Module ═══ */
-var ALL_WEEKS=["2-23","3-2","3-9","3-16","3-23","3-30","4-6","4-13","4-20","4-27","5-4","5-11","5-18","5-25","6-1","6-8","6-15"];
+var ALL_WEEKS=["2-23","3-2","3-9","3-16","3-23","3-30","4-6","4-13","4-20","4-27","5-4","5-11","5-18","5-25","6-1","6-8","6-15","6-22"];
 /* -- Derived calendar: auto-builds month/quarter/year buckets from ALL_WEEKS. Supports unlimited months & years. Parses legacy "M-D"/"WM-D" (year inferred by month-rollover from YEAR_ANCHOR) and year-aware "YY-M-D"/"WYY-M-D" (year read from key). On single-year data the month keys are bare abbreviations ("Feb"), identical to the prior hardcoded structures. -- */
 var YEAR_ANCHOR=2026;
 var MONTH_ABBR=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -125,7 +125,7 @@ function buildCalendar(allWeeks,yearAnchor){
   var years=Object.keys(yset).map(Number).sort(function(a,b){return a-b;}),multiYear=years.length>1;
   function _mk(k){var a=MONTH_ABBR[meta[k].m-1];return multiYear?a+" '"+String(meta[k].y).slice(-2):a;}
   function _qk(k){var q=Math.floor((meta[k].m-1)/3)+1;return multiYear?"Q"+q+" '"+String(meta[k].y).slice(-2):"Q"+q;}
-  var MONTHS={,Jun:['6-8','6-15']},MONTH_KEYS=[],QUARTERS={},QUARTER_KEYS=[],YEARS={},YEAR_KEYS=[];
+  var MONTHS={,Jun:['6-8','6-15','6-22']},MONTH_KEYS=[],QUARTERS={},QUARTER_KEYS=[],YEARS={},YEAR_KEYS=[];
   order.forEach(function(k){
     var a=_mk(k);if(!MONTHS[a]){MONTHS[a]=[];MONTH_KEYS.push(a);}MONTHS[a].push(k);
     var b=_qk(k);if(!QUARTERS[b]){QUARTERS[b]=[];QUARTER_KEYS.push(b);}QUARTERS[b].push(k);
@@ -179,7 +179,8 @@ const RAW={
   "5-25":{AM:492.04,AT:9079.6,AV:5614.35,CA:402.63,CO:1696.03,DC:5547.3,FM:437.28,FR:3686.14,HB:1201.63,HZ:3680.91,KC:25952.55,NW:105.9,WC:2731.64},
   "6-1":{AM:383.93,AT:21603.9,AV:34284.36,CA:3615.31,CO:3771.74,DC:5656.59,FM:919.16,FR:7769.38,HB:3037.76,HZ:6844,KC:55903.26,NW:4139.89,WC:6139.6},
   "6-8":{AM:4871.61,AT:13317.02,AV:16622.12,CA:2129.67,CO:3421.9,DC:2770.55,FM:137.9,FR:4641.1,HB:3662.78,HZ:7031.53,KC:57348.12,NW:318.91,WC:3787.81},
-  "6-15":{AM:2939.16,AT:19087.52,AV:34042.87,CA:3190.19,CO:4996.47,DC:4875.29,FM:3101.03,FR:13115.76,HB:2468.93,HZ:11853.61,KC:82715.03,NW:3251.63,WC:8416.07}};
+  "6-15":{AM:2939.16,AT:19087.52,AV:34042.87,CA:3190.19,CO:4996.47,DC:4875.29,FM:3101.03,FR:13115.76,HB:2468.93,HZ:11853.61,KC:82715.03,NW:3251.63,WC:8416.07},
+  "6-22":{AM:873.92,AT:12422.31,AV:28707.7,CA:1171.53,CO:5970.59,DC:7499.81,FM:182.7,FR:7010.84,HB:4046.21,HZ:6706.43,KC:61867.45,NW:3100.99,WC:4724.68}};
 const LABELS={AM:"Amelia",AT:"Atlanta",AV:"Avon",CA:"Canada",CO:"Colorado",DC:"DC Metro",FM:"Farmer's Mkt",FR:"Franklin",HB:"Harrisburg",HZ:"Hazleton",KC:"Kansas City",NW:"Northwest",SP:"Springfield",WC:"West Coast"};
 // Fixed color index per account — assigned by best-ever Total Paid rank across all weeks
 const ACCT_COLORS={KC:0,AV:1,AT:2,FR:3,HZ:4,CA:5,HB:6,WC:7,DC:8,CO:9,NW:10,AM:11,FM:12,SP:13};

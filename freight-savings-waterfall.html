@@ -137,7 +137,7 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--
 </div>
 <script>
 /* ═══ Date Control Module ═══ */
-var ALL_WEEKS=["W2-23","W3-2","W3-9","W3-16","W3-23","W3-30","W4-6","W4-13","W4-20","W4-27","W5-4","W5-11","W5-18","W5-25","W6-1","W6-8","W6-15"];
+var ALL_WEEKS=["W2-23","W3-2","W3-9","W3-16","W3-23","W3-30","W4-6","W4-13","W4-20","W4-27","W5-4","W5-11","W5-18","W5-25","W6-1","W6-8","W6-15","W6-22"];
 /* -- Derived calendar: auto-builds month/quarter/year buckets from ALL_WEEKS. Supports unlimited months & years. Parses legacy "M-D"/"WM-D" (year inferred by month-rollover from YEAR_ANCHOR) and year-aware "YY-M-D"/"WYY-M-D" (year read from key). On single-year data the month keys are bare abbreviations ("Feb"), identical to the prior hardcoded structures. -- */
 var YEAR_ANCHOR=2026;
 var MONTH_ABBR=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -153,7 +153,7 @@ function buildCalendar(allWeeks,yearAnchor){
   var years=Object.keys(yset).map(Number).sort(function(a,b){return a-b;}),multiYear=years.length>1;
   function _mk(k){var a=MONTH_ABBR[meta[k].m-1];return multiYear?a+" '"+String(meta[k].y).slice(-2):a;}
   function _qk(k){var q=Math.floor((meta[k].m-1)/3)+1;return multiYear?"Q"+q+" '"+String(meta[k].y).slice(-2):"Q"+q;}
-  var MONTHS={,Jun:['W6-8','W6-15']},MONTH_KEYS=[],QUARTERS={},QUARTER_KEYS=[],YEARS={},YEAR_KEYS=[];
+  var MONTHS={,Jun:['W6-8','W6-15','W6-22']},MONTH_KEYS=[],QUARTERS={},QUARTER_KEYS=[],YEARS={},YEAR_KEYS=[];
   order.forEach(function(k){
     var a=_mk(k);if(!MONTHS[a]){MONTHS[a]=[];MONTH_KEYS.push(a);}MONTHS[a].push(k);
     var b=_qk(k);if(!QUARTERS[b]){QUARTERS[b]=[];QUARTER_KEYS.push(b);}QUARTERS[b].push(k);
@@ -1354,6 +1354,174 @@ const DATA={"W2-23":{"totals":{"billed":5649.49,"paid":3188.48,"auditSvgs":1492.
         "auditSvgs": 50.71,
         "dupSvgs": 0,
         "desc": "PER PRICING AGREEMENT FSC IS ADDED B4 HIGH COST FEE"
+      }
+    ]
+  }
+,
+  "W6-22": {
+    "totals": {
+      "billed": 2897.02,
+      "paid": 2025.94,
+      "auditSvgs": 629.97,
+      "dupSvgs": 241.11,
+      "totalSvgs": 871.08,
+      "savingsRate": 30.1,
+      "bills": 13
+    },
+    "carriers": [
+      {
+        "id": "SAIA",
+        "billed": 1604.0,
+        "paid": 1446.03,
+        "auditSvgs": 157.97,
+        "dupSvgs": 0
+      },
+      {
+        "id": "RLCA",
+        "billed": 454.94,
+        "paid": 369.94,
+        "auditSvgs": 85,
+        "dupSvgs": 0
+      },
+      {
+        "id": "DOHR",
+        "billed": 409.97,
+        "paid": 209.97,
+        "auditSvgs": 200,
+        "dupSvgs": 0
+      },
+      {
+        "id": "FEC*",
+        "billed": 241.11,
+        "paid": 0,
+        "auditSvgs": 0,
+        "dupSvgs": 241.11
+      },
+      {
+        "id": "FXNL",
+        "billed": 187,
+        "paid": 0,
+        "auditSvgs": 187,
+        "dupSvgs": 0
+      }
+    ],
+    "items": [
+      {
+        "carr": "DOHR",
+        "pro": "88520682",
+        "paid": 95.6,
+        "billed": 195.6,
+        "auditSvgs": 100,
+        "dupSvgs": 0,
+        "desc": "PER KRISTA T W/HANT PER KENS EMAIL DISTRIB FEE HAS BEEN REMOVED"
+      },
+      {
+        "carr": "DOHR",
+        "pro": "89153917",
+        "paid": 114.37,
+        "billed": 214.37,
+        "auditSvgs": 100,
+        "dupSvgs": 0,
+        "desc": "PER KRISTA T W/HANT PER KENS EMAIL REMOVIN DISTRIBUTION FEE"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "916808706",
+        "paid": 0,
+        "billed": 43.04,
+        "auditSvgs": 0,
+        "dupSvgs": 43.04,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "925128928",
+        "paid": 0,
+        "billed": 44.91,
+        "auditSvgs": 0,
+        "dupSvgs": 44.91,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "927909944",
+        "paid": 0,
+        "billed": 108.07,
+        "auditSvgs": 0,
+        "dupSvgs": 108.07,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "927923766",
+        "paid": 0,
+        "billed": 45.09,
+        "auditSvgs": 0,
+        "dupSvgs": 45.09,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FXNL",
+        "pro": "302466936582",
+        "paid": 0,
+        "billed": 187,
+        "auditSvgs": 187,
+        "dupSvgs": 0,
+        "desc": "JOSHUA DEPPERSCHMIDT W/FEDEX REMOVING REDLVY CHG NOT VALID"
+      },
+      {
+        "carr": "RLCA",
+        "pro": "I172977192",
+        "paid": 126.18,
+        "billed": 186.18,
+        "auditSvgs": 60,
+        "dupSvgs": 0,
+        "desc": "PER GOOGLE MAPS THIS IS A BUSINESS THAT HAS A DOCK"
+      },
+      {
+        "carr": "RLCA",
+        "pro": "I203816223",
+        "paid": 243.76,
+        "billed": 268.76,
+        "auditSvgs": 25,
+        "dupSvgs": 0,
+        "desc": "PER GOOGLE MAPS THIS IS A BUSINESS LTD ACCE NOT RESD"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10838515300",
+        "paid": 311.26,
+        "billed": 337.44,
+        "auditSvgs": 26.18,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT FSC IS BEFOR THE REMOT CHG"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10892685170",
+        "paid": 409.9,
+        "billed": 460.16,
+        "auditSvgs": 50.26,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT FSC IS RATED BEFORE HIGH COST FEE"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10892685180",
+        "paid": 418.22,
+        "billed": 468.48,
+        "auditSvgs": 50.26,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT FSC IS ADDED BEFORE HIGH COST FEE"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10892685230",
+        "paid": 306.65,
+        "billed": 337.92,
+        "auditSvgs": 31.27,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT FSC IS ADDED BEFORE REMOTE CHG IS"
       }
     ]
   }
