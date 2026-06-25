@@ -137,7 +137,7 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--
 </div>
 <script>
 /* ═══ Date Control Module ═══ */
-var ALL_WEEKS=["W2-23","W3-2","W3-9","W3-16","W3-23","W3-30","W4-6","W4-13","W4-20","W4-27","W5-4","W5-11","W5-18","W5-25","W6-1","W6-8","W6-15","W6-22"];
+var ALL_WEEKS=["W2-23","W3-2","W3-9","W3-16","W3-23","W3-30","W4-6","W4-13","W4-20","W4-27","W5-4","W5-11","W5-18","W5-25","W6-1","W6-8","W6-15","W6-22","W6-29"];
 /* -- Derived calendar: auto-builds month/quarter/year buckets from ALL_WEEKS. Supports unlimited months & years. Parses legacy "M-D"/"WM-D" (year inferred by month-rollover from YEAR_ANCHOR) and year-aware "YY-M-D"/"WYY-M-D" (year read from key). On single-year data the month keys are bare abbreviations ("Feb"), identical to the prior hardcoded structures. -- */
 var YEAR_ANCHOR=2026;
 var MONTH_ABBR=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -153,7 +153,7 @@ function buildCalendar(allWeeks,yearAnchor){
   var years=Object.keys(yset).map(Number).sort(function(a,b){return a-b;}),multiYear=years.length>1;
   function _mk(k){var a=MONTH_ABBR[meta[k].m-1];return multiYear?a+" '"+String(meta[k].y).slice(-2):a;}
   function _qk(k){var q=Math.floor((meta[k].m-1)/3)+1;return multiYear?"Q"+q+" '"+String(meta[k].y).slice(-2):"Q"+q;}
-  var MONTHS={,Jun:['W6-8','W6-15','W6-22']},MONTH_KEYS=[],QUARTERS={},QUARTER_KEYS=[],YEARS={},YEAR_KEYS=[];
+  var MONTHS={,Jun:['W6-8','W6-15','W6-22','W6-29']},MONTH_KEYS=[],QUARTERS={},QUARTER_KEYS=[],YEARS={},YEAR_KEYS=[];
   order.forEach(function(k){
     var a=_mk(k);if(!MONTHS[a]){MONTHS[a]=[];MONTH_KEYS.push(a);}MONTHS[a].push(k);
     var b=_qk(k);if(!QUARTERS[b]){QUARTERS[b]=[];QUARTER_KEYS.push(b);}QUARTERS[b].push(k);
@@ -1522,6 +1522,140 @@ const DATA={"W2-23":{"totals":{"billed":5649.49,"paid":3188.48,"auditSvgs":1492.
         "auditSvgs": 31.27,
         "dupSvgs": 0,
         "desc": "PER PRICING AGREEMENT FSC IS ADDED BEFORE REMOTE CHG IS"
+      }
+    ]
+  }
+,
+  "W6-29": {
+    "totals": {
+      "billed": 5948.71,
+      "paid": 3284.12,
+      "auditSvgs": 2402.18,
+      "dupSvgs": 262.41,
+      "totalSvgs": 2664.59,
+      "savingsRate": 44.8,
+      "bills": 10
+    },
+    "carriers": [
+      {
+        "id": "SAIA",
+        "billed": 3420.92,
+        "paid": 1919.37,
+        "auditSvgs": 1501.55,
+        "dupSvgs": 0
+      },
+      {
+        "id": "CNWY",
+        "billed": 1937.71,
+        "paid": 1097.08,
+        "auditSvgs": 840.63,
+        "dupSvgs": 0
+      },
+      {
+        "id": "RLCA",
+        "billed": 327.67,
+        "paid": 267.67,
+        "auditSvgs": 60,
+        "dupSvgs": 0
+      },
+      {
+        "id": "FEC*",
+        "billed": 262.41,
+        "paid": 0,
+        "auditSvgs": 0,
+        "dupSvgs": 262.41
+      }
+    ],
+    "items": [
+      {
+        "carr": "CNWY",
+        "pro": "220093193",
+        "paid": 1097.08,
+        "billed": 1937.71,
+        "auditSvgs": 840.63,
+        "dupSvgs": 0,
+        "desc": "BILLING ERROR BILL TO IS HANTOVER C/O DATA FREIGHT"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "926078056",
+        "paid": 0,
+        "billed": 44.91,
+        "auditSvgs": 0,
+        "dupSvgs": 44.91,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "928869824",
+        "paid": 0,
+        "billed": 172.59,
+        "auditSvgs": 0,
+        "dupSvgs": 172.59,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "928881541",
+        "paid": 0,
+        "billed": 44.91,
+        "auditSvgs": 0,
+        "dupSvgs": 44.91,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "RLCA",
+        "pro": "I203816367",
+        "paid": 267.67,
+        "billed": 327.67,
+        "auditSvgs": 60,
+        "dupSvgs": 0,
+        "desc": "OBL DOES NOT STATE INSIDE DLVY REQUIRED DRIVER DIDNT MARK INSD"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10838512941",
+        "paid": 0,
+        "billed": 1318.3,
+        "auditSvgs": 1318.3,
+        "dupSvgs": 0,
+        "desc": "SENT BACK FOR ORIG BOL AND LOA FROM SAIA"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10892685270",
+        "paid": 478.55,
+        "billed": 527.46,
+        "auditSvgs": 48.91,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT FSC CHG IS ADDED B4 HIGH COST FEE"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10892685340",
+        "paid": 486.02,
+        "billed": 534.93,
+        "auditSvgs": 48.91,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT FSC CHG IS APPLIED B4 HIGH COST"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10892685350",
+        "paid": 482.93,
+        "billed": 531.84,
+        "auditSvgs": 48.91,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT FSC IS APPLIED B4 HIGH COST FEE"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10892685370",
+        "paid": 471.87,
+        "billed": 508.39,
+        "auditSvgs": 36.52,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT FSC IS ADDED B4 HIGH COST CHG"
       }
     ]
   }
