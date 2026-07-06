@@ -137,7 +137,7 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--
 </div>
 <script>
 /* ═══ Date Control Module ═══ */
-var ALL_WEEKS=["W2-23","W3-2","W3-9","W3-16","W3-23","W3-30","W4-6","W4-13","W4-20","W4-27","W5-4","W5-11","W5-18","W5-25","W6-1","W6-8","W6-15","W6-22","W6-29"];
+var ALL_WEEKS=["W2-23","W3-2","W3-9","W3-16","W3-23","W3-30","W4-6","W4-13","W4-20","W4-27","W5-4","W5-11","W5-18","W5-25","W6-1","W6-8","W6-15","W6-22","W6-29","W7-6"];
 /* -- Derived calendar: auto-builds month/quarter/year buckets from ALL_WEEKS. Supports unlimited months & years. Parses legacy "M-D"/"WM-D" (year inferred by month-rollover from YEAR_ANCHOR) and year-aware "YY-M-D"/"WYY-M-D" (year read from key). On single-year data the month keys are bare abbreviations ("Feb"), identical to the prior hardcoded structures. -- */
 var YEAR_ANCHOR=2026;
 var MONTH_ABBR=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -153,7 +153,7 @@ function buildCalendar(allWeeks,yearAnchor){
   var years=Object.keys(yset).map(Number).sort(function(a,b){return a-b;}),multiYear=years.length>1;
   function _mk(k){var a=MONTH_ABBR[meta[k].m-1];return multiYear?a+" '"+String(meta[k].y).slice(-2):a;}
   function _qk(k){var q=Math.floor((meta[k].m-1)/3)+1;return multiYear?"Q"+q+" '"+String(meta[k].y).slice(-2):"Q"+q;}
-  var MONTHS={,Jun:['W6-8','W6-15','W6-22','W6-29']},MONTH_KEYS=[],QUARTERS={},QUARTER_KEYS=[],YEARS={},YEAR_KEYS=[];
+  var MONTHS={,Jun:['W6-8','W6-15','W6-22','W6-29'],Jul:['W7-6']},MONTH_KEYS=[],QUARTERS={},QUARTER_KEYS=[],YEARS={},YEAR_KEYS=[];
   order.forEach(function(k){
     var a=_mk(k);if(!MONTHS[a]){MONTHS[a]=[];MONTH_KEYS.push(a);}MONTHS[a].push(k);
     var b=_qk(k);if(!QUARTERS[b]){QUARTERS[b]=[];QUARTER_KEYS.push(b);}QUARTERS[b].push(k);
@@ -1656,6 +1656,156 @@ const DATA={"W2-23":{"totals":{"billed":5649.49,"paid":3188.48,"auditSvgs":1492.
         "auditSvgs": 36.52,
         "dupSvgs": 0,
         "desc": "PER PRICING AGREEMENT FSC IS ADDED B4 HIGH COST CHG"
+      }
+    ]
+  }
+,
+  "W7-6": {
+    "totals": {
+      "billed": 7831.74,
+      "paid": 4348.88,
+      "auditSvgs": 3392.78,
+      "dupSvgs": 90.08,
+      "totalSvgs": 3482.86,
+      "savingsRate": 44.5,
+      "bills": 11
+    },
+    "carriers": [
+      {
+        "id": "CD585",
+        "billed": 5452.79,
+        "paid": 2384.05,
+        "auditSvgs": 3068.74,
+        "dupSvgs": 0
+      },
+      {
+        "id": "SAIA",
+        "billed": 1269.46,
+        "paid": 1165.42,
+        "auditSvgs": 104.04,
+        "dupSvgs": 0
+      },
+      {
+        "id": "RLCA",
+        "billed": 718.86,
+        "paid": 538.86,
+        "auditSvgs": 180,
+        "dupSvgs": 0
+      },
+      {
+        "id": "FXNL",
+        "billed": 300.55,
+        "paid": 260.55,
+        "auditSvgs": 40,
+        "dupSvgs": 0
+      },
+      {
+        "id": "FEC*",
+        "billed": 90.08,
+        "paid": 0,
+        "auditSvgs": 0,
+        "dupSvgs": 90.08
+      }
+    ],
+    "items": [
+      {
+        "carr": "CD585",
+        "pro": "A10345287",
+        "paid": 622.2,
+        "billed": 2411.95,
+        "auditSvgs": 1789.75,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT 641 POINTS TO GUELPH ON 230.00 PER SKID"
+      },
+      {
+        "carr": "CD585",
+        "pro": "A10362880",
+        "paid": 1761.85,
+        "billed": 3040.84,
+        "auditSvgs": 1278.99,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT PLT RATE FOR GUELP IS 230.00 PER PLT"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "927052785",
+        "paid": 0,
+        "billed": 45.17,
+        "auditSvgs": 0,
+        "dupSvgs": 45.17,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "929910474",
+        "paid": 0,
+        "billed": 44.91,
+        "auditSvgs": 0,
+        "dupSvgs": 44.91,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FXNL",
+        "pro": "9164717936",
+        "paid": 260.55,
+        "billed": 300.55,
+        "auditSvgs": 40,
+        "dupSvgs": 0,
+        "desc": "PER BOL ACT WT 269 PER WEIGHT CERT WT 285 UNDER 50 FEE N/A"
+      },
+      {
+        "carr": "RLCA",
+        "pro": "I203809581",
+        "paid": 147.05,
+        "billed": 207.05,
+        "auditSvgs": 60,
+        "dupSvgs": 0,
+        "desc": "PER GOOGLE MAPS GOING TO A BUSINESS NOT A RESD DLVY"
+      },
+      {
+        "carr": "RLCA",
+        "pro": "I467550792",
+        "paid": 234.02,
+        "billed": 294.02,
+        "auditSvgs": 60,
+        "dupSvgs": 0,
+        "desc": "PER GOOGLE MAPS GOING TO A BUSINESS NOT A RESD DLVY"
+      },
+      {
+        "carr": "RLCA",
+        "pro": "I467550819",
+        "paid": 157.79,
+        "billed": 217.79,
+        "auditSvgs": 60,
+        "dupSvgs": 0,
+        "desc": "PER GOOGLE MAPS THIS IS FRITO LAY NOT A RESIDENTIAL DLVY"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10892685400",
+        "paid": 491.37,
+        "billed": 538.94,
+        "auditSvgs": 47.57,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT HIGH COST IS ADDED AFTER FSC"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10892685470",
+        "paid": 390.94,
+        "billed": 422.1,
+        "auditSvgs": 31.16,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT HIGH COST IS RATED AFTER FSC NOT BEFORE"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10901740300",
+        "paid": 283.11,
+        "billed": 308.42,
+        "auditSvgs": 25.31,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT FSC IS ADDED B4 REMOTE ACCESS CHG"
       }
     ]
   }
