@@ -313,8 +313,13 @@ def extract_all(xlsx_path, week_label):
         mode = ws.cell(r, 3).value or ''
         carr = ws.cell(r, 2).value or ''
         paid = ws.cell(r, 10).value or 0
-        if carr.startswith(('FX', 'FE', 'FEC', 'UP', 'UPS')):
+        if not carr:
             continue
+        # S220 FIX: the old prefix guard (FX/FE/FEC/UP/UPS) wrongly excluded
+        # FedEx Freight (FXFE/FXNL) and TForce (UPGF) LTL bills — genuine LTL
+        # freight — undercounting ltl_freight ~30-90 bills/week since W3-23.
+        # Parcel rows in Bills carry mode 'SML PKG', never 'LTL'/'TL', so the
+        # mode filter below is the complete and correct exclusion.
         if mode == 'LTL':
             bubble_data['ltl_freight']['count'] += 1
             bubble_data['ltl_freight']['spend'] += paid
@@ -386,44 +391,14 @@ def inject_months(html, week_label, has_prefix):
     MONTH_KEYS is the ordered list of month names.
     Both are used by the date control module for monthly aggregation.
     """
-    prefix = 'W' if has_prefix else ''
-    wk_str = f'{prefix}{week_label}'
-    month_num = int(week_label.split('-')[0])
-    month_name = MONTH_NAMES.get(month_num)
-    if not month_name:
-        return html
-
-    # ── Update MONTHS object ──
-    months_m = re.search(r'(var\s+MONTHS\s*=\s*\{)(.*?)(\})', html)
-    if not months_m:
-        return html
-
-    months_body = months_m.group(2)
-    if wk_str in months_body:
-        return html  # Already present
-
-    quote = '"' if '"' in months_body else "'"
-
-    # Check if this month already exists in MONTHS
-    month_pat = re.search(rf'{month_name}:\[([^\]]*)\]', months_body)
-    if month_pat:
-        # Add week to existing month array
-        old_array = month_pat.group(0)
-        new_array = old_array.replace(']', f',{quote}{wk_str}{quote}]')
-        months_body = months_body.replace(old_array, new_array)
-    else:
-        # New month — append to MONTHS object
-        months_body += f',{month_name}:[{quote}{wk_str}{quote}]'
-
-    html = html[:months_m.start(1)] + months_m.group(1) + months_body + months_m.group(3) + html[months_m.end():]
-
-    # ── Update MONTH_KEYS array if new month ──
-    if not month_pat:
-        keys_m = re.search(r'(var\s+MONTH_KEYS\s*=\s*\[)(.*?)(\])', html)
-        if keys_m and month_name not in keys_m.group(2):
-            new_keys = keys_m.group(1) + keys_m.group(2) + f',"{month_name}"' + keys_m.group(3)
-            html = html[:keys_m.start()] + new_keys + html[keys_m.end():]
-
+    # ── CONTRACT NO-OP (post-S145 / canonical ref §12.4) ──────────────────
+    # The calendar (MONTHS / MONTH_KEYS / QUARTERS / YEARS) is DERIVED AT
+    # RUNTIME by buildCalendar(ALL_WEEKS, ...) inside every widget. The
+    # injector must write ONLY the ALL_WEEKS array and the data structures.
+    # Writing MONTHS here is what corrupted the whole suite in June 2026
+    # (the old regex matched buildCalendar's internal empty literal and
+    # produced `var MONTHS={,Jun:[...]}` — a fatal SyntaxError in all 8).
+    # Kept as a callable no-op so call sites need no change.
     return html
 
 
@@ -619,6 +594,11 @@ def inject_waterfall(html, week_label, wf_data):
     return html
 
 
+def _fmt_val(v):
+    """File-style numeric literal: plain 0, else fixed 2dp."""
+    return '0' if not v else f'{v:.2f}'
+
+
 def inject_slope(html, week_label, slope_data):
     """Inject slope surcharge data into CATS array entries."""
     wk_key = f'W{week_label}'
@@ -630,13 +610,18 @@ def inject_slope(html, week_label, slope_data):
         fedex_pattern = rf'(id:"{re.escape(cat_id)}"[^}}]*?fedex:\{{[^}}]*)'
         fedex_m = re.search(fedex_pattern, html)
         if fedex_m and f'"{wk_key}"' not in fedex_m.group(1):
-            html = html[:fedex_m.end(1)] + f',"{wk_key}":{vals["fedex"]}' + html[fedex_m.end(1):]
+            html = html[:fedex_m.end(1)] + f',"{wk_key}":{_fmt_val(vals["fedex"])}' + html[fedex_m.end(1):]
 
-        # Add new week to ups object (re-search since html changed)
-        ups_pattern = rf'(id:"{re.escape(cat_id)}"[^}}]*?ups:\{{[^}}]*)'
+        # Add new week to ups object (re-search since html changed).
+        # The pattern must CROSS the fedex object explicitly — a bare
+        # `[^}]*?ups:` can never pass fedex's closing brace, which is the
+        # bug that silently dropped every UPS value from W3-23 onward.
+        # The presence guard must scope to the ups SUB-body: group(1) also
+        # contains the fedex body, where this week's key was just inserted.
+        ups_pattern = rf'(id:"{re.escape(cat_id)}"[^}}]*?fedex:\{{[^}}]*\}},ups:\{{[^}}]*)'
         ups_m = re.search(ups_pattern, html)
-        if ups_m and f'"{wk_key}"' not in ups_m.group(1):
-            html = html[:ups_m.end(1)] + f',"{wk_key}":{vals["ups"]}' + html[ups_m.end(1):]
+        if ups_m and f'"{wk_key}"' not in ups_m.group(1).split(',ups:{', 1)[1]:
+            html = html[:ups_m.end(1)] + f',"{wk_key}":{_fmt_val(vals["ups"])}' + html[ups_m.end(1):]
 
     # For categories in CATS that have no data this week, add 0 values
     existing_cats = re.findall(r'id:"([^"]+)"', html)
@@ -646,9 +631,9 @@ def inject_slope(html, week_label, slope_data):
             fedex_m = re.search(fedex_pattern, html)
             if fedex_m and f'"{wk_key}"' not in fedex_m.group(1):
                 html = html[:fedex_m.end(1)] + f',"{wk_key}":0' + html[fedex_m.end(1):]
-            ups_pattern = rf'(id:"{re.escape(cat_id)}"[^}}]*?ups:\{{[^}}]*)'
+            ups_pattern = rf'(id:"{re.escape(cat_id)}"[^}}]*?fedex:\{{[^}}]*\}},ups:\{{[^}}]*)'
             ups_m = re.search(ups_pattern, html)
-            if ups_m and f'"{wk_key}"' not in ups_m.group(1):
+            if ups_m and f'"{wk_key}"' not in ups_m.group(1).split(',ups:{', 1)[1]:
                 html = html[:ups_m.end(1)] + f',"{wk_key}":0' + html[ups_m.end(1):]
 
     return html
@@ -707,45 +692,113 @@ def inject_bubble(html, week_label, bubble_data):
 # VALIDATION
 # ═══════════════════════════════════════════════════════════
 
+def _aware_balance(script):
+    """String/comment/regex-literal-aware {}/[] balance check (fallback when
+    node is unavailable). Returns (opens, closes) over CODE characters only."""
+    opens = closes = 0
+    i, n = 0, len(script)
+    in_s = None; lc = bc = rx = False; prev = ''
+    while i < n:
+        c = script[i]
+        if lc:
+            lc = c != '\n'
+        elif bc:
+            if c == '*' and i + 1 < n and script[i+1] == '/':
+                i += 1; bc = False
+        elif in_s:
+            if c == '\\' and i + 1 < n: i += 1
+            elif c == in_s: in_s = None
+        elif rx:
+            if c == '\\' and i + 1 < n: i += 1
+            elif c == '[':
+                i += 1
+                while i < n and script[i] != ']':
+                    if script[i] == '\\': i += 1
+                    i += 1
+            elif c == '/': rx = False
+        else:
+            if c == '/' and i + 1 < n and script[i+1] == '/': lc = True
+            elif c == '/' and i + 1 < n and script[i+1] == '*': bc = True
+            elif c in '"\'`': in_s = c
+            elif c == '/':
+                if prev in '(,=:[!&|?{};+-*%<>' or prev == '': rx = True
+                else: prev = c
+            else:
+                if c in '{[': opens += 1
+                elif c in '}]': closes += 1
+                if not c.isspace(): prev = c
+        i += 1
+    return opens, closes
+
+
+def _syntax_gate(html, filename):
+    """Extract the widget's main <script> and syntax-check it.
+    Primary: `node --check` (authoritative). Fallback: aware balance count.
+    Returns list of issue strings (empty = clean)."""
+    import subprocess, tempfile, shutil, os
+    blocks = re.findall(r'<script[^>]*>(.*?)</script>', html, re.S)
+    if not blocks:
+        return ["no <script> block found"]
+    script = max(blocks, key=len)
+    node = shutil.which('node')
+    if node:
+        with tempfile.NamedTemporaryFile('w', suffix='.js', delete=False,
+                                          encoding='utf-8') as tf:
+            tf.write(script); tmp = tf.name
+        try:
+            r = subprocess.run([node, '--check', tmp],
+                               capture_output=True, text=True, timeout=30)
+            if r.returncode != 0:
+                first = (r.stderr or '').strip().splitlines()
+                return [f"node --check FAILED: {first[0] if first else 'unknown'}"]
+            return []
+        finally:
+            os.unlink(tmp)
+    # Fallback only (no node on PATH). Conservative: heavy template-literal
+    # interpolation can desync this heuristic and FALSELY report imbalance
+    # (fail-safe direction — it can block a good commit, never pass a bad one).
+    # node --check above is authoritative; the GitHub runner has node.
+    opens, closes = _aware_balance(script)
+    if opens != closes:
+        return [f"delimiter imbalance (aware fallback count — node unavailable, "
+                f"may be false positive on template-heavy code): {opens} vs {closes}"]
+    return []
+
+
 def validate_widget(html, filename, week_label):
-    """Run audit checks on a single widget after injection."""
+    """Audit a widget's HTML (in memory) after injection. Empty list = clean."""
     issues = []
     has_prefix = filename in W_PREFIX
-    prefix = 'W' if has_prefix else ''
-    wk_str = f'{prefix}{week_label}'
+    wk_str = f"{'W' if has_prefix else ''}{week_label}"
 
-    # Check ALL_WEEKS array exists and contains new week
+    # ALL_WEEKS presence + new week
     if 'ALL_WEEKS' not in html:
         issues.append("ALL_WEEKS array not found")
-    elif wk_str not in html:
-        issues.append(f"Week '{wk_str}' not found in ALL_WEEKS")
+    elif f'"{wk_str}"' not in html:
+        issues.append(f"Week '{wk_str}' not found")
 
-    # Check MONTHS object exists and contains the week
-    if 'var MONTHS=' not in html:
-        issues.append("MONTHS object not found")
-    elif wk_str not in html[html.find('var MONTHS='):html.find('var MONTHS=') + 500]:
-        issues.append(f"Week '{wk_str}' not found in MONTHS")
+    # Post-S145 calendar contract: derived at runtime, consumed via __CAL.
+    if 'function buildCalendar' not in html:
+        issues.append("buildCalendar not found (calendar contract)")
+    if '__CAL' not in html:
+        issues.append("__CAL not found (calendar contract)")
+    if html.count('var MONTHS=__CAL.MONTHS') != 1:
+        issues.append("calendar consumer line missing or duplicated")
+    # Legacy injectable declarations must NOT exist — their presence means
+    # something is writing the calendar again (the June 2026 failure mode).
+    if re.search(r'var\s+MONTHS\s*=\s*\{', html):
+        issues.append("legacy 'var MONTHS={' declaration present — forbidden")
+    if re.search(r'var\s+MONTH_KEYS\s*=\s*\[', html):
+        issues.append("legacy 'var MONTH_KEYS=[' declaration present — forbidden")
 
-    # Check MONTH_KEYS exists
-    if 'var MONTH_KEYS=' not in html:
-        issues.append("MONTH_KEYS not found")
-
-    # Check date control infrastructure
+    # Date control infrastructure
     if 'buildDateControl' not in html:
         issues.append("buildDateControl not found")
     if 'onDateChange' not in html:
         issues.append("onDateChange not found")
 
-    # Check braces are balanced in script section
-    script_start = html.find('<script>')
-    script_end = html.find('</script>')
-    if script_start >= 0 and script_end >= 0:
-        script = html[script_start + 8:script_end]
-        opens = script.count('{')
-        closes = script.count('}')
-        if opens != closes:
-            issues.append(f"Brace imbalance: {opens} opens vs {closes} closes")
-
+    # Real syntax gate (this is what would have caught June 8 pre-commit)
+    issues.extend(_syntax_gate(html, filename))
     return issues
 
 
@@ -778,7 +831,7 @@ def main():
     print(f"FREIGHT DASHBOARD UPDATE — W{week_label} ({month_name})")
     print(f"{'='*60}")
     print(f"  Source: {xls_path.name}")
-    print(f"  Week label: {week_label} → ALL_WEEKS + MONTHS.{month_name}")
+    print(f"  Week label: {week_label} → ALL_WEEKS (calendar derives at runtime)")
     print(f"  Widgets dir: {widgets_dir}")
 
     # Step 1: Convert XLS
@@ -813,6 +866,7 @@ def main():
     # Step 4: Inject into each widget
     print(f"\n[4/5] Injecting W{week_label} into all widgets...")
     results = {}
+    pending = {}
     for fname in WIDGET_FILES:
         fpath = widgets_dir / fname
         html = fpath.read_text()
@@ -846,16 +900,17 @@ def main():
             html = inject_bubble(html, week_label, data['bubble'])
 
         delta = len(html) - original_len
-        fpath.write_text(html)
+        pending[fname] = html
         results[fname] = 'OK' if delta > 0 else 'SKIP (already present)'
-        print(f"    ✅ {fname}: {'+' if delta > 0 else ''}{delta} bytes")
+        print(f"    ✅ {fname}: {'+' if delta > 0 else ''}{delta} bytes (staged)")
 
-    # Step 5: Validate
-    print(f"\n[5/5] Validating all widgets...")
+    # Step 5: Validate IN MEMORY — nothing is written unless every widget
+    # passes. A validation failure exits non-zero so the Action fails
+    # BEFORE the commit step, leaving the repo untouched.
+    print(f"\n[5/5] Validating all widgets (pre-write)...")
     all_clean = True
     for fname in WIDGET_FILES:
-        html = (widgets_dir / fname).read_text()
-        issues = validate_widget(html, fname, week_label)
+        issues = validate_widget(pending[fname], fname, week_label)
         if issues:
             all_clean = False
             print(f"    ❌ {fname}:")
@@ -863,6 +918,14 @@ def main():
                 print(f"       {i}")
         else:
             print(f"    ✅ {fname}")
+
+    if not all_clean:
+        print(f"\n  Validation FAILED — no files written. Fix the issue and re-run.")
+        sys.exit(1)
+
+    for fname in WIDGET_FILES:
+        (widgets_dir / fname).write_text(pending[fname])
+    print(f"  All {len(WIDGET_FILES)} widgets validated — files written.")
 
     # Summary
     print(f"\n{'='*60}")
