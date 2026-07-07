@@ -184,13 +184,13 @@ function buildCalendar(allWeeks,yearAnchor){
   var years=Object.keys(yset).map(Number).sort(function(a,b){return a-b;}),multiYear=years.length>1;
   function _mk(k){var a=MONTH_ABBR[meta[k].m-1];return multiYear?a+" '"+String(meta[k].y).slice(-2):a;}
   function _qk(k){var q=Math.floor((meta[k].m-1)/3)+1;return multiYear?"Q"+q+" '"+String(meta[k].y).slice(-2):"Q"+q;}
-  var MONTHS={,Jun:['6-8','6-15','6-22','6-29'],Jul:['7-6']},MONTH_KEYS=[],QUARTERS={},QUARTER_KEYS=[],YEARS={},YEAR_KEYS=[];
+  var cMo={},cMk=[],cQt={},cQk=[],cYr={},cYk=[];
   order.forEach(function(k){
-    var a=_mk(k);if(!MONTHS[a]){MONTHS[a]=[];MONTH_KEYS.push(a);}MONTHS[a].push(k);
-    var b=_qk(k);if(!QUARTERS[b]){QUARTERS[b]=[];QUARTER_KEYS.push(b);}QUARTERS[b].push(k);
-    var c=String(meta[k].y);if(!YEARS[c]){YEARS[c]=[];YEAR_KEYS.push(c);}YEARS[c].push(k);
+    var a=_mk(k);if(!cMo[a]){cMo[a]=[];cMk.push(a);}cMo[a].push(k);
+    var b=_qk(k);if(!cQt[b]){cQt[b]=[];cQk.push(b);}cQt[b].push(k);
+    var c=String(meta[k].y);if(!cYr[c]){cYr[c]=[];cYk.push(c);}cYr[c].push(k);
   });
-  return {meta:meta,years:years,multiYear:multiYear,MONTHS:MONTHS,MONTH_KEYS:MONTH_KEYS,QUARTERS:QUARTERS,QUARTER_KEYS:QUARTER_KEYS,YEARS:YEARS,YEAR_KEYS:YEAR_KEYS};
+  return {meta:meta,years:years,multiYear:multiYear,MONTHS:cMo,MONTH_KEYS:cMk,QUARTERS:cQt,QUARTER_KEYS:cQk,YEARS:cYr,YEAR_KEYS:cYk};
 }
 var __CAL=buildCalendar(ALL_WEEKS,YEAR_ANCHOR);
 var MONTHS=__CAL.MONTHS,MONTH_KEYS=__CAL.MONTH_KEYS;
