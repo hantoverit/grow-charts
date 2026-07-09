@@ -137,7 +137,7 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--
 </div>
 <script>
 /* ═══ Date Control Module ═══ */
-var ALL_WEEKS=["W2-23","W3-2","W3-9","W3-16","W3-23","W3-30","W4-6","W4-13","W4-20","W4-27","W5-4","W5-11","W5-18","W5-25","W6-1","W6-8","W6-15","W6-22","W6-29","W7-6"];
+var ALL_WEEKS=["W2-23","W3-2","W3-9","W3-16","W3-23","W3-30","W4-6","W4-13","W4-20","W4-27","W5-4","W5-11","W5-18","W5-25","W6-1","W6-8","W6-15","W6-22","W6-29","W7-6","W7-13"];
 /* -- Derived calendar: auto-builds month/quarter/year buckets from ALL_WEEKS. Supports unlimited months & years. Parses legacy "M-D"/"WM-D" (year inferred by month-rollover from YEAR_ANCHOR) and year-aware "YY-M-D"/"WYY-M-D" (year read from key). On single-year data the month keys are bare abbreviations ("Feb"), identical to the prior hardcoded structures. -- */
 var YEAR_ANCHOR=2026;
 var MONTH_ABBR=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -1806,6 +1806,140 @@ const DATA={"W2-23":{"totals":{"billed":5649.49,"paid":3188.48,"auditSvgs":1492.
         "auditSvgs": 25.31,
         "dupSvgs": 0,
         "desc": "PER PRICING AGREEMENT FSC IS ADDED B4 REMOTE ACCESS CHG"
+      }
+    ]
+  }
+,
+  "W7-13": {
+    "totals": {
+      "billed": 3390.24,
+      "paid": 1292.2,
+      "auditSvgs": 286.31,
+      "dupSvgs": 1811.73,
+      "totalSvgs": 2098.04,
+      "savingsRate": 61.9,
+      "bills": 10
+    },
+    "carriers": [
+      {
+        "id": "FEC*",
+        "billed": 1811.73,
+        "paid": 0,
+        "auditSvgs": 0,
+        "dupSvgs": 1811.73
+      },
+      {
+        "id": "EXLA",
+        "billed": 569.41,
+        "paid": 544.41,
+        "auditSvgs": 25,
+        "dupSvgs": 0
+      },
+      {
+        "id": "RLCA",
+        "billed": 551.64,
+        "paid": 339.24,
+        "auditSvgs": 212.4,
+        "dupSvgs": 0
+      },
+      {
+        "id": "SAIA",
+        "billed": 457.46,
+        "paid": 408.55,
+        "auditSvgs": 48.91,
+        "dupSvgs": 0
+      }
+    ],
+    "items": [
+      {
+        "carr": "EXLA",
+        "pro": "1642640090",
+        "paid": 544.41,
+        "billed": 569.41,
+        "auditSvgs": 25,
+        "dupSvgs": 0,
+        "desc": "PER DLVY RECEIPT DELIVERED W/O SIGNATUR SIGNATURE FEE NA"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "927909944",
+        "paid": 0,
+        "billed": 108.07,
+        "auditSvgs": 0,
+        "dupSvgs": 108.07,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "927923766",
+        "paid": 0,
+        "billed": 45.09,
+        "auditSvgs": 0,
+        "dupSvgs": 45.09,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "930774184",
+        "paid": 0,
+        "billed": 264.65,
+        "auditSvgs": 0,
+        "dupSvgs": 264.65,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "930776117",
+        "paid": 0,
+        "billed": 206.54,
+        "auditSvgs": 0,
+        "dupSvgs": 206.54,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "930779973",
+        "paid": 0,
+        "billed": 1142.21,
+        "auditSvgs": 0,
+        "dupSvgs": 1142.21,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "930779974",
+        "paid": 0,
+        "billed": 45.17,
+        "auditSvgs": 0,
+        "dupSvgs": 45.17,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "RLCA",
+        "pro": "I408189384",
+        "paid": 181.99,
+        "billed": 241.99,
+        "auditSvgs": 60,
+        "dupSvgs": 0,
+        "desc": "PER GOOGLE MAPS THIS IS GOING TO A BUSINESS NOT RESD DLVY"
+      },
+      {
+        "carr": "RLCA",
+        "pro": "I713767419",
+        "paid": 157.25,
+        "billed": 309.65,
+        "auditSvgs": 152.4,
+        "dupSvgs": 0,
+        "desc": "PER KRISTA T W/HANT PER KENS EMAIL SORT/ SEG FEE REMOVED"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10892685300",
+        "paid": 408.55,
+        "billed": 457.46,
+        "auditSvgs": 48.91,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT FSC IS RATED B4 THE HIGH COST FEE"
       }
     ]
   }

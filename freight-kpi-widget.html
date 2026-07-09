@@ -82,7 +82,7 @@
 <div class="kpi-tooltip" id="kpi-tip"></div></div>
 <script>
 /* ═══ Date Control Module ═══ */
-var ALL_WEEKS=["2-23","3-2","3-9","3-16","3-23","3-30","4-6","4-13","4-20","4-27","5-4","5-11","5-18","5-25","6-1","6-8","6-15","6-22","6-29","7-6"];
+var ALL_WEEKS=["2-23","3-2","3-9","3-16","3-23","3-30","4-6","4-13","4-20","4-27","5-4","5-11","5-18","5-25","6-1","6-8","6-15","6-22","6-29","7-6","7-13"];
 /* -- Derived calendar: auto-builds month/quarter/year buckets from ALL_WEEKS. Supports unlimited months & years. Parses legacy "M-D"/"WM-D" (year inferred by month-rollover from YEAR_ANCHOR) and year-aware "YY-M-D"/"WYY-M-D" (year read from key). On single-year data the month keys are bare abbreviations ("Feb"), identical to the prior hardcoded structures. -- */
 var YEAR_ANCHOR=2026;
 var MONTH_ABBR=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -147,7 +147,8 @@ var WD={
   "6-15":{s:442,p:194053.56,w:684626},
   "6-22":{s:333,p:144285.16,w:418826},
   "6-29":{s:290,p:133191.45,w:446624},
-  "7-6":{s:386,p:169946.22,w:563339}};
+  "7-6":{s:386,p:169946.22,w:563339},
+  "7-13":{s:332,p:151569.68,w:583102}};
 var metrics=[{key:"s",label:"Total Shipments",format:"integer",unit:null},{key:"avgPaid",label:"Avg Paid / Shipment",format:"currency",unit:null},{key:"p",label:"Total Freight Paid",format:"currency",unit:null},{key:"avgWt",label:"Avg Weight / Shipment",format:"integer",unit:"lbs"},{key:"w",label:"Total Weight",format:"integer",unit:"lbs"}];
 var dark=true;
 function agg(wks){var r={s:0,p:0,w:0};wks.forEach(function(k){var d=WD[k];if(d){r.s+=d.s;r.p+=d.p;r.w+=d.w;}});r.avgPaid=r.s?r.p/r.s:0;r.avgWt=r.s?r.w/r.s:0;return r;}

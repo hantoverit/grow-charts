@@ -109,7 +109,7 @@
 <div class="tm-tip" id="tm-tip"></div></div>
 <script>
 /* ═══ Date Control Module ═══ */
-var ALL_WEEKS=["2-23","3-2","3-9","3-16","3-23","3-30","4-6","4-13","4-20","4-27","5-4","5-11","5-18","5-25","6-1","6-8","6-15","6-22","6-29","7-6"];
+var ALL_WEEKS=["2-23","3-2","3-9","3-16","3-23","3-30","4-6","4-13","4-20","4-27","5-4","5-11","5-18","5-25","6-1","6-8","6-15","6-22","6-29","7-6","7-13"];
 /* -- Derived calendar: auto-builds month/quarter/year buckets from ALL_WEEKS. Supports unlimited months & years. Parses legacy "M-D"/"WM-D" (year inferred by month-rollover from YEAR_ANCHOR) and year-aware "YY-M-D"/"WYY-M-D" (year read from key). On single-year data the month keys are bare abbreviations ("Feb"), identical to the prior hardcoded structures. -- */
 var YEAR_ANCHOR=2026;
 var MONTH_ABBR=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -182,7 +182,8 @@ const RAW={
   "6-15":{AM:2939.16,AT:19087.52,AV:34042.87,CA:3190.19,CO:4996.47,DC:4875.29,FM:3101.03,FR:13115.76,HB:2468.93,HZ:11853.61,KC:82715.03,NW:3251.63,WC:8416.07},
   "6-22":{AM:873.92,AT:12422.31,AV:28707.7,CA:1171.53,CO:5970.59,DC:7499.81,FM:182.7,FR:7010.84,HB:4046.21,HZ:6706.43,KC:61867.45,NW:3100.99,WC:4724.68},
   "6-29":{AM:786.73,AT:12240.25,AV:26638.92,CA:1845.12,CO:5937.14,DC:3623.41,FM:589.37,FR:9218.82,HB:2691,HZ:5224.91,KC:58876.06,NW:1553.36,WC:3966.36},
-  "7-6":{AM:3807.94,AT:23055.85,AV:28007.24,CA:1918.35,CO:2270.98,DC:6267.53,FM:337.82,FR:8638.84,HB:2748.11,HZ:7519.87,KC:80758.32,NW:842.48,WC:3772.89}};
+  "7-6":{AM:3807.94,AT:23055.85,AV:28007.24,CA:1918.35,CO:2270.98,DC:6267.53,FM:337.82,FR:8638.84,HB:2748.11,HZ:7519.87,KC:80758.32,NW:842.48,WC:3772.89},
+  "7-13":{AM:2897.36,AT:12508.43,AV:28880.5,CA:2873.93,CO:6690.82,DC:2278.92,FM:690.35,FR:10443.98,HB:5670.15,HZ:7608.79,KC:64628.1,NW:955.12,WC:5443.23}};
 const LABELS={AM:"Amelia",AT:"Atlanta",AV:"Avon",CA:"Canada",CO:"Colorado",DC:"DC Metro",FM:"Farmer's Mkt",FR:"Franklin",HB:"Harrisburg",HZ:"Hazleton",KC:"Kansas City",NW:"Northwest",SP:"Springfield",WC:"West Coast"};
 // Fixed color index per account — assigned by best-ever Total Paid rank across all weeks
 const ACCT_COLORS={KC:0,AV:1,AT:2,FR:3,HZ:4,CA:5,HB:6,WC:7,DC:8,CO:9,NW:10,AM:11,FM:12,SP:13};
