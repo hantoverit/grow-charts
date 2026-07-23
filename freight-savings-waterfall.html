@@ -137,7 +137,7 @@ html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--
 </div>
 <script>
 /* ═══ Date Control Module ═══ */
-var ALL_WEEKS=["W2-23","W3-2","W3-9","W3-16","W3-23","W3-30","W4-6","W4-13","W4-20","W4-27","W5-4","W5-11","W5-18","W5-25","W6-1","W6-8","W6-15","W6-22","W6-29","W7-6","W7-13","W7-20"];
+var ALL_WEEKS=["W2-23","W3-2","W3-9","W3-16","W3-23","W3-30","W4-6","W4-13","W4-20","W4-27","W5-4","W5-11","W5-18","W5-25","W6-1","W6-8","W6-15","W6-22","W6-29","W7-6","W7-13","W7-20","W7-27"];
 /* -- Derived calendar: auto-builds month/quarter/year buckets from ALL_WEEKS. Supports unlimited months & years. Parses legacy "M-D"/"WM-D" (year inferred by month-rollover from YEAR_ANCHOR) and year-aware "YY-M-D"/"WYY-M-D" (year read from key). On single-year data the month keys are bare abbreviations ("Feb"), identical to the prior hardcoded structures. -- */
 var YEAR_ANCHOR=2026;
 var MONTH_ABBR=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -2158,6 +2158,165 @@ const DATA={"W2-23":{"totals":{"billed":5649.49,"paid":3188.48,"auditSvgs":1492.
         "auditSvgs": 324,
         "dupSvgs": 0,
         "desc": "PER BOL NO HAZMAT ON BOL BILLING ERROR"
+      }
+    ]
+  }
+,
+  "W7-27": {
+    "totals": {
+      "billed": 6298.08,
+      "paid": 2347.88,
+      "auditSvgs": 2177.07,
+      "dupSvgs": 1773.13,
+      "totalSvgs": 3950.2,
+      "savingsRate": 62.7,
+      "bills": 12
+    },
+    "carriers": [
+      {
+        "id": "FEC*",
+        "billed": 1773.13,
+        "paid": 0,
+        "auditSvgs": 0,
+        "dupSvgs": 1773.13
+      },
+      {
+        "id": "CD585",
+        "billed": 1665.39,
+        "paid": 615.3,
+        "auditSvgs": 1050.09,
+        "dupSvgs": 0
+      },
+      {
+        "id": "SAIA",
+        "billed": 1556.78,
+        "paid": 1404.8,
+        "auditSvgs": 151.98,
+        "dupSvgs": 0
+      },
+      {
+        "id": "FXNL",
+        "billed": 916.66,
+        "paid": 141.66,
+        "auditSvgs": 775,
+        "dupSvgs": 0
+      },
+      {
+        "id": "DOHR",
+        "billed": 386.12,
+        "paid": 186.12,
+        "auditSvgs": 200,
+        "dupSvgs": 0
+      }
+    ],
+    "items": [
+      {
+        "carr": "CD585",
+        "pro": "A10411515",
+        "paid": 615.3,
+        "billed": 1665.39,
+        "auditSvgs": 1050.09,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT 230.00 PER PLT FOR GUELPH"
+      },
+      {
+        "carr": "DOHR",
+        "pro": "88432403",
+        "paid": 84.12,
+        "billed": 184.12,
+        "auditSvgs": 100,
+        "dupSvgs": 0,
+        "desc": "PER KRISTA T W/HANT WHSE FEE IS REMOVED PER KENS EMAIL"
+      },
+      {
+        "carr": "DOHR",
+        "pro": "88520722",
+        "paid": 102,
+        "billed": 202,
+        "auditSvgs": 100,
+        "dupSvgs": 0,
+        "desc": "PER KRISTA T W/HANT DO NOT PAY WHSE FEE HAS BEEN REMOVED"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "929910474",
+        "paid": 0,
+        "billed": 44.91,
+        "auditSvgs": 0,
+        "dupSvgs": 44.91,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "932799923",
+        "paid": 0,
+        "billed": 203.27,
+        "auditSvgs": 0,
+        "dupSvgs": 203.27,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "932810071",
+        "paid": 0,
+        "billed": 45.09,
+        "auditSvgs": 0,
+        "dupSvgs": 45.09,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "932810072",
+        "paid": 0,
+        "billed": 1469.16,
+        "auditSvgs": 0,
+        "dupSvgs": 1469.16,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FEC*",
+        "pro": "972108666",
+        "paid": 0,
+        "billed": 10.7,
+        "auditSvgs": 0,
+        "dupSvgs": 10.7,
+        "desc": "DUPLICATE BILL"
+      },
+      {
+        "carr": "FXNL",
+        "pro": "8284136254",
+        "paid": 141.66,
+        "billed": 916.66,
+        "auditSvgs": 775,
+        "dupSvgs": 0,
+        "desc": "PER BOL DIMS ARE 14X66X22 NO INSPECTION PROVIDED FOR OD CHG"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10838513400",
+        "paid": 494.49,
+        "billed": 579.49,
+        "auditSvgs": 85,
+        "dupSvgs": 0,
+        "desc": "PER KRISTA T W/HANT DO NOT PAY REDLVY CHG JSWART@SAIA REMOVING C"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10838515410",
+        "paid": 304.69,
+        "billed": 326.9,
+        "auditSvgs": 22.21,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT FSC IS ADDED B4 REMOTE ACCESS CHG"
+      },
+      {
+        "carr": "SAIA",
+        "pro": "10892685700",
+        "paid": 605.62,
+        "billed": 650.39,
+        "auditSvgs": 44.77,
+        "dupSvgs": 0,
+        "desc": "PER PRICING AGREEMENT FSC IS RATED B4 HIGH COST FEE"
       }
     ]
   }
